@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz.
- * Version: 1.0
+ * Version: 0.0.2
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  */
@@ -100,6 +100,93 @@ function shipment_fix_wc_tooltips()
 	</style>';
 };
 
+function kargo_details($order)
+{
+    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
+    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+
+    if ($tracking_company == '') {
+        echo "Kargo hazırlanıyor";
+    } else {
+        ?>
+
+    <h2 id="kargoTakipSection">Kargo Takip</h2>
+    <h4>Kargo firması : </h4>  <?php
+if ($tracking_company == 'ptt') {
+            echo "Ptt Kargo";
+        }
+        if ($tracking_company == 'yurtici') {
+            echo "Yurtiçi Kargo";
+        }
+        if ($tracking_company == 'aras') {
+            echo "Aras Kargo";
+        }
+        if ($tracking_company == 'mng') {
+            echo "Mng Kargo";
+        }
+        ?>
+    <h4>Kargo takip numarası:</h4> <?php echo $tracking_code ?>
+    <br>
+
+    <?php
+
+        if ($tracking_company == 'ptt') {
+            echo '<a href="https://gonderitakip.ptt.gov.tr/Track/Verify?q='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'yurtici') {
+            echo '<a href="https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'aras') {
+            echo '<a href="https://www.araskargo.com.tr/trmobile/cargo_tracking_detail.aspx?query=1&querydetail=2&ref_no=&seri_no=&irs_no=&kargo_takip_no='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+
+        }
+        if ($tracking_company == 'mng') {
+            echo '<a href="http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+
+        }
+
+    ?>
+
+    
+    
+    Kargonuzu izlemek için buraya tıklayın.
+    
+    </a>
 
 
+    <?php
+}
+}
 
+add_action('woocommerce_after_order_details', 'kargo_details');
+
+
+add_filter( 'woocommerce_my_account_my_orders_actions', 'add_my_account_my_orders_custom_action', 10, 2 );
+function add_my_account_my_orders_custom_action( $actions, $order ) {
+    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
+    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+
+    $action_slug = 'specific_name';
+
+
+    if ($tracking_company == 'ptt') {
+        $cargoTrackingUrl =  '<a href="https://gonderitakip.ptt.gov.tr/Track/Verify?q='.$tracking_code;
+    }
+    if ($tracking_company == 'yurtici') {
+        $cargoTrackingUrl = 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code='.$tracking_code;
+    }
+    if ($tracking_company == 'aras') {
+        $cargoTrackingUrl = 'https://www.araskargo.com.tr/trmobile/cargo_tracking_detail.aspx?query=1&querydetail=2&ref_no=&seri_no=&irs_no=&kargo_takip_no='.$tracking_code;
+
+    }
+    if ($tracking_company == 'mng') {
+        $cargoTrackingUrl = 'http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k='.$tracking_code;
+
+    }
+
+    $actions[$action_slug] = array(
+        'url'  =>  $cargoTrackingUrl,
+        'name' => 'Kargo takibi',
+    );
+    return $actions;
+}
