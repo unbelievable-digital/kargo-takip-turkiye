@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name: Kargo Takip Türkiye
- * Plugin URI: https://unbelievable.digital
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz.
  * Version: 1.0
  * Author: Unbelievable.Digital
