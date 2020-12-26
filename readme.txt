@@ -14,6 +14,8 @@ Müşteri kargolarınızı kayıtlarını şiparişin içinde tutabilirsiniz bu 
 Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir.Eklentiyi aktif yaptığınızda otomatik olarak şiparişlerin içine kargo bölümü eklenecektir.
 
 == Screenshots ==
+1.Woocomerce şipariş içi takip ekleme görünümü
+2.Şiparişler sayfası görünümü
 
 == Changelog ==
 = 0.0.2 =
