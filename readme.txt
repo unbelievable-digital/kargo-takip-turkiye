@@ -1,10 +1,10 @@
 === Kargo Takip ===
 Contributors: zgrkaralar,unbelievabledigital
 Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking
-Requires at least: 4.0
+Requires at least: 5.1
 Tested up to: 5.6
 Requires PHP: 7.1
-Stable tag: 0.0.2
+Stable tag: 0.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +18,9 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir.Eklentiyi akt
 2.Şiparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.3 =
+Fonksiyon isimleri düzeltildi.
+
 = 0.0.2 =
 Müşteri hesabım >> Şiparişler sayfasındaki şipariş bölümüne düğme eklendi.
 Şipariş detayları sayfasına kargo firması adı ve kargo takip gösterme eklendi.

@@ -9,7 +9,7 @@
 
 // Register new status
 
-function register_shipment_shipped_order_status()
+function kargoTR_register_shipment_shipped_order_status()
 {
     register_post_status('wc-kargo-verildi', array(
         'label' => 'Kargoya verildi',
@@ -20,9 +20,9 @@ function register_shipment_shipped_order_status()
         'label_count' => _n_noop('Kargoya verildi(%s)', 'Kargoya verildi (%s)'),
     ));
 }
-add_action('init', 'register_shipment_shipped_order_status');
+add_action('init', 'kargoTR_register_shipment_shipped_order_status');
 
-function add_shipment_to_order_statuses($order_statuses)
+function kargoTR_add_shipment_to_order_statuses($order_statuses)
 {
 
     $new_order_statuses = array();
@@ -38,11 +38,11 @@ function add_shipment_to_order_statuses($order_statuses)
 
     return $new_order_statuses;
 }
-add_filter('wc_order_statuses', 'add_shipment_to_order_statuses');
+add_filter('wc_order_statuses', 'kargoTR_add_shipment_to_order_statuses');
 
-add_action('woocommerce_admin_order_data_after_order_details', 'shipment_details');
+add_action('woocommerce_admin_order_data_after_order_details', 'kargoTR_general_shipment_details_for_admin');
 
-function shipment_details($order)
+function kargoTR_general_shipment_details_for_admin($order)
 {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
@@ -78,17 +78,17 @@ function shipment_details($order)
 
 }
 
-add_action('woocommerce_process_shop_order_meta', 'tracking_save_general_details');
+add_action('woocommerce_process_shop_order_meta', 'kargoTR_tracking_save_general_details');
 
-function tracking_save_general_details($ord_id)
+function kargoTR_tracking_save_general_details($ord_id)
 {
     update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
     update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
 }
 
-add_action('admin_head', 'shipment_fix_wc_tooltips');
+add_action('admin_head', 'kargoTR_shipment_fix_wc_tooltips');
 
-function shipment_fix_wc_tooltips()
+function kargoTR_shipment_fix_wc_tooltips()
 {
     echo '<style>
 	#order_data .order_data_column .form-field.shipment-set-tip-style label{
@@ -100,7 +100,7 @@ function shipment_fix_wc_tooltips()
 	</style>';
 };
 
-function kargo_details($order)
+function kargoTR_shipment_details($order)
 {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
@@ -158,11 +158,12 @@ if ($tracking_company == 'ptt') {
 }
 }
 
-add_action('woocommerce_after_order_details', 'kargo_details');
+add_action('woocommerce_after_order_details', 'kargoTR_shipment_details');
 
 
-add_filter( 'woocommerce_my_account_my_orders_actions', 'add_my_account_my_orders_custom_action', 10, 2 );
-function add_my_account_my_orders_custom_action( $actions, $order ) {
+add_filter( 'woocommerce_my_account_my_orders_actions', 'kargoTR_add_kargo_button_in_order', 10, 2 );
+
+function kargoTR_add_kargo_button_in_order( $actions, $order ) {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
 
