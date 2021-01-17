@@ -63,6 +63,13 @@ function kargoTR_general_shipment_details_for_admin($order)
             'yurtici' => 'Yurtiçi Kargo',
             'aras' => 'Aras Kargo',
             'mng' => 'Mng Kargo',
+            'horoz' => 'Horoz Kargo',
+            'ups' => 'UPS Kargo',
+            'surat' => 'Sürat Kargo',
+            'filo' => 'Filo Kargo',
+            'tnt' => 'TNT Kargo',
+            'dhl' =>'DHL Kargo'
+
         ),
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));
@@ -124,6 +131,28 @@ if ($tracking_company == 'ptt') {
         if ($tracking_company == 'mng') {
             echo "Mng Kargo";
         }
+        if ($tracking_company == 'horoz') {
+            echo "Horoz Kargo";
+        }
+        if ($tracking_company == 'ups') {
+            echo "UPS Kargo";
+        }
+        if ($tracking_company == 'surat') {
+            echo "Sürat Kargo";
+        }
+        if ($tracking_company == 'filo') {
+            echo "Filo Kargo";
+        }
+        if ($tracking_company == 'tnt') {
+            echo "TNT Kargo";
+        }
+        if ($tracking_company == 'dhl') {
+            echo "DHL Kargo";
+        }
+        if ($tracking_company == 'fedex') {
+            echo "Fedex Kargo";
+        }
+        
         ?>
     <h4>Kargo takip numarası:</h4> <?php echo $tracking_code ?>
     <br>
@@ -142,7 +171,27 @@ if ($tracking_company == 'ptt') {
         }
         if ($tracking_company == 'mng') {
             echo '<a href="http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
-
+        }
+        if ($tracking_company == 'horoz') {
+            echo '<a href="https://app3.horoz.com.tr/wsKurumsal/_genel/frmGonderiTakip.aspx?lng=tr" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'ups') {
+            echo '<a href="https://www.ups.com.tr/WaybillSorgu.aspx?Waybill='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'surat') {
+            echo '<a href="https://www.suratkargo.com.tr/KargoTakip/?kargotakipno='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'filo') {
+            echo '<a href="http://filloweb.fillo.com.tr/GonderiTakip" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'tnt') {
+            echo '<a href="https://www.tnt.com/express/tr_tr/site/shipping-tools/tracking.html?searchType=con&cons='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'dhl') {
+            echo '<a href="https://www.dhl.com/tr-tr/home/tracking.html?tracking-id='.$tracking_code.'&submit=1" target="_blank" rel="noopener noreferrer">';
+        }
+        if ($tracking_company == 'fedex') {
+            echo '<a href=" https://www.fedex.com/fedextrack/?action=track&tracknumbers='.$tracking_code.'&locale=tr_TR&cntry_code=us" target="_blank" rel="noopener noreferrer">';
         }
 
     ?>
@@ -182,8 +231,26 @@ function kargoTR_add_kargo_button_in_order( $actions, $order ) {
     }
     if ($tracking_company == 'mng') {
         $cargoTrackingUrl = 'http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k='.$tracking_code;
-
     }
+    if ($tracking_company == 'horoz') {
+        $cargoTrackingUrl = '<a href="https://app3.horoz.com.tr/wsKurumsal/_genel/frmGonderiTakip.aspx?lng=tr" target="_blank" rel="noopener noreferrer">';
+    }
+    if ($tracking_company == 'ups') {
+        $cargoTrackingUrl = '<a href="https://www.ups.com.tr/WaybillSorgu.aspx?Waybill='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+    }
+    if ($tracking_company == 'surat') {
+        $cargoTrackingUrl = '<a href="https://www.suratkargo.com.tr/KargoTakip/?kargotakipno='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+    }
+    if ($tracking_company == 'filo') {
+        $cargoTrackingUrl = '<a href="http://filloweb.fillo.com.tr/GonderiTakip" target="_blank" rel="noopener noreferrer">';
+    }
+    if ($tracking_company == 'tnt') {
+        $cargoTrackingUrl = '<a href="https://www.tnt.com/express/tr_tr/site/shipping-tools/tracking.html?searchType=con&cons='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+    }
+    if ($tracking_company == 'dhl') {
+        $cargoTrackingUrl =  '<a href="https://www.dhl.com/tr-tr/home/tracking.html?tracking-id='.$tracking_code.'&submit=1" target="_blank" rel="noopener noreferrer">';
+    }
+
 
     $actions[$action_slug] = array(
         'url'  =>  $cargoTrackingUrl,
