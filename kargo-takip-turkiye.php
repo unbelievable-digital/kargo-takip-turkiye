@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz.
- * Version: 0.0.5
+ * Version: 0.0.6
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  */
@@ -274,6 +274,9 @@ function kargoTR_add_kargo_button_in_order( $actions, $order ) {
     }
     if ($tracking_company == 'dhl') {
         $cargoTrackingUrl =  'https://www.dhl.com/tr-tr/home/tracking.html?tracking-id='.$tracking_code;
+    }
+    if ($tracking_company == 'fedex') {
+        $cargoTrackingUrl =  'https://www.fedex.com/fedextrack/?action=track&tracknumbers='.$tracking_code.'&locale=tr_TR&cntry_code=us';
     }
 
 
