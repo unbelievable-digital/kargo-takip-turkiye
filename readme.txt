@@ -4,7 +4,7 @@ Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici k
 Requires at least: 5.2
 Tested up to: 5.6
 Requires PHP: 7.1
-Stable tag: 0.0.4
+Stable tag: 0.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,11 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir.Eklentiyi akt
 2.Şiparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.5 =
+Şipariş sayfasındaki kargo butonu düzeltildi.
+Otomatik şipariş notu ekleme düzeltildi.
+Ufak tefek görsel değişiklikler yapıldı.
+
 = 0.0.4 =
 Yeni kargo firmaları eklendi.
 Horoz Lojistik
