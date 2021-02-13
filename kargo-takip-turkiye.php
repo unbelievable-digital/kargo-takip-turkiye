@@ -25,7 +25,7 @@ add_action('init', 'kargoTR_register_shipment_shipped_order_status');
 function kargoTR_add_shipment_to_order_statuses($order_statuses)
 {
 
-    $order_statuses['wc-kargo-verildi'] = _x( 'Kargoya Verildi', 'WooCommerce Order status', 'woocommerce' );
+    $order_statuses['wc-kargo-verildi'] = _x('Kargoya Verildi', 'WooCommerce Order status', 'woocommerce');
     return $order_statuses;
 }
 add_filter('wc_order_statuses', 'kargoTR_add_shipment_to_order_statuses');
@@ -58,8 +58,8 @@ function kargoTR_general_shipment_details_for_admin($order)
             'surat' => 'Sürat Kargo',
             'filo' => 'Filo Kargo',
             'tnt' => 'TNT Kargo',
-            'dhl' =>'DHL Kargo',
-            'fedex' => 'Fedex Kargo'
+            'dhl' => 'DHL Kargo',
+            'fedex' => 'Fedex Kargo',
 
         ),
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
@@ -83,38 +83,30 @@ function kargoTR_tracking_save_general_details($ord_id)
     $tracking_company = get_post_meta($ord_id, 'tracking_company', true);
     $tracking_code = get_post_meta($ord_id, 'tracking_code', true);
     $order_note = wc_get_order($ord_id);
-    
 
-    if (($tracking_company != $_POST['tracking_company']) && ($tracking_code == $_POST['tracking_code']) ) {
+    if (($tracking_company != $_POST['tracking_company']) && ($tracking_code == $_POST['tracking_code'])) {
         update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
 
         $note = __("Kargo firması güncellendi.");
 
-        $order_note->add_order_note( $note );
-    }
-    elseif (($tracking_company == $_POST['tracking_company']) && ($tracking_code != $_POST['tracking_code']) ) {
+        $order_note->add_order_note($note);
+    } elseif (($tracking_company == $_POST['tracking_company']) && ($tracking_code != $_POST['tracking_code'])) {
         update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
 
         $note = __("Kargo takip kodu güncellendi.");
-       
 
-        $order_note->add_order_note( $note );
-    }
-    elseif (($tracking_company == $_POST['tracking_company']) && ($tracking_code == $_POST['tracking_code']) ) {
+        $order_note->add_order_note($note);
+    } elseif (($tracking_company == $_POST['tracking_company']) && ($tracking_code == $_POST['tracking_code'])) {
 
-    }
-    elseif (!empty($_POST['tracking_company']) &&   !empty($_POST['tracking_code']) ) {
+    } elseif (!empty($_POST['tracking_company']) && !empty($_POST['tracking_code'])) {
         update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
         update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
         $order = new WC_Order($ord_id);
-        $order->update_status('kargo-verildi','Şipariş takip kodu eklendi');
+        $order->update_status('kargo-verildi', 'Şipariş takip kodu eklendi');
+
+        do_action('order_ship_mail', $ord_id);
 
     }
-
-    
-
-  
-   
 
 }
 
@@ -177,7 +169,7 @@ if ($tracking_company == 'ptt') {
         if ($tracking_company == 'fedex') {
             echo "Fedex Kargo";
         }
-        
+
         ?>
     <h4>Kargo takip numarası:</h4> <?php echo $tracking_code ?>
     <br>
@@ -185,46 +177,45 @@ if ($tracking_company == 'ptt') {
     <?php
 
         if ($tracking_company == 'ptt') {
-            echo '<a href="https://gonderitakip.ptt.gov.tr/Track/Verify?q='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+            echo '<a href="https://gonderitakip.ptt.gov.tr/Track/Verify?q=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'yurtici') {
-            echo '<a href="https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+            echo '<a href="https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'aras') {
-            echo '<a href="https://www.araskargo.com.tr/trmobile/cargo_tracking_detail.aspx?query=1&querydetail=2&ref_no=&seri_no=&irs_no=&kargo_takip_no='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
-
+            echo '<a href="https://www.araskargo.com.tr/trmobile/cargo_tracking_detail.aspx?query=1&querydetail=2&ref_no=&seri_no=&irs_no=&kargo_takip_no=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'mng') {
-            echo '<a href="http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+            echo '<a href="http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'horoz') {
             echo '<a href="https://app3.horoz.com.tr/wsKurumsal/_genel/frmGonderiTakip.aspx?lng=tr" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'ups') {
-            echo '<a href="https://www.ups.com.tr/WaybillSorgu.aspx?Waybill='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+            echo '<a href="https://www.ups.com.tr/WaybillSorgu.aspx?Waybill=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'surat') {
-            echo '<a href="https://www.suratkargo.com.tr/KargoTakip/?kargotakipno='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+            echo '<a href="https://www.suratkargo.com.tr/KargoTakip/?kargotakipno=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'filo') {
             echo '<a href="http://filloweb.fillo.com.tr/GonderiTakip" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'tnt') {
-            echo '<a href="https://www.tnt.com/express/tr_tr/site/shipping-tools/tracking.html?searchType=con&cons='.$tracking_code.'" target="_blank" rel="noopener noreferrer">';
+            echo '<a href="https://www.tnt.com/express/tr_tr/site/shipping-tools/tracking.html?searchType=con&cons=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'dhl') {
-            echo '<a href="https://www.dhl.com/tr-tr/home/tracking.html?tracking-id='.$tracking_code.'&submit=1" target="_blank" rel="noopener noreferrer">';
+            echo '<a href="https://www.dhl.com/tr-tr/home/tracking.html?tracking-id=' . $tracking_code . '&submit=1" target="_blank" rel="noopener noreferrer">';
         }
         if ($tracking_company == 'fedex') {
-            echo '<a href=" https://www.fedex.com/fedextrack/?action=track&tracknumbers='.$tracking_code.'&locale=tr_TR&cntry_code=us" target="_blank" rel="noopener noreferrer">';
+            echo '<a href=" https://www.fedex.com/fedextrack/?action=track&tracknumbers=' . $tracking_code . '&locale=tr_TR&cntry_code=us" target="_blank" rel="noopener noreferrer">';
         }
 
-    ?>
+        ?>
 
-    
-    
+
+
     Kargonuzu izlemek için buraya tıklayın.
-    
+
     </a>
 
 
@@ -234,55 +225,103 @@ if ($tracking_company == 'ptt') {
 
 add_action('woocommerce_after_order_details', 'kargoTR_shipment_details');
 
+add_filter('woocommerce_my_account_my_orders_actions', 'kargoTR_add_kargo_button_in_order', 10, 2);
 
-add_filter( 'woocommerce_my_account_my_orders_actions', 'kargoTR_add_kargo_button_in_order', 10, 2 );
+function kargoTR_add_kargo_button_in_order($actions, $order)
+{
+    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
+    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    $action_slug = 'kargoButonu';
 
-function kargoTR_add_kargo_button_in_order( $actions, $order ) {
+    if (!empty($tracking_code)) {
+
+        if ($tracking_company == 'ptt') {
+            $cargoTrackingUrl = 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=' . $tracking_code;
+        }
+        if ($tracking_company == 'yurtici') {
+            $cargoTrackingUrl = 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=' . $tracking_code;
+        }
+        if ($tracking_company == 'aras') {
+            $cargoTrackingUrl = 'https://www.araskargo.com.tr/trmobile/cargo_tracking_detail.aspx?query=1&querydetail=2&ref_no=&seri_no=&irs_no=&kargo_takip_no=' . $tracking_code;
+
+        }
+        if ($tracking_company == 'mng') {
+            $cargoTrackingUrl = 'http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k=' . $tracking_code;
+        }
+        if ($tracking_company == 'horoz') {
+            $cargoTrackingUrl = 'https://app3.horoz.com.tr/wsKurumsal/_genel/frmGonderiTakip.aspx?lng=tr';
+        }
+        if ($tracking_company == 'ups') {
+            $cargoTrackingUrl = 'https://www.ups.com.tr/WaybillSorgu.aspx?Waybill=' . $tracking_code;
+        }
+        if ($tracking_company == 'surat') {
+            $cargoTrackingUrl = 'https://www.suratkargo.com.tr/KargoTakip/?kargotakipno=' . $tracking_code;
+        }
+        if ($tracking_company == 'filo') {
+            $cargoTrackingUrl = 'http://filloweb.fillo.com.tr/GonderiTakip';
+        }
+        if ($tracking_company == 'tnt') {
+            $cargoTrackingUrl = 'https://www.tnt.com/express/tr_tr/site/shipping-tools/tracking.html?searchType=con&cons=' . $tracking_code;
+        }
+        if ($tracking_company == 'dhl') {
+            $cargoTrackingUrl = 'https://www.dhl.com/tr-tr/home/tracking.html?tracking-id=' . $tracking_code;
+        }
+        if ($tracking_company == 'fedex') {
+            $cargoTrackingUrl = 'https://www.fedex.com/fedextrack/?action=track&tracknumbers=' . $tracking_code . '&locale=tr_TR&cntry_code=us';
+        }
+
+        $actions[$action_slug] = array(
+            'url' => $cargoTrackingUrl,
+            'name' => 'Kargo takibi',
+        );
+
+        return $actions;
+    } else {
+
+        return $actions;
+    }
+
+}
+
+function kargoTR_kargo_bildirim_icerik($order, $mail_title = false, $mailer)
+{
+    $template = 'email-shipment-template.php';
+    $mailTemplatePath = untrailingslashit(plugin_dir_path(__FILE__)) . '/mail-template/';
+
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
 
-    $action_slug = 'specific_name';
+    return wc_get_template_html($template, array(
+        'order' => $order,
+        'email_heading' => $mail_title,
+        'sent_to_admin' => false,
+        'plain_text' => false,
+        'email' => $mailer,
+        'tracking_company' => $tracking_company,
+        'tracking_code' => $tracking_code,
+    ), '', $mailTemplatePath);
 
-
-    if ($tracking_company == 'ptt') {
-        $cargoTrackingUrl =  'https://gonderitakip.ptt.gov.tr/Track/Verify?q='.$tracking_code;
-    }
-    if ($tracking_company == 'yurtici') {
-        $cargoTrackingUrl = 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code='.$tracking_code;
-    }
-    if ($tracking_company == 'aras') {
-        $cargoTrackingUrl = 'https://www.araskargo.com.tr/trmobile/cargo_tracking_detail.aspx?query=1&querydetail=2&ref_no=&seri_no=&irs_no=&kargo_takip_no='.$tracking_code;
-
-    }
-    if ($tracking_company == 'mng') {
-        $cargoTrackingUrl = 'http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k='.$tracking_code;
-    }
-    if ($tracking_company == 'horoz') {
-        $cargoTrackingUrl = 'https://app3.horoz.com.tr/wsKurumsal/_genel/frmGonderiTakip.aspx?lng=tr';
-    }
-    if ($tracking_company == 'ups') {
-        $cargoTrackingUrl = 'https://www.ups.com.tr/WaybillSorgu.aspx?Waybill='.$tracking_code;
-    }
-    if ($tracking_company == 'surat') {
-        $cargoTrackingUrl = 'https://www.suratkargo.com.tr/KargoTakip/?kargotakipno='.$tracking_code;
-    }
-    if ($tracking_company == 'filo') {
-        $cargoTrackingUrl = 'http://filloweb.fillo.com.tr/GonderiTakip';
-    }
-    if ($tracking_company == 'tnt') {
-        $cargoTrackingUrl = 'https://www.tnt.com/express/tr_tr/site/shipping-tools/tracking.html?searchType=con&cons='.$tracking_code;
-    }
-    if ($tracking_company == 'dhl') {
-        $cargoTrackingUrl =  'https://www.dhl.com/tr-tr/home/tracking.html?tracking-id='.$tracking_code;
-    }
-    if ($tracking_company == 'fedex') {
-        $cargoTrackingUrl =  'https://www.fedex.com/fedextrack/?action=track&tracknumbers='.$tracking_code.'&locale=tr_TR&cntry_code=us';
-    }
-
-
-    $actions[$action_slug] = array(
-        'url'  =>  $cargoTrackingUrl,
-        'name' => 'Kargo takibi',
-    );
-    return $actions;
 }
+
+function kargoTR_kargo_eposta_details($order_id)
+{
+    $order = wc_get_order($order_id);
+
+    $mailer = WC()->mailer();
+
+    $mailTo = $order->get_billing_email();
+    $subject = "Şiparişiniz Kargoya Verildi";
+    $details = kargoTR_kargo_bildirim_icerik($order, $subject, $mailer);
+    $mailHeaders[] = "Content-Type: text/html\r\n";
+
+    $mailer->send($mailTo, $subject, $details, $mailHeaders);
+
+    $note = __("Müşterinin " . $order->get_billing_email() . " e-postasına kargo takip bilgileri gönderilmiştir.");
+    $order->add_order_note($note);
+
+    // Siparişi güncelle
+    $order->save();
+
+}
+
+add_action('order_ship_mail', 'kargoTR_kargo_eposta_details');
