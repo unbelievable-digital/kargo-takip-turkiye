@@ -4,11 +4,11 @@ Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici k
 Requires at least: 5.2
 Tested up to: 5.6
 Requires PHP: 7.1
-Stable tag: 0.0.6
+Stable tag: 0.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Müşteri kargolarınızı kayıtlarını şiparişin içinde tutabilirsiniz bu eklenti sayesinde.
+Müşteri kargolarınızı kayıtlarını Siparişin içinde tutabilirsiniz bu eklenti sayesinde.
 
 Eklentide bulunan kargolar,
 
@@ -25,19 +25,25 @@ TNT Kargo
 Filo Kargo
 
 == Installation ==
-Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir.Eklentiyi aktif yaptığınızda otomatik olarak şiparişlerin içine kargo bölümü eklenecektir.
+Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir.Eklentiyi aktif yaptığınızda otomatik olarak Siparişlerin içine kargo bölümü eklenecektir.
 
 == Screenshots ==
-1.Woocomerce şipariş içi takip ekleme görünümü
-2.Şiparişler sayfası görünümü
+1.Woocomerce Sipariş içi takip ekleme görünümü
+2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.7 =
+E-mail gönderme özelliği eklendi.
+Sipariş sayfasında kargo takip kodu girilmesede kargo takip butonu gösteriliyordu bu hata düzeltildi.
+Şipariş yazım hatası Sipariş olarak düzeltildi :) 
+
+
 = 0.0.6 =
-Şipariş sayfasındaki Fedex kargo butonu düzeltildi.
+Sipariş sayfasındaki Fedex kargo butonu düzeltildi.
 
 = 0.0.5 =
-Şipariş sayfasındaki kargo butonu düzeltildi.
-Otomatik şipariş notu ekleme düzeltildi.
+Sipariş sayfasındaki kargo butonu düzeltildi.
+Otomatik Sipariş notu ekleme düzeltildi.
 Ufak tefek görsel değişiklikler yapıldı.
 
 = 0.0.4 =
@@ -54,8 +60,8 @@ Filo Kargo
 Fonksiyon isimleri düzeltildi.
 
 = 0.0.2 =
-Müşteri hesabım >> Şiparişler sayfasındaki şipariş bölümüne düğme eklendi.
-Şipariş detayları sayfasına kargo firması adı ve kargo takip gösterme eklendi.
+Müşteri hesabım >> Siparişler sayfasındaki Sipariş bölümüne düğme eklendi.
+Sipariş detayları sayfasına kargo firması adı ve kargo takip gösterme eklendi.
 Ufak hatalar düzeltildi.
 = 0.0.1 =
 Eklenti oluşturuldu

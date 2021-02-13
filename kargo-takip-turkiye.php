@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz.
- * Version: 0.0.6
+ * Version: 0.0.7
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  */
@@ -102,7 +102,7 @@ function kargoTR_tracking_save_general_details($ord_id)
         update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
         update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
         $order = new WC_Order($ord_id);
-        $order->update_status('kargo-verildi', 'Şipariş takip kodu eklendi');
+        $order->update_status('kargo-verildi', 'Sipariş takip kodu eklendi');
 
         do_action('order_ship_mail', $ord_id);
 
@@ -310,7 +310,7 @@ function kargoTR_kargo_eposta_details($order_id)
     $mailer = WC()->mailer();
 
     $mailTo = $order->get_billing_email();
-    $subject = "Şiparişiniz Kargoya Verildi";
+    $subject = "Siparişiniz Kargoya Verildi";
     $details = kargoTR_kargo_bildirim_icerik($order, $subject, $mailer);
     $mailHeaders[] = "Content-Type: text/html\r\n";
 

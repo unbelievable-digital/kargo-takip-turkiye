@@ -32,7 +32,7 @@ do_action('woocommerce_email_header', $email_heading, $email);
 
 
 <p><?php printf(esc_html__('Merhaba %s,', 'woocommerce'), esc_html($order->get_billing_first_name()));?></p>
-<p> Şiparişiniz kargoya verilmiştir. Takip bilgileri aşağıda yer almaktadır:<p>
+<p> Siparişiniz kargoya verilmiştir. Takip bilgileri aşağıda yer almaktadır:<p>
 <p> Kargo Firması Adı: <strong> <?php
 if ($tracking_company == 'ptt') {
     echo "Ptt Kargo";
