@@ -24,7 +24,7 @@ if ($_POST['user1']) {
         </div>
         <div class="form-group">
             <label for="header">Kullanıcı adı:</label>
-            <input type="text" class="form-control" id="header" value="<?php echo get_option("netgsm_header"); ?>" placeholder="NETGSM kullanıcı adı" name="header1">
+            <input type="text" class="form-control" id="header" value="<?php echo get_option("netgsm_header"); ?>" placeholder="NETGSM SMS Başlığı" name="header1">
         </div>
         <button type="submit" class="btn btn-default">KAYDET</button>
     </form>
