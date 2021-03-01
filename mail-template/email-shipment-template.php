@@ -67,6 +67,9 @@ if ($tracking_company == 'dhl') {
 if ($tracking_company == 'fedex') {
     echo "Fedex Kargo";
 }
+if ($tracking_company == 'foodman') {
+    echo "Foodman Kargo";
+}
 
 ?></strong></p>
 <p> Kargo Takip No:<strong><?php echo $tracking_code; ?></strong></p>
@@ -104,6 +107,9 @@ if ($tracking_company == 'dhl') {
 }
 if ($tracking_company == 'fedex') {
     echo '<a href=" https://www.fedex.com/fedextrack/?action=track&tracknumbers=' . $tracking_code . '&locale=tr_TR&cntry_code=us" target="_blank" rel="noopener noreferrer">';
+}
+if ($tracking_company == 'foodman') {
+    echo '<a href="https://www.foodman.online/GonderiSorgu.aspx?gonderino=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
 }
 
 ?>

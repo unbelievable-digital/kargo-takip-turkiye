@@ -1,10 +1,11 @@
 === Kargo Takip ===
-Contributors: zgrkaralar,unbelievabledigital
-Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking
+Contributors: zgrkaralar,unbelievabledigital,aliosmanyuksel
+Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo
 Requires at least: 5.2
-Tested up to: 5.6
+Tested up to: 5.6.1
+WC tested up to: 5.0.0
 Requires PHP: 7.1
-Stable tag: 0.0.7
+Stable tag: 0.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,15 +24,26 @@ Fedex Kargo
 DHL Kargo
 TNT Kargo
 Filo Kargo
+FoodMan Kargo
 
 == Installation ==
-Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir.Eklentiyi aktif yaptığınızda otomatik olarak Siparişlerin içine kargo bölümü eklenecektir.
+Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi aktif ettiğinizde otomatik olarak Siparişlerin içine kargo bölümü eklenecektir.
+
+Yeni sürümde eklenmesi planlananlar (ROADMAP);
+* Farklı SMS firmalarının entegrasyonu.
+* Sipariş teslim edildikten sonra otomatik olarak "Tamamlandı" durumuna geçirilmesi.
 
 == Screenshots ==
 1.Woocomerce Sipariş içi takip ekleme görünümü
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.8 =
+Foodman Kargo firması eklendi.
+NetGSM SMS gönderimi sağlandı.
+Ufak tefek iyileştirmeler yapıldı :)
+
+
 = 0.0.7 =
 E-mail gönderme özelliği eklendi.
 Sipariş sayfasında kargo takip kodu girilmesede kargo takip butonu gösteriliyordu bu hata düzeltildi.
