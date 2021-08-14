@@ -1,9 +1,9 @@
 === Kargo Takip ===
 Contributors: zgrkaralar,unbelievabledigital,aliosmanyuksel
 Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo
-Requires at least: 5.2
-Tested up to: 5.6.1
-WC tested up to: 5.0.0
+Requires at least: 5.3
+Tested up to: 5.8.0
+WC tested up to: 5.5.0
 Requires PHP: 7.1
 Stable tag: 0.0.8
 License: GPLv2 or later
@@ -25,6 +25,14 @@ DHL Kargo
 TNT Kargo
 Filo Kargo
 FoodMan Kargo
+Iyi Kargo
+Post Trans Kargo
+
+
+A2A Digitalin hazırladı eklentinin kullanım videosu
+[youtube https://www.youtube.com/watch?v=7q-LbmdFH_M]
+
+Eklentiye katkılarından dolayı Ali Osman Yüksel ve Yasin Sarıgül teşekkür ederiz.
 
 == Installation ==
 Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi aktif ettiğinizde otomatik olarak Siparişlerin içine kargo bölümü eklenecektir.
@@ -38,6 +46,13 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.9 =
+İyi Kargo eklendi.
+Post Trans Kargo eklendi.
+0.1.0 Sürüme hazırlık için ayarlan sayfası eklendi.
+Otomatik mail göndermeyi kapatmak için ayarlar sayfasına özellik eklendi.
+Kargo hazırlanıyor yazısını kapatmak için ayarlar sayfaısına özellik eklendi.
+
 = 0.0.8 =
 Foodman Kargo firması eklendi.
 NetGSM SMS gönderimi sağlandı.

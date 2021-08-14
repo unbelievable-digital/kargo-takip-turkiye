@@ -2,46 +2,124 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz. Mail ve SMS gönderebilirsiniz.
- * Version: 0.0.8
+ * Version: 0.0.9
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  */
 
-//Admin menüsüne buton ekliyoruz...
-add_action('admin_menu', 'onayMenu');
-function onayMenu(){
-    add_menu_page('Kargo Takip Türkiye', 'Kargo Takip Türkiye', 'manage_options', 'kargoTakip', 'kargoTakip', 'dashicons-yes-alt', '2');
-    add_submenu_page( 'kargoTakip', 'Kargo Ayar Sayfası', 'Kargo Ayar Sayfası', 'manage_options', 'kargoAyar', 'kargoAyar');
+
+//Add Menu to WPadmin 
+
+add_action( 'admin_menu', 'register_my_custom_menu_page' );
+function register_my_custom_menu_page() {
+    $menu_slug = 'kargo-takip-turkiye';
+  // add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
+  add_menu_page( 'Kargo Takip Türkiye', 'Kargo Takip', 'read', $menu_slug, false, 'dashicons-car', 20 );
+  add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Ayarlar', 'read', $menu_slug, 'kargoTR_setting_page' );
+
+  add_action( 'admin_init', 'kargoTR_register_settings' );
 }
 
-function kargoTakip(){
-    include ('index.php');
+
+function kargoTR_setting_page() {
+    $kargo_hazirlaniyor_text = get_option('kargo_hazirlaniyor_text');
+    $mail_send_general_option = get_option('mail_send_general');
+    ?>
+<div class="wrap">
+    <h1>Kargo Takip Türkiye</h1>
+
+    <form method="post" action="options.php">
+        <?php settings_fields( 'kargoTR-settings-group' ); ?>
+        <?php do_settings_sections( 'kargoTR-settings-group' ); ?>
+        <table class="form-table">
+            <tr valign="top">
+                <th scope="row" style="width:50%">
+                    <?php _e( 'Kargo bilgisi girmeden önce şiparişlerin içinde gösterilen kargo hazırlanıyor yazısı gösterilsin mi ?', 'kargoTR' ) ?>
+                </th>
+                <td>
+
+                     
+                      <input type="radio" id="evet" <?php if( $kargo_hazirlaniyor_text == 'yes' ) echo 'checked'?>
+                        name="kargo_hazirlaniyor_text" value="yes">
+                    <label for="evet">Evet</label><br>
+                </td>
+                <td>
+                     
+                      <input type="radio" id="hayir" <?php if( $kargo_hazirlaniyor_text == 'no' ) echo 'checked'?>
+                        name="kargo_hazirlaniyor_text" value="no">
+                    <label for="hayir">Hayır</label><br>
+
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <th scope="row" style="width:50%">
+                    <?php _e( 'Kargo bilgisi girildiğinde mail otomatik gönderilsin mi ?', 'kargoTR' ) ?>
+                </th>
+                <td>
+
+                     
+                      <input type="radio" id="evetmail" <?php if( $mail_send_general_option == 'yes' ) echo 'checked'?>
+                        name="mail_send_general" value="yes">
+                    <label for="evetmail">Evet</label><br>
+                     
+
+
+                </td>
+                <td>
+
+                     
+                      <input type="radio" id="hayirmail" <?php if( $mail_send_general_option == 'no' ) echo 'checked'?>
+                        name="mail_send_general" value="no">
+                    <label for="hayirmail">Hayır</label><br>
+
+                </td>
+            </tr>
+
+
+        </table>
+
+        <?php submit_button(); ?>
+
+    </form>
+</div>
+<?php 
 }
-function kargoAyar(){
-    include ('settings.php');
+
+
+
+function kargoTR_register_settings() {
+    $args = array(
+        'default' => 'yes',
+        );
+register_setting( 'kargoTR-settings-group', 'kargo_hazirlaniyor_text',$args  );
+
+register_setting( 'kargoTR-settings-group', 'mail_send_general',$args  );
+register_setting( 'kargoTR-settings-group', 'sms_send_general',$args  );
+
+
 }
-//Admin menüsüne buton ekleme bitti...
 
 // Register new status
 
 function kargoTR_register_shipment_shipped_order_status()
 {
-    register_post_status('wc-kargo-verildi', array(
-        'label' => 'Kargoya verildi',
-        'public' => true,
-        'exclude_from_search' => false,
-        'show_in_admin_all_list' => true,
-        'show_in_admin_status_list' => true,
-        'label_count' => _n_noop('Kargoya verildi(%s)', 'Kargoya verildi (%s)'),
-    ));
+register_post_status('wc-kargo-verildi', array(
+'label' => 'Kargoya verildi',
+'public' => true,
+'exclude_from_search' => false,
+'show_in_admin_all_list' => true,
+'show_in_admin_status_list' => true,
+'label_count' => _n_noop('Kargoya verildi(%s)', 'Kargoya verildi (%s)'),
+));
 }
 
 add_action('init', 'kargoTR_register_shipment_shipped_order_status');
 
 function kargoTR_add_shipment_to_order_statuses($order_statuses)
 {
-    $order_statuses['wc-kargo-verildi'] = _x('Kargoya Verildi', 'WooCommerce Order status', 'woocommerce');
-    return $order_statuses;
+$order_statuses['wc-kargo-verildi'] = _x('Kargoya Verildi', 'WooCommerce Order status', 'woocommerce');
+return $order_statuses;
 }
 
 add_filter('wc_order_statuses', 'kargoTR_add_shipment_to_order_statuses');
@@ -50,11 +128,11 @@ add_action('woocommerce_admin_order_data_after_order_details', 'kargoTR_general_
 
 function kargoTR_general_shipment_details_for_admin($order)
 {
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
-    ?>
-    <br class="clear"/>
-    <?php
+$tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
+$tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+?>
+<br class="clear" />
+<?php
 
     woocommerce_wp_select(array(
         'id' => 'tracking_company',
@@ -76,7 +154,8 @@ function kargoTR_general_shipment_details_for_admin($order)
             'tnt' => 'TNT Kargo',
             'dhl' => 'DHL Kargo',
             'fedex' => 'Fedex Kargo',
-            'foodman' => 'FoodMan Kargo'
+            'foodman' => 'FoodMan Kargo',
+            'postrans'=> 'Postrans Kargo'
         ),
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));
@@ -94,7 +173,7 @@ function kargoTR_general_shipment_details_for_admin($order)
 
 add_action('woocommerce_process_shop_order_meta', 'kargoTR_tracking_save_general_details');
 
-function getCargoTrack($tracking_company = NULL, $tracking_code = NULL)
+function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL)
 {
     // Genel fonksiyon içine alarak SMS gönderirken de kod fazlalılığı yapmamak için :)
     if ($tracking_company == 'ptt') {
@@ -133,6 +212,12 @@ function getCargoTrack($tracking_company = NULL, $tracking_code = NULL)
     if ($tracking_company == 'foodman') {
         $cargoTrackingUrl = 'https://www.foodman.online/GonderiSorgu.aspx?gonderino=' . $tracking_code;
     }
+    if ($tracking_company == 'postrans') {
+        $cargoTrackingUrl = 'http://85.99.122.231/hareket.asp?har_kod=' . $tracking_code;
+    }
+    if ($tracking_company == 'iyi') {
+        $cargoTrackingUrl = 'https://www.geowix.com/kargom-nerede?tracking_code=' . $tracking_code . '&p=1fbe7c33-3226-4aad-aec3-850dc2487597&pfix=';
+    }
 
     return $cargoTrackingUrl;
 }
@@ -142,6 +227,8 @@ function kargoTR_tracking_save_general_details($ord_id)
     $tracking_company = get_post_meta($ord_id, 'tracking_company', true);
     $tracking_code = get_post_meta($ord_id, 'tracking_code', true);
     $order_note = wc_get_order($ord_id);
+    $mail_send_general_option = get_option('mail_send_general');
+
 
     if (($tracking_company != $_POST['tracking_company']) && ($tracking_code == $_POST['tracking_code'])) {
         update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
@@ -162,8 +249,7 @@ function kargoTR_tracking_save_general_details($ord_id)
         update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
         $order = new WC_Order($ord_id);
         $order->update_status('kargo-verildi', 'Sipariş takip kodu eklendi');
-
-        do_action('order_ship_mail', $ord_id);
+        if ($mail_send_general_option == 'yes') do_action('order_ship_mail', $ord_id);
 
     }
 
@@ -189,14 +275,19 @@ function kargoTR_shipment_details($order)
 {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    $kargo_hazirlaniyor_text_option = get_option('kargo_hazirlaniyor_text');
+
+    
+    if ( $order->get_status() != 'cancelled') {
+
 
     if ($tracking_company == '') {
+        if ($kargo_hazirlaniyor_text_option =='yes')
         echo "Kargo hazırlanıyor";
-    } else {
-        ?>
-
-        <h2 id="kargoTakipSection">Kargo Takip</h2>
-        <h4>Kargo firması : </h4>  <?php
+        } else {
+            ?>
+<h2 id="kargoTakipSection">Kargo Takip</h2>
+<h4>Kargo firması : </h4> <?php
         if ($tracking_company == 'ptt') {
             echo "PTT Kargo";
         }
@@ -233,18 +324,22 @@ function kargoTR_shipment_details($order)
         if ($tracking_company == 'foodman') {
             echo "FoodMan Kargo";
         }
+        if ($tracking_company == 'postman'){
+            echo "Postman Kargo";
+        }
+        if ($tracking_company == 'iyi'){
+            echo "İyi Kargo";
+        }
 
         ?>
-        <h4>Kargo takip numarası:</h4> <?php echo $tracking_code ?>
-        <br>
+<h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo $tracking_code ?>
+<br>
 
-        <?php echo '<a href="' . getCargoTrack($tracking_company, $tracking_code) . '" target="_blank" rel="noopener noreferrer">'; ?>
+<?php echo '<a href="' . kargoTR_getCargoTrack($tracking_company, $tracking_code) . '"target="_blank" rel="noopener noreferrer">'; _e( 'Kargonuzu takibi için buraya tıklayın.','kargoTR' );  echo '</a>'; ?>
 
-        Kargonuzu izlemek için buraya tıklayın.
-
-        </a>
-        <?php
+<?php
     }
+        }
 }
 
 add_action('woocommerce_after_order_details', 'kargoTR_shipment_details');
@@ -259,7 +354,7 @@ function kargoTR_add_kargo_button_in_order($actions, $order)
 
     if (!empty($tracking_code)) {
 
-        $cargoTrackingUrl = getCargoTrack($tracking_company, $tracking_code);
+        $cargoTrackingUrl = kargoTR_getCargoTrack($tracking_company, $tracking_code);
 
         $actions[$action_slug] = array(
             'url' => $cargoTrackingUrl,
@@ -308,42 +403,7 @@ function kargoTR_kargo_eposta_details($order_id)
 
     $mailer->send($mailTo, $subject, $details, $mailHeaders);
 
-    /**
-     * Basit şekilde NetGSM ile müşteriye SMS göndermek için betik...
-     */
-    if (!empty(get_option("netgsm_user")) && !empty(get_option("netgsm_pass")) && !empty(get_option("netgsm_header"))) {
-        $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-        $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
-        $takipLink = getCargoTrack($tracking_company, $tracking_code);
-        try {
-            $client = new SoapClient("https://soap.netgsm.com.tr:8181/Sms_webservis/SMS?wsdl");
 
-            $msg = 'Sayın ' . $alici . ', ' . $order_id . 'numaralı siparişiniz kargoya verilmiştir. Takip için; '.$takipLink;
-
-            $kullan = get_option("netgsm_user");
-            $parola = get_option("netgsm_pass");
-            $baslik = get_option("netgsm_header");
-
-            $Result = $client->smsGonder1NV2(array(
-                'username' => $kullan,
-                'password' => $parola,
-                'header' => $baslik,
-                'msg' => $msg,
-                'gsm' => $phone,
-                'filter' => '',
-                'startdate' => '',
-                'stopdate' => '',
-                'encoding' => ''
-            ));
-
-            $note2 = __("Müşterinin " . phone . " numaralı telefonuna kargo takip bilgileri gönderilmiştir.");
-            $order->add_order_note($note2);
-
-        } catch (Exception $exc) {
-            // Hata olusursa yakala
-            echo "Soap Hatasi Olustu: " . $exc->getMessage();
-        }
-    }
 
     $note = __("Müşterinin " . $order->get_billing_email() . " e-postasına kargo takip bilgileri gönderilmiştir.");
     $order->add_order_note($note);
