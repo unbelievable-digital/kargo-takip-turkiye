@@ -1,11 +1,11 @@
 === Kargo Takip ===
-Contributors: zgrkaralar,unbelievabledigital,aliosmanyuksel
+Contributors: zgrkaralar,unbelievabledigital
 Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo
 Requires at least: 5.3
 Tested up to: 5.8.0
 WC tested up to: 5.5.0
 Requires PHP: 7.1
-Stable tag: 0.0.8
+Stable tag: 0.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
