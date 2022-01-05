@@ -11,6 +11,8 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Müşteri kargolarınızı kayıtlarını Siparişin içinde tutabilirsiniz bu eklenti sayesinde.
 
+Eklenti artık SMS de gönderebiliyor şimdilik sadece NetGSM ile fakat sonraki sürümlerde daha farklı firmalarıda ekleyeceğiz.
+
 Eklentide bulunan kargolar,
 
 PTT Kargo
@@ -46,6 +48,11 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.91 =
+Bazı bölümlerde ufak iyileştirilmeler yapıldı düzeltildi.
+SMS özelliği için alt yapı hazırlandı.
+NetGSM entegrasyonu gerçekleştirildi.
+
 = 0.0.9 =
 İyi Kargo eklendi.
 Post Trans Kargo eklendi.
