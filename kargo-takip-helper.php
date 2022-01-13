@@ -1,6 +1,6 @@
 <?php
 
-function kargoTR_get_company_name($tracking_company){
+function kargoTR_get_company_name($tracking_company) {
     if ($tracking_company == 'ptt') {
         return "PTT Kargo";
     }
@@ -45,8 +45,7 @@ function kargoTR_get_company_name($tracking_company){
     }
 }
 
-function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL)
-{
+function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL) {
     // Genel fonksiyon içine alarak SMS gönderirken de kod fazlalılığı yapmamak için :)
     if ($tracking_company == 'ptt') {
         $cargoTrackingUrl = 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=' . $tracking_code;
