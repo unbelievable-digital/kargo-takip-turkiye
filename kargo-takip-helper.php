@@ -1,6 +1,6 @@
 <?php
 
-function kargoTR_get_company_name($tracking_company) {
+function kargoTR_get_company_name($tracking_company){
     if ($tracking_company == 'ptt') {
         return "PTT Kargo";
     }
@@ -43,9 +43,16 @@ function kargoTR_get_company_name($tracking_company) {
     if ($tracking_company == 'iyi'){
         return "İyi Kargo";
     }
+    if ($tracking_company == 'tex'){
+        return "Trendyol Express";
+    }
+    if ($tracking_company == 'hepsijet'){
+        return "HepsiJET";
+    }
 }
 
-function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL) {
+function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL)
+{
     // Genel fonksiyon içine alarak SMS gönderirken de kod fazlalılığı yapmamak için :)
     if ($tracking_company == 'ptt') {
         $cargoTrackingUrl = 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=' . $tracking_code;
@@ -88,6 +95,12 @@ function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL) 
     }
     if ($tracking_company == 'iyi') {
         $cargoTrackingUrl = 'https://www.geowix.com/kargom-nerede?tracking_code=' . $tracking_code . '&p=1fbe7c33-3226-4aad-aec3-850dc2487597&pfix=';
+    }
+    if ($tracking_company == 'tex') {
+        $cargoTrackingUrl = 'https://kargotakip.trendyol.com/?orderNumber=' . $tracking_code;
+    }
+    if ($tracking_company == 'hepsijet') {
+        $cargoTrackingUrl = 'https://www.hepsijet.com/gonderi-takibi/' . $tracking_code;
     }
 
     return $cargoTrackingUrl;

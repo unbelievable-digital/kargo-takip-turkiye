@@ -1,11 +1,11 @@
 === Kargo Takip ===
 Contributors: zgrkaralar,unbelievabledigital
-Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo
-Requires at least: 5.3
-Tested up to: 5.8.0
-WC tested up to: 5.5.0
+Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo,Trendyol Kargo,hepsijet kargo, trendyol, hepsijet
+Requires at least: 4.9
+Tested up to: 5.9.1
+WC tested up to: 6.2.1
 Requires PHP: 7.1
-Stable tag: 0.0.9
+Stable tag: 0.0.92
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,6 +15,8 @@ Eklenti artık SMS de gönderebiliyor şimdilik sadece NetGSM ile fakat sonraki 
 
 Eklentide bulunan kargolar,
 
+Trendyol Express
+HepsiJET
 PTT Kargo
 Aras Kargo
 Yurtiçi Kargo
@@ -29,6 +31,7 @@ Filo Kargo
 FoodMan Kargo
 Iyi Kargo
 Post Trans Kargo
+
 
 
 A2A Digitalin hazırladı eklentinin kullanım videosu
@@ -48,6 +51,16 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.92 =
+Woocommerce 6.2.1 testleri yapıldı. 
+WordPress 5.9.1 testi yapıldı.
+
+*** Yeni iki kargo şirketi eklendi ***
+
+Trendyol Express
+HepsiJET
+
+
 = 0.0.91 =
 Bazı bölümlerde ufak iyileştirilmeler yapıldı düzeltildi.
 SMS özelliği için alt yapı hazırlandı.

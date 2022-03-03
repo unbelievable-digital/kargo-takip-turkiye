@@ -26,50 +26,57 @@ do_action('woocommerce_email_header', $email_heading, $email);
 <?php /* translators: %s: Customer first name */?>
 
 
-
-
-
-
-
 <p><?php printf(esc_html__('Merhaba %s,', 'woocommerce'), esc_html($order->get_billing_first_name()));?></p>
 <p> Siparişiniz kargoya verilmiştir. Takip bilgileri aşağıda yer almaktadır:<p>
 <p> Kargo Firması Adı: <strong> <?php
 if ($tracking_company == 'ptt') {
-    echo "Ptt Kargo";
-}
-if ($tracking_company == 'yurtici') {
-    echo "Yurtiçi Kargo";
-}
-if ($tracking_company == 'aras') {
-    echo "Aras Kargo";
-}
-if ($tracking_company == 'mng') {
-    echo "Mng Kargo";
-}
-if ($tracking_company == 'horoz') {
-    echo "Horoz Kargo";
-}
-if ($tracking_company == 'ups') {
-    echo "UPS Kargo";
-}
-if ($tracking_company == 'surat') {
-    echo "Sürat Kargo";
-}
-if ($tracking_company == 'filo') {
-    echo "Filo Kargo";
-}
-if ($tracking_company == 'tnt') {
-    echo "TNT Kargo";
-}
-if ($tracking_company == 'dhl') {
-    echo "DHL Kargo";
-}
-if ($tracking_company == 'fedex') {
-    echo "Fedex Kargo";
-}
-if ($tracking_company == 'foodman') {
-    echo "Foodman Kargo";
-}
+        echo "PTT Kargo";
+    }
+    if ($tracking_company == 'yurtici') {
+        echo "Yurtiçi Kargo";
+    }
+    if ($tracking_company == 'aras') {
+        echo "Aras Kargo";
+    }
+    if ($tracking_company == 'mng') {
+        echo "MNG Kargo";
+    }
+    if ($tracking_company == 'horoz') {
+        echo "Horoz Kargo";
+    }
+    if ($tracking_company == 'ups') {
+        echo "UPS Kargo";
+    }
+    if ($tracking_company == 'surat') {
+        echo "Sürat Kargo";
+    }
+    if ($tracking_company == 'filo') {
+        echo "Filo Kargo";
+    }
+    if ($tracking_company == 'tnt') {
+        echo "TNT Kargo";
+    }
+    if ($tracking_company == 'dhl') {
+        echo "DHL Kargo";
+    }
+    if ($tracking_company == 'fedex') {
+        echo "Fedex Kargo";
+    }
+    if ($tracking_company == 'foodman') {
+        echo "FoodMan Kargo";
+    }
+    if ($tracking_company == 'postman'){
+        echo "Postman Kargo";
+    }
+    if ($tracking_company == 'iyi'){
+        echo "İyi Kargo";
+    }
+    if ($tracking_company == 'tex'){
+        echo "Trendyol Express";
+    }
+    if ($tracking_company == 'hepsijet'){
+        echo "HepsiJET";
+    }
 
 ?></strong></p>
 <p> Kargo Takip No:<strong><?php echo $tracking_code; ?></strong></p>
@@ -110,6 +117,18 @@ if ($tracking_company == 'fedex') {
 }
 if ($tracking_company == 'foodman') {
     echo '<a href="https://www.foodman.online/GonderiSorgu.aspx?gonderino=' . $tracking_code . '" target="_blank" rel="noopener noreferrer">';
+}
+if ($tracking_company == 'postrans') {
+    echo 'http://85.99.122.231/hareket.asp?har_kod=' . $tracking_code;
+}
+if ($tracking_company == 'iyi') {
+    echo 'https://www.geowix.com/kargom-nerede?tracking_code=' . $tracking_code . '&p=1fbe7c33-3226-4aad-aec3-850dc2487597&pfix=';
+}
+if ($tracking_company == 'tex') {
+    echo 'https://kargotakip.trendyol.com/?orderNumber=' . $tracking_code;
+}
+if ($tracking_company == 'hepsijet') {
+    echo  'https://www.hepsijet.com/gonderi-takibi/' . $tracking_code;
 }
 
 ?>
