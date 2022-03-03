@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.9.1
 WC tested up to: 6.2.1
 Requires PHP: 7.1
-Stable tag: 0.0.92
+Stable tag: 0.0.93
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,9 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.93 =
+Kargo görüntülenme hatası giderildi.
+
 = 0.0.92 =
 Woocommerce 6.2.1 testleri yapıldı. 
 WordPress 5.9.1 testi yapıldı.
