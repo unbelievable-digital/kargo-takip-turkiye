@@ -51,6 +51,10 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.95 =
+Kargo takip helper fonksiyonları yeniden düzenlendi.
+Kargo firma bilgileri config.php dosyasına taşındı.
+
 = 0.0.93 =
 Kargo görüntülenme hatası giderildi.
 
