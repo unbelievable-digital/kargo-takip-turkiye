@@ -257,7 +257,8 @@ function kargoTR_general_shipment_details_for_admin($order) {
             'dhl' => 'DHL Kargo',
             'fedex' => 'Fedex Kargo',
             'foodman' => 'FoodMan Kargo',
-            'postrans'=> 'Postrans Kargo'
+            'postrans'=> 'Postrans Kargo',
+            'sendeo' => 'Sendeo Kargo'
         ),
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));

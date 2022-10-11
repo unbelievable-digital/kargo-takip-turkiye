@@ -66,5 +66,10 @@ return array(
             "company" => "HepsiJET",
             "url" => "https://www.hepsijet.com/gonderi-takibi/"
         ),
+        "Sendeo" => array(
+            "company" => "Sendeo Kargo",
+            "url" => "https://www.sendeo.com.tr/kargo-takip"
+        ),
+        
     )
 );
