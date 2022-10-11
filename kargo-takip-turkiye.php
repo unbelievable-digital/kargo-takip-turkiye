@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz. Mail ve SMS gönderebilirsiniz.
- * Version: 0.0.93
+ * Version: 0.0.95
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  */
@@ -262,6 +262,14 @@ function kargoTR_general_shipment_details_for_admin($order) {
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));
 
+    ?>
+        <script>
+            jQuery(document).ready(function($) {
+                $('#tracking_company').select2();
+            });
+        </script>
+    <?php
+
     woocommerce_wp_text_input(array(
         'id' => 'tracking_code',
         'label' => 'Takip Numarası:',
@@ -359,7 +367,7 @@ function kargoTR_add_kargo_button_in_order($actions, $order) {
     }
 }
 
-function kargoTR_kargo_bildirim_icerik($order, $mail_title = false, $mailer) {
+function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
     $template = 'email-shipment-template.php';
     $mailTemplatePath = untrailingslashit(plugin_dir_path(__FILE__)) . '/mail-template/';
 
@@ -422,7 +430,7 @@ function kargoTR_kargo_eposta_details($order_id) {
 
     $mailTo = $order->get_billing_email();
     $subject = "Siparişiniz Kargoya Verildi";
-    $details = kargoTR_kargo_bildirim_icerik($order, $subject, $mailer);
+    $details = kargoTR_kargo_bildirim_icerik($order, $mailer, $subject);
     $mailHeaders[] = "Content-Type: text/html\r\n";
 
     $mailer->send($mailTo, $subject, $details, $mailHeaders);
