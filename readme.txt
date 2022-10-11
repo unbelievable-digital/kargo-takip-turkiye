@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.9.1
 WC tested up to: 6.2.1
 Requires PHP: 7.1
-Stable tag: 0.0.93
+Stable tag: 0.0.98
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,10 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.98 =
+Deprecated: Required parameter $mailer follows optional parameter hatası düzeltildi.
+Kargo takip select elemani select2 ile değiştirildi. Görsel tasarımı düzenlendi.
+
 = 0.0.95 =
 Kargo takip helper fonksiyonları yeniden düzenlendi.
 Kargo firma bilgileri config.php dosyasına taşındı.

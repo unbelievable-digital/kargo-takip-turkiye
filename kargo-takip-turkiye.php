@@ -262,6 +262,16 @@ function kargoTR_general_shipment_details_for_admin($order) {
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));
 
+    ?>
+        <script>
+            jQuery(document).ready(function($) {
+                $('#tracking_company').select2({
+                    minimumResultsForSearch: -1
+                });
+            });
+        </script>
+    <?php
+
     woocommerce_wp_text_input(array(
         'id' => 'tracking_code',
         'label' => 'Takip Numarası:',
