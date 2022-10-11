@@ -369,7 +369,7 @@ function kargoTR_add_kargo_button_in_order($actions, $order) {
     }
 }
 
-function kargoTR_kargo_bildirim_icerik($order, $mail_title = false, $mailer) {
+function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
     $template = 'email-shipment-template.php';
     $mailTemplatePath = untrailingslashit(plugin_dir_path(__FILE__)) . '/mail-template/';
 
@@ -432,7 +432,7 @@ function kargoTR_kargo_eposta_details($order_id) {
 
     $mailTo = $order->get_billing_email();
     $subject = "Siparişiniz Kargoya Verildi";
-    $details = kargoTR_kargo_bildirim_icerik($order, $subject, $mailer);
+    $details = kargoTR_kargo_bildirim_icerik($order, $mailer, $subject);
     $mailHeaders[] = "Content-Type: text/html\r\n";
 
     $mailer->send($mailTo, $subject, $details, $mailHeaders);
