@@ -265,9 +265,7 @@ function kargoTR_general_shipment_details_for_admin($order) {
     ?>
         <script>
             jQuery(document).ready(function($) {
-                $('#tracking_company').select2({
-                    minimumResultsForSearch: -1
-                });
+                $('#tracking_company').select2();
             });
         </script>
     <?php
