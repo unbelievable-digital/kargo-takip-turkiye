@@ -51,6 +51,9 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.0.99 =
+Kargo firma listesi (select2) verisi config.php dosyasından alıncak şekilde düzenlendi.
+
 = 0.0.98 =
 Deprecated: Required parameter $mailer follows optional parameter hatası düzeltildi.
 Kargo takip select elemani select2 ile değiştirildi. Görsel tasarımı düzenlendi.
