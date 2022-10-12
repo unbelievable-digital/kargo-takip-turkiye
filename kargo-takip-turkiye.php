@@ -248,9 +248,7 @@ function kargoTR_general_shipment_details_for_admin($order) {
     ?>
         <script>
             jQuery(document).ready(function($) {
-                $('#tracking_company').select2({
-                    minimumResultsForSearch: -1
-                });
+                $('#tracking_company').select2();
             });
         </script>
     <?php
@@ -315,20 +313,26 @@ function kargoTR_shipment_details($order) {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
     $kargo_hazirlaniyor_text_option = get_option('kargo_hazirlaniyor_text');
-
     if ( $order->get_status() != 'cancelled') {
         if ($tracking_company == '') {
             if ($kargo_hazirlaniyor_text_option =='yes') {
                 echo "Kargo hazırlanıyor";
             } else {
             ?>
+            
+            <?php
+            }
+        }
+        else {
+            ?>  
+            <div class="shipment-order-page">
                 <h2 id="kargoTakipSection">Kargo Takip</h2>
                 <h4>Kargo firması : </h4> <?php echo kargoTR_get_company_name($tracking_company); ?>
                 <h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo $tracking_code ?>
                 <br>
                 <?php echo '<a href="' . kargoTR_getCargoTrack($tracking_company, $tracking_code) . '"target="_blank" rel="noopener noreferrer">'; _e( 'Kargonuzu takibi için buraya tıklayın.','kargoTR' );  echo '</a>'; ?>
+            </div>
             <?php
-            }
         }
     }
 }
