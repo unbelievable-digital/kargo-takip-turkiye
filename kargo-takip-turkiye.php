@@ -11,6 +11,7 @@
 //Add Menu to WPadmin
 include 'netgsm-helper.php';
 include 'kargo-takip-helper.php';
+include 'kargo-takip-order-list.php';
 add_action( 'admin_menu', 'register_my_custom_menu_page' );
 function register_my_custom_menu_page() {
     $menu_slug = 'kargo-takip-turkiye';
