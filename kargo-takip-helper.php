@@ -27,6 +27,22 @@ function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL) 
     return $config["cargoes"][$tracking_company]["url"] . $tracking_code;
 }
 
+/*
+ * Kargo anahtarını kullanarak ilgili kargo firmasının 
+ * kargo adini verir.
+ * 
+ * 
+ * @param   string $tracking_company kargo anahtarı
+ * @return  string
+ *  
+ */
+
+function kargoTR_getCargoName($tracking_company = NULL) {
+    $config = include("config.php");
+    return $config["cargoes"][$tracking_company]["name"];
+}
+
+
 /**
  * Sistemde tanimli kargo firmalarinin isim listesini verir
  * 

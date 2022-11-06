@@ -68,7 +68,7 @@ return array(
         ),
         "Sendeo" => array(
             "company" => "Sendeo Kargo",
-            "url" => "https://www.sendeo.com.tr/kargo-takip"
+            "url" => "https://www.sendeo.com.tr/kargo-takip/"
         ),
         
     )
