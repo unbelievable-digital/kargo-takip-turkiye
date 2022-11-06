@@ -38,7 +38,7 @@ Sendo Kargo
 A2A Digitalin hazırladı eklentinin kullanım videosu
 [youtube https://www.youtube.com/watch?v=7q-LbmdFH_M]
 
-Eklentiye katkılarından dolayı Ali Osman Yüksel ve Yasin Sarıgül teşekkür ederiz.
+Eklentiye katkılarından dolayı Ali Osman Yüksel, Sarıgül ve Zafer Çelenk'e teşekkür ederiz.
 
 == Installation ==
 Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi aktif ettiğinizde otomatik olarak Siparişlerin içine kargo bölümü eklenecektir.
