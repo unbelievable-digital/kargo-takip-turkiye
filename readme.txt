@@ -2,10 +2,10 @@
 Contributors: zgrkaralar,unbelievabledigital
 Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo,Trendyol Kargo,hepsijet kargo, trendyol, hepsijet
 Requires at least: 4.9
-Tested up to: 5.9.1
-WC tested up to: 6.2.1
+Tested up to: 6.1
+WC tested up to: 7.0.1
 Requires PHP: 7.1
-Stable tag: 0.0.98
+Stable tag: 0.0.99
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,7 @@ Filo Kargo
 FoodMan Kargo
 Iyi Kargo
 Post Trans Kargo
+Sendo Kargo
 
 
 
@@ -53,6 +54,8 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 == Changelog ==
 = 0.0.99 =
 Kargo firma listesi (select2) verisi config.php dosyasından alıncak şekilde düzenlendi.
+Sendo Kargo eklendi
+
 
 = 0.0.98 =
 Deprecated: Required parameter $mailer follows optional parameter hatası düzeltildi.
