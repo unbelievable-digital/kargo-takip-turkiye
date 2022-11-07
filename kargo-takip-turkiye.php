@@ -12,8 +12,8 @@
 include 'netgsm-helper.php';
 include 'kargo-takip-helper.php';
 include 'kargo-takip-order-list.php';
-add_action( 'admin_menu', 'register_my_custom_menu_page' );
-function register_my_custom_menu_page() {
+add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
+function kargoTR_register_admin_menu() {
     $menu_slug = 'kargo-takip-turkiye';
     // add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
     add_menu_page( 'Kargo Takip Türkiye', 'Kargo Takip', 'read', $menu_slug, false, 'dashicons-car', 20 );
@@ -119,11 +119,11 @@ function kargoTR_setting_page() {
                     </th>
                     <td>
                         <label for="NetGsm_UserName" class="label-bold">Abone Numarası </label>  <br>
-                        <input type="text" id="NetGsm_UserName" name="NetGsm_UserName" value="<?php echo $NetGsm_UserName; ?>">
+                        <input type="text" id="NetGsm_UserName" name="NetGsm_UserName" value="<?php echo esc_attr($NetGsm_UserName); ?>">
                     </td>
                     <td>
                         <label for="NetGSM" class="label-bold">NetGSM Şifresi</label> <br>
-                        <input type="password" id="NetGSM" name="NetGsm_Password" value="<?php echo $NetGsm_Password;?>">
+                        <input type="password" id="NetGSM" name="NetGsm_Password" value="<?php echo esc_attr($NetGsm_Password);?>">
                         <br>
                     </td>
                 </tr>
@@ -141,9 +141,9 @@ function kargoTR_setting_page() {
                                     echo '<select name="NetGsm_Header" id="NetGsm_Header">';
                                     foreach ($netGsm_Header_get as $key => $value) {
                                         if ($NetGsm_Header == $value) {
-                                            echo '<option selected value="'.$value.'">'.$value.'</option>';
+                                            echo esc_attr('<option selected value="'.$value.'">'.$value.'</option>');
                                         } else {
-                                            echo '<option value="'.$value.'">'.$value.'</option>';
+                                            echo esc_attr('<option value="'.$value.'">'.$value.'</option>');
                                         }
                                     }
                                     echo '</select>';
@@ -157,10 +157,10 @@ function kargoTR_setting_page() {
                                 $NetGSM_packet_info = kargoTR_get_netgsm_packet_info($NetGsm_UserName,$NetGsm_Password);
                                 $NetGSM_credit_info = kargoTR_get_netgsm_credit_info($NetGsm_UserName,$NetGsm_Password);
                                 if ($NetGSM_packet_info) {
-                                    echo '<b>Kalan Paketleriniz :</b> <br> '.$NetGSM_packet_info;
+                                    echo '<b>Kalan Paketleriniz :</b> <br> '.esc_attr($NetGSM_packet_info);
                                 }
                                 if ($NetGSM_credit_info) {
-                                    echo '<b>Kalan Krediniz :</b> <br> '.$NetGSM_credit_info .' TL';
+                                    echo '<b>Kalan Krediniz :</b> <br> '.esc_attr($NetGSM_credit_info) .' TL';
                                 }
                             }
                         ?>
