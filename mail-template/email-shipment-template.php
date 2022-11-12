@@ -29,9 +29,9 @@ do_action('woocommerce_email_header', $email_heading, $email);
 <p><?php printf(esc_html__('Merhaba %s,', 'woocommerce'), esc_html($order->get_billing_first_name()));?></p>
 <p> Siparişiniz kargoya verilmiştir. Takip bilgileri aşağıda yer almaktadır:<p>
 <p> Kargo Firması Adı: <strong> <?php
-    echo kargoTR_get_company_name($tracking_company);
+    echo esc_attr(kargoTR_get_company_name($tracking_company));
 ?></strong></p>
-<p> Kargo Takip No:<strong><?php echo $tracking_code; ?></strong></p>
+<p> Kargo Takip No:<strong><?php echo esc_attr($tracking_code); ?></strong></p>
 <?php
     $cargoTrackingUrl = kargoTR_getCargoTrack($tracking_company, $tracking_code);
     echo '<a href="'.$cargoTrackingUrl.'" target="_blank" rel="noopener noreferrer">';

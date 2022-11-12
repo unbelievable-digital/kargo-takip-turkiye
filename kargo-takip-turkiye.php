@@ -141,9 +141,9 @@ function kargoTR_setting_page() {
                                     echo '<select name="NetGsm_Header" id="NetGsm_Header">';
                                     foreach ($netGsm_Header_get as $key => $value) {
                                         if ($NetGsm_Header == $value) {
-                                            echo esc_attr('<option selected value="'.$value.'">'.$value.'</option>');
+                                            echo esc_attr('<option selected value="'.esc_attr($value).'">'.esc_attr($value).'</option>');
                                         } else {
-                                            echo esc_attr('<option value="'.$value.'">'.$value.'</option>');
+                                            echo esc_attr('<option value="'.esc_attr($value).'">'.esc_attr($value).'</option>');
                                         }
                                     }
                                     echo '</select>';
