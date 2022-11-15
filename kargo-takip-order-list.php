@@ -33,7 +33,7 @@ function kargoTR_shipping_information_column_content( $column, $post_id )
             
 
             if($logo) {
-                echo '<img src="'.$logoUrl.'" style="width: 100px; height: 50px;"/>';
+                echo '<img src="'.esc_attr($logoUrl).'" style="width: 100px; height: 50px;"/>';
             } else {
                 echo "Kargo Bilgisi Yok";
             }

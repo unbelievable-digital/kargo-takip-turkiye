@@ -329,7 +329,7 @@ function kargoTR_shipment_details($order) {
             <div class="shipment-order-page">
                 <h2 id="kargoTakipSection">Kargo Takip</h2>
                 <h4>Kargo firması : </h4> <?php echo kargoTR_get_company_name($tracking_company); ?>
-                <h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo $tracking_code ?>
+                <h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo esc_attr($tracking_code) ?>
                 <br>
                 <?php echo '<a href="' . kargoTR_getCargoTrack($tracking_company, $tracking_code) . '"target="_blank" rel="noopener noreferrer">'; _e( 'Kargonuzu takibi için buraya tıklayın.','kargoTR' );  echo '</a>'; ?>
             </div>
