@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 WC tested up to: 7.0.1
 Requires PHP: 7.1
-Stable tag: 0.0.991
+Stable tag: 0.0.994
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
