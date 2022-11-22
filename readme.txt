@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 WC tested up to: 7.0.1
 Requires PHP: 7.1
-Stable tag: 0.0.994
+Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,6 +52,12 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.1.00 =
+Yeni sürüme geliş yapıldı. 
+Sendo SMS hatası cözüldü
+NetGSM hatasi duzeltildi.
+
+
 = 0.0.991 =
 Firma logolari eklendi
 Güvenlik güncellemesi yapıldı

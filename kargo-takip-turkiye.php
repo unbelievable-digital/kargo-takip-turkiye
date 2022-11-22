@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz. Mail ve SMS gönderebilirsiniz.
- * Version: 0.0.994
+ * Version: 0.1.00
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  */
@@ -123,7 +123,7 @@ function kargoTR_setting_page() {
                     </td>
                     <td>
                         <label for="NetGSM" class="label-bold">NetGSM Şifresi</label> <br>
-                        <input type="password" id="NetGSM" name="NetGsm_Password" value="<?php echo esc_attr($NetGsm_Password);?>">
+                        <input type="password" id="NetGSM" name="NetGsm_Password" value="<?php echo __($NetGsm_Password);?>">
                         <br>
                     </td>
                 </tr>
@@ -141,9 +141,9 @@ function kargoTR_setting_page() {
                                     echo '<select name="NetGsm_Header" id="NetGsm_Header">';
                                     foreach ($netGsm_Header_get as $key => $value) {
                                         if ($NetGsm_Header == $value) {
-                                            echo esc_attr('<option selected value="'.esc_attr($value).'">'.esc_attr($value).'</option>');
+                                            echo '<option selected value="'.$value.'">'.$value.'</option>';
                                         } else {
-                                            echo esc_attr('<option value="'.esc_attr($value).'">'.esc_attr($value).'</option>');
+                                            echo '<option value="'.$value.'">'.$value.'</option>';
                                         }
                                     }
                                     echo '</select>';
@@ -157,7 +157,7 @@ function kargoTR_setting_page() {
                                 $NetGSM_packet_info = kargoTR_get_netgsm_packet_info($NetGsm_UserName,$NetGsm_Password);
                                 $NetGSM_credit_info = kargoTR_get_netgsm_credit_info($NetGsm_UserName,$NetGsm_Password);
                                 if ($NetGSM_packet_info) {
-                                    echo '<b>Kalan Paketleriniz :</b> <br> '.esc_attr($NetGSM_packet_info);
+                                    echo '<b>Kalan Paketleriniz :</b> <br> '.__($NetGSM_packet_info);
                                 }
                                 if ($NetGSM_credit_info) {
                                     echo '<b>Kalan Krediniz :</b> <br> '.esc_attr($NetGSM_credit_info) .' TL';
@@ -234,6 +234,7 @@ function kargoTR_general_shipment_details_for_admin($order) {
     ?>
         <br class="clear" />
     <?php
+
 
     woocommerce_wp_select(array(
         'id' => 'tracking_company',
@@ -409,6 +410,8 @@ function kargoTR_SMS_gonder($order_id) {
     } else {
         $order->add_order_note("Sms Gönderilemedi - NetGSM SMS HATA Kodu : ".$request['body']);
     }
+    $order->add_order_note("Debug : ".$request['body']);
+
 }
 
 
