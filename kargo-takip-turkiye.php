@@ -410,7 +410,8 @@ function kargoTR_SMS_gonder($order_id) {
     } else {
         $order->add_order_note("Sms Gönderilemedi - NetGSM SMS HATA Kodu : ".$request['body']);
     }
-    $order->add_order_note("Debug : ".$request['body']);
+  
+    // $order->add_order_note("Debug : ".$request['body']);
 
 }
 
