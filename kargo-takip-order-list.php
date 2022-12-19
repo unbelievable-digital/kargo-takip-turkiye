@@ -25,20 +25,29 @@ function kargoTR_shipping_information_column_content( $column, $post_id )
     switch ( $column )
     {
         case 'kargo-information' :
-            // Get custom post meta data
-            $logo = kargoTR_get_order_cargo_logo($post_id);
+            // Get information 
 
-            $logoUrl = plugin_dir_url( __FILE__ ).$logo;
+            $information = kargoTR_get_order_cargo_information($post_id);
 
-            
+            if($information) {
 
-            if($logo) {
-                echo '<img src="'.esc_attr($logoUrl).'" style="width: 100px; height: 50px;"/>';
+                $logo_url = plugin_dir_url( __FILE__ ).$information["logo"];
+
+                echo "<a href='".$information["url"]."' target='_blank'>";
+                echo "<img src='".$logo_url."' style='width: 100px; height: 50px;'>";
+                echo "</a>";
+                
             } else {
-                echo "Kargo Bilgisi Yok";
+                echo "Kargo bilgisi bulunamadı";
             }
+            
+        
+            
  
             break;
 
     }
 }
+
+ 
+

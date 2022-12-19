@@ -12,6 +12,7 @@
 include 'netgsm-helper.php';
 include 'kargo-takip-helper.php';
 include 'kargo-takip-order-list.php';
+include 'wc-api-helper.php';
 add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
 function kargoTR_register_admin_menu() {
     $menu_slug = 'kargo-takip-turkiye';

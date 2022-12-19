@@ -83,3 +83,31 @@ function kargoTR_get_order_cargo_logo($order_id) {
     }
 }
 
+//Function return tracking code, company name and tracking url 
+
+function kargoTR_get_order_cargo_information($order_id) {
+    $order = wc_get_order($order_id);
+    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
+    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+
+    if($tracking_company) {
+        $config = include("config.php");
+        $logo = $config["cargoes"][$tracking_company]["logo"];
+        $company = $config["cargoes"][$tracking_company]["company"];
+        $url = $config["cargoes"][$tracking_company]["url"] . $tracking_code;
+
+        if($logo) {
+            return array(
+                "logo" => $logo,
+                "company" => $company,
+                "url" => $url
+            );
+        } else {
+            return "";
+        }
+        
+    } else {
+        return "";
+    }
+}
+
