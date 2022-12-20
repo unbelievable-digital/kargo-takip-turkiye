@@ -26,7 +26,6 @@ function kargoTR_api_add_tracking_code() {
     //get tracking code from request
     $tracking_code = $_POST['tracking_code'];
 
-
     //check is user logged in
     if ( ! is_user_logged_in() ) {
         return new WP_Error( 'rest_not_logged_in', 'You are not currently logged in.', array( 'status' => 401 ) );
@@ -62,12 +61,6 @@ function kargoTR_api_add_tracking_code() {
         return new WP_Error( 'rest_invalid_order_id', 'Invalid order id. Please check order id', array( 'status' => 401 ) );
     }
 
-
-
-
-
-
-    
 
     //get order from order id
 
