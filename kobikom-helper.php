@@ -76,7 +76,8 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
         $message = $message." ".urlencode("Takip URL : ").kargoTR_getCargoTrack($tracking_company, $tracking_code);
     }
 
-    $url = "https://sms.kobikom.com.tr/api/send-sms?api_token=$Kobikom_ApiKey&to=$phone&from=$KobiKom_Header&sms=$message&unicode=1";
+ 
+    $url = "https://smspaneli.kobikom.com.tr/sms/api?action=send-sms&api_key=$Kobikom_ApiKey&to=$phone&from=$KobiKom_Header&sms=$message&unicode=1"; 
 
     $request = wp_remote_get($url);
 
@@ -84,11 +85,14 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
 
 
     if ($response['code'] == 'ok') {
+
         $order->add_order_note("Sms Gönderildi - NetGSM SMS Kodu : ".$response['message_id']);
     } else {
         $order->add_order_note("Sms Gönderilemedi - NetGSM SMS HATA Kodu : ".$request['body']);
     }
   
+    $order->add_order_note("URL : ". $url);
+    
     // $order->add_order_note("Debug : ".$request['body']);
 
 
