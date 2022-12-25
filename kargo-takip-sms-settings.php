@@ -13,7 +13,9 @@ function kargoTR_sms_setting_page(){
 
     //kobikom
     $Kobikom_ApiKey = get_option('Kobikom_ApiKey');
-    $KobiKom_Header = get_option('Kobikom_Header');
+    $Kobikom_option_Header = get_option('Kobikom_Header');
+
+  
 
     ?>
     <div class="wrap">
@@ -150,10 +152,10 @@ function kargoTR_sms_setting_page(){
                                     if (!$KobiKom_get_Headers) {
                                         echo 'Kobikom Api Keyiniz yanlis';
                                     } else {
-                                       echo '<select name="KobiKom_Header" id="KobiKom_Header">';
+                                       echo '<select name="Kobikom_Header" id="Kobikom_Header">';
                                         foreach ($KobiKom_get_Headers as $key => $value) {
                                         
-                                            if ($KobiKom_Header == $value['title']) {
+                                            if ($Kobikom_option_Header == $value['title']) {
                                                 echo '<option selected value="'.$value['title'].'">'.$value['title'].'</option>';
                                             } else {
                                                 echo '<option value="'.$value['title'].'">'.$value['title'].'</option>';
