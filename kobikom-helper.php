@@ -1,5 +1,9 @@
 <?php
 
+// https://developer.kobikom.com.tr/#bb0d0c18-0eee-4101-b53d-b49361198f01
+
+
+
 function kargoTR_get_kobikom_headers($api) {
     $password= urlencode($api);
     $url= "https://sms.kobikom.com.tr/api/subscription?api_token=$api";
@@ -64,34 +68,33 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
     $tracking_code = get_post_meta($order_id, 'tracking_code', true);
 
     $message = "Siparişinizin kargo takip numarası : " . $tracking_code . ", " . kargoTR_get_company_name($tracking_company) . " kargo firması ile takip edebilirsiniz.";
-    $message = urlencode($message);
 
     //Simple url 
     //https://smspaneli.kobikom.com.tr/sms/api?action=send-sms&api_key={{api_anahtariniz}}&to=905151234567&from=KOBIKOM&sms=Test Mesajı.&unicode=1
 
 
-    $message = urlencode($message);
+    
 
     if ($NetGsm_sms_url_send == 'yes') {
-        $message = $message." ".urlencode("Takip URL : ").kargoTR_getCargoTrack($tracking_company, $tracking_code);
+        $message = $message." Takip URL : ".kargoTR_getCargoTrack($tracking_company, $tracking_code);
     }
 
  
-    $url = "https://smspaneli.kobikom.com.tr/sms/api?action=send-sms&api_key=$Kobikom_ApiKey&to=$phone&from=$KobiKom_Header&sms=$message&unicode=1"; 
+    $url = "https://sms.kobikom.com.tr/api/message/send?api_token=$Kobikom_ApiKey&to=$phone&from=$KobiKom_Header&message=$message&unicode=1"; 
 
     $request = wp_remote_get($url);
 
     $response = json_decode($request['body'], true);
 
 
-    if ($response['code'] == 'ok') {
+    if ($response['data'][0]['uuid']) {
 
-        $order->add_order_note("Sms Gönderildi - NetGSM SMS Kodu : ".$response['message_id']);
+        $order->add_order_note("Sms Gönderildi - Kobikom SMS Kodu : ".$$response['data'][0]['uuid']);
     } else {
-        $order->add_order_note("Sms Gönderilemedi - NetGSM SMS HATA Kodu : ".$request['body']);
+        $order->add_order_note("Sms Gönderilemedi - Kobikom SMS HATA Geri donusu : ".$request['body']);
     }
   
-    $order->add_order_note("URL : ". $url);
+    // $order->add_order_note("URL : ". $url);
     
     // $order->add_order_note("Debug : ".$request['body']);
 

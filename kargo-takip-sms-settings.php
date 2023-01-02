@@ -203,6 +203,24 @@ function kargoTR_sms_setting_page(){
                         <label for="noUrlSend">Hayır</label><br>
                     </td>
                 </tr>
+
+                <tr valign="top">
+                    <th scope="row" style="width:100%">
+                        <?php _e( 'SMS Şablonu', 'kargoTR' ) ?>
+                    </th>
+                    <td>
+                        <input type="radio" id="yes_url_send" <?php if( $NetGsm_sms_url_send == 'yes' ) echo 'checked'?>
+                            name="NetGsm_sms_url_send" value="yes">
+                        <label for="yes_url_send">Evet</label><br>
+                    </td>
+                    <td>
+                        <input type="radio" id="noUrlSend" <?php if( $NetGsm_sms_url_send == 'no' ) echo 'checked'?>
+                            name="NetGsm_sms_url_send" value="no">
+                        <label for="noUrlSend">Hayır</label><br>
+                    </td>
+                </tr>
+
+             
             </table>
 
             <?php submit_button(); ?>

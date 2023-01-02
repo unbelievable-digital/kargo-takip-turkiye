@@ -3,7 +3,7 @@ Contributors: zgrkaralar,unbelievabledigital
 Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo,Trendyol Kargo,hepsijet kargo, trendyol, hepsijet
 Requires at least: 4.9
 Tested up to: 6.1
-WC tested up to: 7.0.1
+WC tested up to: 7.2.2
 Requires PHP: 7.1
 Stable tag: 0.1.13
 License: GPLv2 or later
