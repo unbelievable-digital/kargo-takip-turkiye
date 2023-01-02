@@ -52,6 +52,11 @@ Yeni sürümde eklenmesi planlananlar (ROADMAP);
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+= 0.1.13 =
+Wp-Admin kargo takip sayfası düzenlendi.
+SMS için Kobikom firması eklendi.
+SMS tarafında geliştirmeler yapıldı.  
+
 = 0.1.00 =
 Yeni sürüme geliş yapıldı. 
 Sendo SMS hatası cözüldü
