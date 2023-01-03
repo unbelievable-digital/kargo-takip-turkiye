@@ -89,7 +89,7 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
 
     if ($response['data'][0]['uuid']) {
 
-        $order->add_order_note("Sms Gönderildi - Kobikom SMS Kodu : ".$$response['data'][0]['uuid']);
+        $order->add_order_note("Sms Gönderildi - Kobikom SMS Kodu : ".$response['data'][0]['uuid']);
     } else {
         $order->add_order_note("Sms Gönderilemedi - Kobikom SMS HATA Geri donusu : ".$request['body']);
     }
