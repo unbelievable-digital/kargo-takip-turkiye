@@ -5,6 +5,11 @@
 
 
 function kargoTR_get_kobikom_headers($api) {
+    // if api empty return 0
+    if (empty($api)||$api==null) {
+        return false;
+    }
+
     $password= urlencode($api);
     $url= "https://sms.kobikom.com.tr/api/subscription?api_token=$api";
     $request = wp_remote_get($url);
@@ -61,24 +66,7 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
     $Kobikom_ApiKey = get_option('Kobikom_ApiKey');
     $KobiKom_Header = get_option('Kobikom_Header');
 
-    $NetGsm_sms_url_send = get_option('NetGsm_sms_url_send');
-
-
-    $tracking_company = get_post_meta($order_id, 'tracking_company', true);
-    $tracking_code = get_post_meta($order_id, 'tracking_code', true);
-
-    $message = "Siparişinizin kargo takip numarası : " . $tracking_code . ", " . kargoTR_get_company_name($tracking_company) . " kargo firması ile takip edebilirsiniz.";
-
-    //Simple url 
-    //https://smspaneli.kobikom.com.tr/sms/api?action=send-sms&api_key={{api_anahtariniz}}&to=905151234567&from=KOBIKOM&sms=Test Mesajı.&unicode=1
-
-
-    
-
-    if ($NetGsm_sms_url_send == 'yes') {
-        $message = $message." Takip URL : ".kargoTR_getCargoTrack($tracking_company, $tracking_code);
-    }
-
+   $message = kargoTR_get_sms_template($order_id, get_option('kargoTR_sms_template'));
  
     $url = "https://sms.kobikom.com.tr/api/message/send?api_token=$Kobikom_ApiKey&to=$phone&from=$KobiKom_Header&message=$message&unicode=1"; 
 

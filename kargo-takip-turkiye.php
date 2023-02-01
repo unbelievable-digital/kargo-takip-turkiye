@@ -32,22 +32,38 @@ function kargoTR_register_settings() {
         'default' => 'yes',
     );
 
-    register_setting( 'kargoTR-settings-group', 'kargo_hazirlaniyor_text',$args  );
+    $argsSelect = array(
+        'default' => 'no',
+    );
 
-    register_setting( 'kargoTR-settings-group', 'mail_send_general',$args  );
-    register_setting( 'kargoTR-settings-group', 'sms_provider',$args  );
+    $argsFild = array(
+        'default' => '',
+    );
 
-    register_setting( 'kargoTR-settings-group', 'sms_send_general',$args  );
+    $argsSmsTemplate = array(
+        'default' => 'Merhaba {customer_name} , {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız : {tracking_number} .Kargo takip linkiniz : {tracking_url} ,İyi günler dileriz.',
+    );
 
-    register_setting( 'kargoTR-settings-group', 'NetGsm_UserName',$args  );
-    register_setting( 'kargoTR-settings-group', 'NetGsm_Password',$args  );
-    register_setting( 'kargoTR-settings-group', 'NetGsm_Header',$args  );
-    register_setting( 'kargoTR-settings-group', 'NetGsm_sms_url_send',$args  );
+
+    register_setting( 'kargoTR-settings-group', 'kargo_hazirlaniyor_text',$argsSelect  );
+
+    register_setting( 'kargoTR-settings-group', 'mail_send_general',$argsSelect  );
+    register_setting( 'kargoTR-settings-group', 'sms_provider',$argsSelect  );
+
+    register_setting( 'kargoTR-settings-group', 'sms_send_general',$argsSelect  );
+
+    register_setting( 'kargoTR-settings-group', 'NetGsm_UserName',$argsFild  );
+    register_setting( 'kargoTR-settings-group', 'NetGsm_Password',$argsFild  );
+    register_setting( 'kargoTR-settings-group', 'NetGsm_Header',$argsSelect  );
+    register_setting( 'kargoTR-settings-group', 'NetGsm_sms_url_send',$argsSelect  );
+
+    //general sms template
+    register_setting( 'kargoTR-settings-group', 'kargoTr_sms_template',$argsSmsTemplate  );
 
     //kobikom
 
-    register_setting( 'kargoTR-settings-group', 'Kobikom_ApiKey',$args  );
-    register_setting( 'kargoTR-settings-group', 'Kobikom_Header',$args  );
+    register_setting( 'kargoTR-settings-group', 'Kobikom_ApiKey',$argsFild  );
+    register_setting( 'kargoTR-settings-group', 'Kobikom_Header',$argsFild  );
 }
 
 

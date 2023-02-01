@@ -87,6 +87,11 @@ return array(
             "url" => "https://www.sendeo.com.tr/kargo-takip/",
             "logo" => "assets/logos/sendeo.png"
         ),
+        "carrtell" => array(
+            "company" => "Carrtell Kargo",
+            "url" => "https://takip.carrtell.co/",
+            "logo" => "assets/logos/carrtell.png"
+        ),
         
     )
 );

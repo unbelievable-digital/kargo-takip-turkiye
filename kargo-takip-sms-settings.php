@@ -15,6 +15,9 @@ function kargoTR_sms_setting_page(){
     $Kobikom_ApiKey = get_option('Kobikom_ApiKey');
     $Kobikom_option_Header = get_option('Kobikom_Header');
 
+    //get sms template kargoTr_sms_template
+    $sms_template = get_option('kargoTr_sms_template');
+
   
 
     ?>
@@ -189,35 +192,31 @@ function kargoTR_sms_setting_page(){
                 </tr>
 
                 <tr valign="top">
-                    <th scope="row" style="width:50%">
-                        <?php _e( 'Kargo takip URL de gönderilsin mi ? <br> Eğer bu özelliği açarsanız sms boyutunuz muhtemelen daha büyük olacak ve ekstradan kredi harçayacaktır paketinizden.', 'kargoTR' ) ?>
-                    </th>
+                
                     <td>
-                        <input type="radio" id="yes_url_send" <?php if( $NetGsm_sms_url_send == 'yes' ) echo 'checked'?>
-                            name="NetGsm_sms_url_send" value="yes">
-                        <label for="yes_url_send">Evet</label><br>
+                        <label for="sms_template" class="label-bold">SMS Şablonu</label> <br>
+                        Buradan istediğiniz şekilde sms şablonu oluşturabilirsiniz. <br>
+                        <b>Örnek Şablon</b> : <br>
+                        Merhaba {customer_name}  <br>
+                        {order_id} nolu siparişiniz kargoya verildi. <br>
+                        Kargo şirketiniz : {company_name} <br>
+                        Kargo takip numaranız : {tracking_number} <br>
+                        Kargo takip linkiniz : {tracking_url} <br>
+                        İyi günler dileriz.<br>
+                        <br>
+                        <b>Not : </b> <br>
+                        <b>{customer_name} : Müşteri adı</b> <br>
+                        <b>{order_id} : Sipariş numarası</b> <br>
+                        <b>{company_name} : Kargo Şirket adı</b> <br>
+                        <b>{tracking_number} : Kargo takip numarası</b> <br>
+                        <b>{tracking_url} : Kargo takip linki</b> <br>
                     </td>
-                    <td>
-                        <input type="radio" id="noUrlSend" <?php if( $NetGsm_sms_url_send == 'no' ) echo 'checked'?>
-                            name="NetGsm_sms_url_send" value="no">
-                        <label for="noUrlSend">Hayır</label><br>
-                    </td>
-                </tr>
+                    <td colspan="2">
 
-                <tr valign="top">
-                    <th scope="row" style="width:100%">
-                        <?php _e( 'SMS Şablonu', 'kargoTR' ) ?>
-                    </th>
-                    <td>
-                        <input type="radio" id="yes_url_send" <?php if( $NetGsm_sms_url_send == 'yes' ) echo 'checked'?>
-                            name="NetGsm_sms_url_send" value="yes">
-                        <label for="yes_url_send">Evet</label><br>
+                        <textarea type="text" id="sms_template" style="width:100%" name="kargoTr_sms_template"  rows="6" ><?php echo esc_attr($sms_template); ?></textarea>
+
                     </td>
-                    <td>
-                        <input type="radio" id="noUrlSend" <?php if( $NetGsm_sms_url_send == 'no' ) echo 'checked'?>
-                            name="NetGsm_sms_url_send" value="no">
-                        <label for="noUrlSend">Hayır</label><br>
-                    </td>
+                     
                 </tr>
 
              
