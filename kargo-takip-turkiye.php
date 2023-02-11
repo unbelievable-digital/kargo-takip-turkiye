@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz. Mail ve SMS gönderebilirsiniz.
- * Version: 0.1.13
+ * Version: 0.2.0
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  */
