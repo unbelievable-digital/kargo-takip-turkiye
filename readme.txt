@@ -43,9 +43,6 @@ Eklentiye katkılarından dolayı Ali Osman Yüksel, Sarıgül ve Zafer Çelenk'
 == Installation ==
 Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi aktif ettiğinizde otomatik olarak Siparişlerin içine kargo bölümü eklenecektir.
 
-Yeni sürümde eklenmesi planlananlar (ROADMAP);
-* Farklı SMS firmalarının entegrasyonu.
-* Sipariş teslim edildikten sonra otomatik olarak "Tamamlandı" durumuna geçirilmesi.
 
 == Screenshots ==
 1.Woocomerce Sipariş içi takip ekleme görünümü
