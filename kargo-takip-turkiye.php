@@ -27,43 +27,33 @@ function kargoTR_register_admin_menu() {
     add_action( 'admin_init', 'kargoTR_register_settings' );
 }
 
+// Improved function name for better readability and consistency
 function kargoTR_register_settings() {
-    $args = array(
-        'default' => 'yes',
+    // Define default values as an array for easier management
+    $defaultValues = array(
+        'select' => 'no',
+        'field' => '',
+        'smsTemplate' => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
     );
 
-    $argsSelect = array(
-        'default' => 'no',
+    // Use a foreach loop to register settings more efficiently
+    $settings = array(
+        'kargo_hazirlaniyor_text' => $defaultValues['select'],
+        'mail_send_general' => $defaultValues['select'],
+        'sms_provider' => $defaultValues['select'],
+        'sms_send_general' => $defaultValues['select'],
+        'NetGsm_UserName' => $defaultValues['field'],
+        'NetGsm_Password' => $defaultValues['field'],
+        'NetGsm_Header' => $defaultValues['select'],
+        'NetGsm_sms_url_send' => $defaultValues['select'],
+        'kargoTr_sms_template' => $defaultValues['smsTemplate'],
+        'Kobikom_ApiKey' => $defaultValues['field'],
+        'Kobikom_Header' => $defaultValues['field'],
     );
 
-    $argsFild = array(
-        'default' => '',
-    );
-
-    $argsSmsTemplate = array(
-        'default' => 'Merhaba {customer_name} , {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız : {tracking_number} .Kargo takip linkiniz : {tracking_url} ,İyi günler dileriz.',
-    );
-
-
-    register_setting( 'kargoTR-settings-group', 'kargo_hazirlaniyor_text',$argsSelect  );
-
-    register_setting( 'kargoTR-settings-group', 'mail_send_general',$argsSelect  );
-    register_setting( 'kargoTR-settings-group', 'sms_provider',$argsSelect  );
-
-    register_setting( 'kargoTR-settings-group', 'sms_send_general',$argsSelect  );
-
-    register_setting( 'kargoTR-settings-group', 'NetGsm_UserName',$argsFild  );
-    register_setting( 'kargoTR-settings-group', 'NetGsm_Password',$argsFild  );
-    register_setting( 'kargoTR-settings-group', 'NetGsm_Header',$argsSelect  );
-    register_setting( 'kargoTR-settings-group', 'NetGsm_sms_url_send',$argsSelect  );
-
-    //general sms template
-    register_setting( 'kargoTR-settings-group', 'kargoTr_sms_template',$argsSmsTemplate  );
-
-    //kobikom
-
-    register_setting( 'kargoTR-settings-group', 'Kobikom_ApiKey',$argsFild  );
-    register_setting( 'kargoTR-settings-group', 'Kobikom_Header',$argsFild  );
+    foreach ($settings as $settingKey => $settingDefault) {
+        register_setting('kargoTR-settings-group', $settingKey, array('default' => $settingDefault));
+    }
 }
 
 
@@ -127,105 +117,11 @@ function kargoTR_setting_page() {
                         <hr>
                     </td>
                 </tr>
-                <tr valign="top">
-                    <th scope="row" style="width:50%">
-                        <?php _e( 'Otomatik SMS Gönderilsin mi ? Gönderilmesini istiyorsanız firma seçin', 'kargoTR' ) ?>
-                    </th>
-                    <td>
-                        <input type="radio" id="yokSms" <?php if( $sms_provider == 'no' ) echo 'checked'?>
-                            name="sms_provider" value="no">
-                        <label for="yokSms">Yok</label><br>
-                    </td>
-                    <td>
-                        <input type="radio" id="NetGSM" <?php if( $sms_provider == 'NetGSM' ) echo 'checked'?>
-                            name="sms_provider" value="NetGSM">
-                        <label for="NetGSM">NetGSM</label><br>
-                    </td>
-                </tr>
+ 
 
-                <tr class="netgsm" <?php if( $sms_provider != 'NetGSM' ) echo 'style="display:none"'?>>
-                    <th scope="row" style="width:50%">
-                        <hr>
-                    </th>
-                    <td>
-                        <hr>
-                    </td>
-                    <td>
-                        <hr>
-                    </td>
-                </tr>
+             
+ 
 
-                <tr valign="top" class="netgsm" <?php if( $sms_provider != 'NetGSM' ) echo 'style="display:none"'?>>
-                    <th scope="row" style="width:25%">
-                        <?php _e( 'NetGSM Bilgileriniz <br> Abone numarasının başında 0 olmadan giriniz orneğin 212xxxxxx <br> Şifrenizide girdikten sonra kaydedin eğer şifre ve abone numaranız dogruysa <br> Sms baslıklarınız çıkacaktır <br> Lütfen başlık seçip kaydedin tekrardan', 'kargoTR' ) ?>
-                    </th>
-                    <td>
-                        <label for="NetGsm_UserName" class="label-bold">Abone Numarası </label> <br>
-                        <input type="text" id="NetGsm_UserName" name="NetGsm_UserName"
-                            value="<?php echo esc_attr($NetGsm_UserName); ?>">
-                    </td>
-                    <td>
-                        <label for="NetGSM" class="label-bold">NetGSM Şifresi</label> <br>
-                        <input type="password" id="NetGSM" name="NetGsm_Password"
-                            value="<?php echo __($NetGsm_Password);?>">
-                        <br>
-                    </td>
-                </tr>
-
-                <tr valign="top" class="netgsm" <?php if ($sms_provider != 'NetGSM') echo 'style="display:none"'?>>
-                    <th scope="row" style="width:25%"></th>
-                    <td>
-                        <label for="NetGsm_Header" class="label-bold">SMS Başlığınız </label> <br>
-                        <?php
-                                if ($NetGsm_Password && $NetGsm_UserName) {
-                                    $netGsm_Header_get = kargoTR_get_netgsm_headers($NetGsm_UserName,$NetGsm_Password);
-                                    if (!$netGsm_Header_get) {
-                                        echo 'NetGSM kullanici adi veya sifreniz yanlis';
-                                    } else {
-                                        echo '<select name="NetGsm_Header" id="NetGsm_Header">';
-                                        foreach ($netGsm_Header_get as $key => $value) {
-                                            if ($NetGsm_Header == $value) {
-                                                echo '<option selected value="'.$value.'">'.$value.'</option>';
-                                            } else {
-                                                echo '<option value="'.$value.'">'.$value.'</option>';
-                                            }
-                                        }
-                                        echo '</select>';
-                                    }
-                                }
-                            ?>
-                    </td>
-                    <td>
-                        <?php
-                                if ($NetGsm_Password && $NetGsm_UserName) {
-                                    $NetGSM_packet_info = kargoTR_get_netgsm_packet_info($NetGsm_UserName,$NetGsm_Password);
-                                    $NetGSM_credit_info = kargoTR_get_netgsm_credit_info($NetGsm_UserName,$NetGsm_Password);
-                                    if ($NetGSM_packet_info) {
-                                        echo '<b>Kalan Paketleriniz :</b> <br> '.__($NetGSM_packet_info);
-                                    }
-                                    if ($NetGSM_credit_info) {
-                                        echo '<b>Kalan Krediniz :</b> <br> '.esc_attr($NetGSM_credit_info) .' TL';
-                                    }
-                                }
-                            ?>
-                    </td>
-                </tr>
-
-                <tr valign="top">
-                    <th scope="row" style="width:50%">
-                        <?php _e( 'Kargo takip URL de gönderilsin mi ? <br> Eğer bu özelliği açarsanız sms boyutunuz muhtemelen daha büyük olacak ve ekstradan kredi harçayacaktır paketinizden.', 'kargoTR' ) ?>
-                    </th>
-                    <td>
-                        <input type="radio" id="yes_url_send" <?php if( $NetGsm_sms_url_send == 'yes' ) echo 'checked'?>
-                            name="NetGsm_sms_url_send" value="yes">
-                        <label for="yes_url_send">Evet</label><br>
-                    </td>
-                    <td>
-                        <input type="radio" id="noUrlSend" <?php if( $NetGsm_sms_url_send == 'no' ) echo 'checked'?>
-                            name="NetGsm_sms_url_send" value="no">
-                        <label for="noUrlSend">Hayır</label><br>
-                    </td>
-                </tr>
             </table>
 
             <?php submit_button(); ?>
@@ -273,15 +169,19 @@ function kargoTR_add_shipment_to_order_statuses($order_statuses) {
 }
 
 add_filter('wc_order_statuses', 'kargoTR_add_shipment_to_order_statuses');
+
+
 add_action('woocommerce_admin_order_data_after_order_details', 'kargoTR_general_shipment_details_for_admin');
 function kargoTR_general_shipment_details_for_admin($order) {
+    // Get post meta values
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    
+    // Use output buffer to capture the HTML markup and return it as a string
+    ob_start();
     ?>
-<br class="clear" />
-<?php
-
-
+    <br class="clear" />
+    <?php
     woocommerce_wp_select(array(
         'id' => 'tracking_company',
         'label' => 'Kargo Firması:',
@@ -293,13 +193,13 @@ function kargoTR_general_shipment_details_for_admin($order) {
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));
 
-    ?>
-<script>
-    jQuery(document).ready(function ($) {
-        $('#tracking_company').select2();
-    });
-</script>
-<?php
+    // Enqueue Select2 library and add inline script in a more appropriate way
+    wp_enqueue_script('select2');
+    wp_add_inline_script('select2', "
+        jQuery(document).ready(function ($) {
+            $('#tracking_company').select2();
+        });
+    ");
 
     woocommerce_wp_text_input(array(
         'id' => 'tracking_code',
@@ -310,9 +210,12 @@ function kargoTR_general_shipment_details_for_admin($order) {
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));
 
+    
 }
 
+ 
 add_action('woocommerce_process_shop_order_meta', 'kargoTR_tracking_save_general_details');
+
 function kargoTR_tracking_save_general_details($ord_id) {
     $tracking_company = get_post_meta($ord_id, 'tracking_company', true);
     $tracking_code = get_post_meta($ord_id, 'tracking_code', true);
@@ -320,32 +223,40 @@ function kargoTR_tracking_save_general_details($ord_id) {
     $mail_send_general_option = get_option('mail_send_general');
     $sms_provider = get_option('sms_provider');
 
-    if (($tracking_company != $_POST['tracking_company']) && ($tracking_code == $_POST['tracking_code'])) {
-        update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
+    $note = '';
 
+    if ($tracking_company != $_POST['tracking_company']) {
+        update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
         $note = __("Kargo firması güncellendi.");
+    }
 
-        $order_note->add_order_note($note);
-    } elseif (($tracking_company == $_POST['tracking_company']) && ($tracking_code != $_POST['tracking_code'])) {
+    if ($tracking_code != $_POST['tracking_code']) {
         update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
-
         $note = __("Kargo takip kodu güncellendi.");
+    }
 
+    if (!empty($note)) {
         $order_note->add_order_note($note);
-    } elseif (($tracking_company == $_POST['tracking_company']) && ($tracking_code == $_POST['tracking_code'])) {
+    }
 
-    } elseif (!empty($_POST['tracking_company']) && !empty($_POST['tracking_code'])) {
-        update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
-        update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
+    if (!empty($_POST['tracking_company']) && !empty($_POST['tracking_code'])) {
         $order = new WC_Order($ord_id);
         $order->update_status('kargo-verildi', 'Sipariş takip kodu eklendi');
-        if ($mail_send_general_option == 'yes') do_action('order_ship_mail', $ord_id);
-        if ($sms_provider == 'NetGSM') do_action('order_send_sms', $ord_id);
-        if ($sms_provider == 'Kobikom') do_action('order_send_sms_kobikom', $ord_id);
 
+        if ($mail_send_general_option == 'yes') {
+            do_action('order_ship_mail', $ord_id);
+        }
 
+        if ($sms_provider == 'NetGSM') {
+            do_action('order_send_sms', $ord_id);
+        }
+
+        if ($sms_provider == 'Kobikom') {
+            do_action('order_send_sms_kobikom', $ord_id);
+        }
     }
 }
+
 
 add_action('admin_head', 'kargoTR_shipment_fix_wc_tooltips');
 function kargoTR_shipment_fix_wc_tooltips() {

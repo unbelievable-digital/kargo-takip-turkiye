@@ -14,7 +14,7 @@ return array(
         ),
         "aras" => array(
             "company" => "Aras Kargo",
-            "url" => "https://www.araskargo.com.tr/trmobile/cargo_tracking_detail.aspx?query=1&querydetail=2&ref_no=&seri_no=&irs_no=&kargo_takip_no=",
+            "url" => "https://ebranch.araskargo.com.tr/track/",
             "logo" => "assets/logos/aras.png"
         ),
         "mng" => array(

@@ -54,6 +54,7 @@ Sms ve E-mail templatleri artık düzenlenebilir panelden
 Api eklendi artık dışardan kargo verisi girebilirsiniz woocommerce rest ile 
 Carrtell kargosu eklendi
 Kod yapısında bir kaç değişiklik yapıldı 
+Aras Kargo Url degistirildi. 
 
 = 0.1.13 =
 Wp-Admin kargo takip sayfası düzenlendi.
