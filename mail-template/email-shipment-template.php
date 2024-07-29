@@ -16,6 +16,8 @@
 
 defined('ABSPATH') || exit();
 
+
+
 /*
  * @hooked WC_Emails::email_header() Output the email header
  */
