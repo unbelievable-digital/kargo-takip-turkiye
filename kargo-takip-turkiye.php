@@ -31,9 +31,10 @@ function kargoTR_register_admin_menu() {
 function kargoTR_register_settings() {
     // Define default values as an array for easier management
     $defaultValues = array(
-        'select' => 'no',
-        'field' => '',
-        'smsTemplate' => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
+        'select'        => 'no',
+        'field'         => '',
+        'smsTemplate'   => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
+        'emailTemplate' => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
     );
 
     // Use a foreach loop to register settings more efficiently
@@ -47,6 +48,7 @@ function kargoTR_register_settings() {
         'NetGsm_Header' => $defaultValues['select'],
         'NetGsm_sms_url_send' => $defaultValues['select'],
         'kargoTr_sms_template' => $defaultValues['smsTemplate'],
+        'kargoTr_email_template' => $defaultValues['emailTemplate'],
         'Kobikom_ApiKey' => $defaultValues['field'],
         'Kobikom_Header' => $defaultValues['field'],
     );
