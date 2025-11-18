@@ -38,19 +38,11 @@ function kargoTR_cargo_setting_page() {
                         <form id="kargotr-add-cargo-form">
                             <?php wp_nonce_field('kargotr_cargo_nonce', 'kargotr_cargo_nonce_field'); ?>
 
-                            <div class="kargotr-form-grid">
-                                <div class="kargotr-form-field">
-                                    <label for="cargo_key">Firma Anahtarı <span class="required">*</span></label>
-                                    <input type="text" id="cargo_key" name="cargo_key"
-                                           placeholder="ornek_kargo" pattern="[a-z0-9_]+" required>
-                                    <p class="description">Küçük harf, rakam ve alt çizgi. Örn: yeni_kargo</p>
-                                </div>
-
-                                <div class="kargotr-form-field">
-                                    <label for="cargo_name">Firma Adı <span class="required">*</span></label>
-                                    <input type="text" id="cargo_name" name="cargo_name"
-                                           placeholder="Örnek Kargo" required>
-                                </div>
+                            <div class="kargotr-form-field">
+                                <label for="cargo_name">Firma Adı <span class="required">*</span></label>
+                                <input type="text" id="cargo_name" name="cargo_name"
+                                       placeholder="Örnek Kargo" required>
+         
                             </div>
 
                             <div class="kargotr-form-field" style="margin-top: 15px;">
@@ -586,9 +578,35 @@ function kargoTR_cargo_setting_page() {
             $(this).hide();
         });
 
+        // Türkçe karakterleri Latin karakterlere çevir
+        function turkishToLatin(str) {
+            var charMap = {
+                'ç': 'c', 'Ç': 'c',
+                'ğ': 'g', 'Ğ': 'g',
+                'ı': 'i', 'I': 'i',
+                'İ': 'i', 'i': 'i',
+                'ö': 'o', 'Ö': 'o',
+                'ş': 's', 'Ş': 's',
+                'ü': 'u', 'Ü': 'u'
+            };
+
+            return str.replace(/[çÇğĞıIİöÖşŞüÜ]/g, function(match) {
+                return charMap[match] || match;
+            });
+        }
+
+        // Firma adından anahtar oluştur
+        function generateKey(name) {
+            var key = turkishToLatin(name);
+            key = key.toLowerCase();
+            key = key.replace(/\s+/g, '_'); // Boşlukları _ yap
+            key = key.replace(/[^a-z0-9_]/g, ''); // Sadece harf, rakam ve _ bırak
+            key = key + '_' + Math.floor(Math.random() * 1000); // Random sayı ekle
+            return key;
+        }
+
         // Firma Ekleme
         $('#kargotr-add-cargo-btn').on('click', function() {
-            var key = $('#cargo_key').val().trim().toLowerCase();
             var name = $('#cargo_name').val().trim();
             var url = $('#cargo_url').val().trim();
             var logo = $('#cargo_logo').val();
@@ -596,15 +614,13 @@ function kargoTR_cargo_setting_page() {
             var $btn = $(this);
 
             // Validasyon
-            if (!key || !name || !url) {
+            if (!name || !url) {
                 alert('Lütfen zorunlu alanları doldurun.');
                 return;
             }
 
-            if (!/^[a-z0-9_]+$/.test(key)) {
-                alert('Firma anahtarı sadece küçük harf, rakam ve alt çizgi içerebilir.');
-                return;
-            }
+            // Anahtarı otomatik oluştur
+            var key = generateKey(name);
 
             $.ajax({
                 url: ajaxurl,
@@ -689,8 +705,21 @@ function kargoTR_add_custom_cargo() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $key = sanitize_key($_POST['key']);
     $name = sanitize_text_field($_POST['name']);
+
+    // Anahtar geldiyse kullan, gelmediyse oluştur
+    if (!empty($_POST['key'])) {
+        $key = sanitize_key($_POST['key']);
+    } else {
+        // Türkçe karakterleri Latin'e çevir
+        $turkish = array('ç', 'Ç', 'ğ', 'Ğ', 'ı', 'I', 'İ', 'ö', 'Ö', 'ş', 'Ş', 'ü', 'Ü');
+        $latin = array('c', 'c', 'g', 'g', 'i', 'i', 'i', 'o', 'o', 's', 's', 'u', 'u');
+        $key = str_replace($turkish, $latin, $name);
+        $key = strtolower($key);
+        $key = preg_replace('/\s+/', '_', $key); // Boşlukları _ yap
+        $key = preg_replace('/[^a-z0-9_]/', '', $key); // Sadece harf, rakam ve _
+        $key = $key . '_' . rand(100, 999); // Random sayı ekle
+    }
 
     // URL'de {code} placeholder'ını korumak için özel işlem
     $url = $_POST['url'];
@@ -704,7 +733,7 @@ function kargoTR_add_custom_cargo() {
     $logo = esc_url_raw($_POST['logo']);
 
     // Validasyon
-    if (empty($key) || empty($name) || empty($url)) {
+    if (empty($name) || empty($url)) {
         wp_send_json_error('Zorunlu alanlar boş olamaz.');
     }
 
