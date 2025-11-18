@@ -1,67 +1,107 @@
 <?php
 
+/**
+ * Tüm kargo firmalarını birleştirir (config.php + custom)
+ * Devre dışı bırakılanları hariç tutar
+ *
+ * @param bool $include_disabled Devre dışı olanları dahil et
+ * @return array
+ */
+function kargoTR_get_all_cargoes($include_disabled = true) {
+    // Config.php'den varsayılan firmalar
+    $config = include(plugin_dir_path(__FILE__) . "config.php");
+    $default_cargoes = isset($config["cargoes"]) ? $config["cargoes"] : array();
+
+    // WordPress options'dan özel firmalar
+    $custom_cargoes = get_option('kargoTR_custom_cargoes', array());
+
+    // Birleştir
+    $all_cargoes = array_merge($default_cargoes, $custom_cargoes);
+
+    // Devre dışı olanları hariç tut
+    if (!$include_disabled) {
+        $disabled_cargoes = get_option('kargoTR_disabled_cargoes', array());
+        foreach ($disabled_cargoes as $key) {
+            unset($all_cargoes[$key]);
+        }
+    }
+
+    return $all_cargoes;
+}
+
 /*
  * Kargo anahtarını kullanarak ilgili kargo firma ismini verir.
- * 
- * 
+ *
+ *
  * @param   string $tracking_company kargo anahtarı
  * @return  string
- *  
+ *
  */
 function kargoTR_get_company_name($tracking_company) {
-    $config = include("config.php");
-    return $config["cargoes"][$tracking_company]["company"];
+    $cargoes = kargoTR_get_all_cargoes();
+    return isset($cargoes[$tracking_company])
+        ? $cargoes[$tracking_company]["company"]
+        : '';
 }
 
 /*
- * Kargo anahtarı ve takip kodunu kullanarak ilgili 
+ * Kargo anahtarı ve takip kodunu kullanarak ilgili
  * gönderi için takip koduna ait takip sayfası bağlantısını verir.
- * 
- * 
+ *
+ *
  * @param   string $tracking_company kargo anahtarı
+ * @param   string $tracking_code takip kodu
  * @return  string
- *  
+ *
  */
 function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL) {
-    $config = include("config.php");
-    return $config["cargoes"][$tracking_company]["url"] . $tracking_code;
+    $cargoes = kargoTR_get_all_cargoes();
+    return isset($cargoes[$tracking_company])
+        ? $cargoes[$tracking_company]["url"] . $tracking_code
+        : '';
 }
 
 /*
- * Kargo anahtarını kullanarak ilgili kargo firmasının 
+ * Kargo anahtarını kullanarak ilgili kargo firmasının
  * kargo adini verir.
- * 
- * 
+ *
+ *
  * @param   string $tracking_company kargo anahtarı
  * @return  string
- *  
+ *
  */
 
 function kargoTR_getCargoName($tracking_company = NULL) {
-    $config = include("config.php");
-    return $config["cargoes"][$tracking_company]["name"];
+    $cargoes = kargoTR_get_all_cargoes();
+    return isset($cargoes[$tracking_company])
+        ? $cargoes[$tracking_company]["company"]
+        : '';
 }
 
 
 /**
- * Sistemde tanimli kargo firmalarinin isim listesini verir
- * 
- * @return array kargo firma ismi ve anahtari
+ * Sistemde tanımlı kargo firmalarının isim listesini verir
+ * Devre dışı firmalar hariç tutulur
+ *
+ * @return array kargo firma ismi ve anahtarı
  */
 function kargoTR_cargo_company_list() : array {
-    $config = include("config.php");
+    // Devre dışı olanları hariç tut
+    $cargoes = kargoTR_get_all_cargoes(false);
+
     $companies = ["" => "Kargo Firması Seçiniz"];
-    foreach($config["cargoes"] as $key => $cargo) {
-        $companies += array($key => $cargo["company"]);
+    foreach($cargoes as $key => $cargo) {
+        $companies[$key] = $cargo["company"];
     }
     return $companies;
 }
 
 
 /**
- * Order Numarasina gore kargo logusunu verir eger yoksa bos doner
- * 
- * @return array kargo firma ismi ve anahtari
+ * Order Numarasına göre kargo logosunu verir eğer yoksa boş döner
+ *
+ * @param int $order_id sipariş ID
+ * @return string logo path veya boş
  */
 
 function kargoTR_get_order_cargo_logo($order_id) {
@@ -69,21 +109,17 @@ function kargoTR_get_order_cargo_logo($order_id) {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
 
     if($tracking_company) {
-        $config = include("config.php");
-        $logo = $config["cargoes"][$tracking_company]["logo"];
+        $cargoes = kargoTR_get_all_cargoes();
 
-        if($logo) {
-            return $logo;
-        } else {
-            return "";
+        if(isset($cargoes[$tracking_company]) && !empty($cargoes[$tracking_company]["logo"])) {
+            return $cargoes[$tracking_company]["logo"];
         }
-        
-    } else {
-        return "";
     }
+
+    return "";
 }
 
-//Function return tracking code, company name and tracking url 
+//Function return tracking code, company name and tracking url
 
 function kargoTR_get_order_cargo_information($order_id) {
     $order = wc_get_order($order_id);
@@ -91,24 +127,22 @@ function kargoTR_get_order_cargo_information($order_id) {
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
 
     if($tracking_company) {
-        $config = include("config.php");
-        $logo = $config["cargoes"][$tracking_company]["logo"];
-        $company = $config["cargoes"][$tracking_company]["company"];
-        $url = $config["cargoes"][$tracking_company]["url"] . $tracking_code;
+        $cargoes = kargoTR_get_all_cargoes();
 
-        if($logo) {
+        if(isset($cargoes[$tracking_company])) {
+            $logo = isset($cargoes[$tracking_company]["logo"]) ? $cargoes[$tracking_company]["logo"] : "";
+            $company = $cargoes[$tracking_company]["company"];
+            $url = $cargoes[$tracking_company]["url"] . $tracking_code;
+
             return array(
                 "logo" => $logo,
                 "company" => $company,
                 "url" => $url
             );
-        } else {
-            return "";
         }
-        
-    } else {
-        return "";
     }
+
+    return "";
 }
 
 // Sms template function
@@ -117,7 +151,7 @@ function kargoTR_get_sms_template($order_id, $template) {
     $order = wc_get_order($order_id);
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
-    //client name 
+    //client name
     $client_name = $order->get_billing_first_name() . " " . $order->get_billing_last_name();
 
     //template from database
@@ -137,8 +171,4 @@ function kargoTR_get_sms_template($order_id, $template) {
     $template = str_replace("{order_id}", $order_id, $template);
 
     return $template;
-
-
-  
 }
-

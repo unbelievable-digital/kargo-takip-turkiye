@@ -14,6 +14,7 @@ include 'kargo-takip-helper.php';
 include 'kargo-takip-order-list.php';
 include 'kargo-takip-email-settings.php';
 include 'kargo-takip-sms-settings.php';
+include 'kargo-takip-cargo-settings.php';
 // include 'kargo-takip-content-edit-helper.php';
 include 'kargo-takip-wc-api-helper.php';
 add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
@@ -22,6 +23,7 @@ function kargoTR_register_admin_menu() {
     // add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
     add_menu_page( 'Kargo Takip Türkiye', 'Kargo Takip', 'read', $menu_slug, false, 'dashicons-car', 20 );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Genel Ayarlar', 'read', $menu_slug, 'kargoTR_setting_page' );
+    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Kargo Ayarlari', 'manage_options', 'kargo-takip-turkiye-cargo-settings', 'kargoTR_cargo_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'E-Mail Ayarlari', 'read', 'kargo-takip-turkiye-email-settings', 'kargoTR_email_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'SMS Ayarlari', 'read', 'kargo-takip-turkiye-sms-settings', 'kargoTR_sms_setting_page' );
     add_action( 'admin_init', 'kargoTR_register_settings' );

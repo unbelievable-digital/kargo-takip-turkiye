@@ -121,14 +121,11 @@ function kargoTR_is_valid_shipment_company($shipment_company) {
         return false;
     }
 
-    // Get shipment company list from config.php
-    $shipment_companies_config = include("config.php");
-
-    // Get shipment companies
-    $shipment_companies_config = $shipment_companies_config['cargoes'];
+    // Tüm kargo firmalarını al (config + custom, disabled dahil)
+    $all_cargoes = kargoTR_get_all_cargoes(true);
 
     // Check if shipment company is in array keys
-    return array_key_exists($shipment_company, $shipment_companies_config);
+    return array_key_exists($shipment_company, $all_cargoes);
 }
 
 
