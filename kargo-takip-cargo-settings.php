@@ -57,7 +57,11 @@ function kargoTR_cargo_setting_page() {
                                 <label for="cargo_url">Takip URL'i <span class="required">*</span></label>
                                 <input type="url" id="cargo_url" name="cargo_url"
                                        placeholder="https://takip.ornekargo.com/?kod=" required>
-                                <p class="description">Takip kodunun ekleneceği base URL. Kod URL'in sonuna eklenecektir.</p>
+                                <p class="description">
+                                    Takip kodunun ekleneceği URL. URL içinde <code>{code}</code> placeholder'ı kullanabilirsiniz.<br>
+                                    <strong>Örnek 1:</strong> https://takip.kargo.com/?kod={code}&lang=tr<br>
+                                    <strong>Örnek 2:</strong> https://kargo.com/takip/ (kod sona eklenir)
+                                </p>
                             </div>
 
                             <div class="kargotr-form-field" style="margin-top: 15px;">
@@ -177,7 +181,7 @@ function kargoTR_cargo_setting_page() {
 
                         <div class="kargotr-tip">
                             <span class="dashicons dashicons-lightbulb"></span>
-                            <strong>İpucu:</strong> Takip URL'inde takip kodu {code} yerine URL'in sonuna otomatik eklenir.
+                            <strong>İpucu:</strong> URL'de <code>{code}</code> placeholder'ı kullanarak takip kodunun yerini belirleyebilirsiniz. Kullanmazsanız kod URL'in sonuna eklenir.
                         </div>
                     </div>
                 </div>

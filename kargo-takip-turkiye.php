@@ -410,7 +410,59 @@ function kargoTR_general_shipment_details_for_admin($order) {
         'wrapper_class' => 'form-field-wide shipment-set-tip-style',
     ));
 
-    
+    // Kargo bilgisi varsa "Yeniden Mail Gönder" butonu göster
+    if (!empty($tracking_company) && !empty($tracking_code)) {
+        ?>
+        <p class="form-field form-field-wide kargotr-resend-mail-wrapper" style="margin-top: 10px;">
+            <button type="button" class="button" id="kargotr-resend-mail-btn" data-order-id="<?php echo esc_attr($order->get_id()); ?>">
+                <span class="dashicons dashicons-email" style="vertical-align: middle; margin-right: 3px;"></span>
+                Kargo Mailini Yeniden Gönder
+            </button>
+            <span id="kargotr-resend-mail-status" style="margin-left: 10px;"></span>
+        </p>
+        <script>
+        jQuery(document).ready(function($) {
+            $('#kargotr-resend-mail-btn').on('click', function(e) {
+                e.preventDefault();
+                var $btn = $(this);
+                var $status = $('#kargotr-resend-mail-status');
+                var orderId = $btn.data('order-id');
+
+                if (!confirm('Bu siparişin kargo takip bilgisini müşteriye tekrar göndermek istediğinizden emin misiniz?')) {
+                    return;
+                }
+
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'kargotr_resend_cargo_mail',
+                        order_id: orderId,
+                        nonce: '<?php echo wp_create_nonce('kargotr_resend_mail'); ?>'
+                    },
+                    beforeSend: function() {
+                        $btn.prop('disabled', true).text('Gönderiliyor...');
+                        $status.html('');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $status.html('<span style="color: green;"><span class="dashicons dashicons-yes-alt"></span> ' + response.data + '</span>');
+                        } else {
+                            $status.html('<span style="color: red;"><span class="dashicons dashicons-dismiss"></span> ' + response.data + '</span>');
+                        }
+                    },
+                    error: function() {
+                        $status.html('<span style="color: red;"><span class="dashicons dashicons-dismiss"></span> Bağlantı hatası</span>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<span class="dashicons dashicons-email" style="vertical-align: middle; margin-right: 3px;"></span> Kargo Mailini Yeniden Gönder');
+                    }
+                });
+            });
+        });
+        </script>
+        <?php
+    }
 }
 
  
@@ -665,6 +717,44 @@ function kargoTR_kargo_eposta_details($order_id) {
 }
 
 add_action('order_ship_mail', 'kargoTR_kargo_eposta_details');
+
+// AJAX: Kargo mailini yeniden gönder
+add_action('wp_ajax_kargotr_resend_cargo_mail', 'kargoTR_resend_cargo_mail');
+function kargoTR_resend_cargo_mail() {
+    // Nonce kontrolü
+    if (!wp_verify_nonce($_POST['nonce'], 'kargotr_resend_mail')) {
+        wp_send_json_error('Güvenlik doğrulaması başarısız.');
+    }
+
+    // Yetki kontrolü
+    if (!current_user_can('edit_shop_orders')) {
+        wp_send_json_error('Bu işlem için yetkiniz yok.');
+    }
+
+    $order_id = intval($_POST['order_id']);
+
+    if (!$order_id) {
+        wp_send_json_error('Geçersiz sipariş ID.');
+    }
+
+    $order = wc_get_order($order_id);
+    if (!$order) {
+        wp_send_json_error('Sipariş bulunamadı.');
+    }
+
+    // Kargo bilgisi kontrolü
+    $tracking_company = get_post_meta($order_id, 'tracking_company', true);
+    $tracking_code = get_post_meta($order_id, 'tracking_code', true);
+
+    if (empty($tracking_company) || empty($tracking_code)) {
+        wp_send_json_error('Kargo takip bilgisi bulunamadı.');
+    }
+
+    // Email gönder
+    kargoTR_kargo_eposta_details($order_id);
+
+    wp_send_json_success('E-posta başarıyla gönderildi: ' . $order->get_billing_email());
+}
 
 // WooCommerce template ile email içeriği sar
 function kargoTR_wrap_with_wc_template($content, $email_heading, $order, $mailer) {

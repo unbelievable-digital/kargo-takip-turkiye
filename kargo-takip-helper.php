@@ -48,6 +48,8 @@ function kargoTR_get_company_name($tracking_company) {
  * Kargo anahtarı ve takip kodunu kullanarak ilgili
  * gönderi için takip koduna ait takip sayfası bağlantısını verir.
  *
+ * URL'de {code} placeholder'ı varsa onu takip koduyla değiştirir,
+ * yoksa takip kodunu URL'in sonuna ekler (geriye uyumluluk).
  *
  * @param   string $tracking_company kargo anahtarı
  * @param   string $tracking_code takip kodu
@@ -56,9 +58,20 @@ function kargoTR_get_company_name($tracking_company) {
  */
 function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL) {
     $cargoes = kargoTR_get_all_cargoes();
-    return isset($cargoes[$tracking_company])
-        ? $cargoes[$tracking_company]["url"] . $tracking_code
-        : '';
+
+    if (!isset($cargoes[$tracking_company])) {
+        return '';
+    }
+
+    $url = $cargoes[$tracking_company]["url"];
+
+    // URL'de {code} placeholder'ı varsa değiştir
+    if (strpos($url, '{code}') !== false) {
+        return str_replace('{code}', $tracking_code, $url);
+    }
+
+    // Yoksa sona ekle (geriye uyumluluk)
+    return $url . $tracking_code;
 }
 
 /*
@@ -132,7 +145,14 @@ function kargoTR_get_order_cargo_information($order_id) {
         if(isset($cargoes[$tracking_company])) {
             $logo = isset($cargoes[$tracking_company]["logo"]) ? $cargoes[$tracking_company]["logo"] : "";
             $company = $cargoes[$tracking_company]["company"];
-            $url = $cargoes[$tracking_company]["url"] . $tracking_code;
+
+            // URL'de {code} placeholder'ı varsa değiştir, yoksa sona ekle
+            $base_url = $cargoes[$tracking_company]["url"];
+            if (strpos($base_url, '{code}') !== false) {
+                $url = str_replace('{code}', $tracking_code, $base_url);
+            } else {
+                $url = $base_url . $tracking_code;
+            }
 
             return array(
                 "logo" => $logo,
