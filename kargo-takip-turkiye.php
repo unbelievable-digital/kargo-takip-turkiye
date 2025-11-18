@@ -49,6 +49,7 @@ function kargoTR_register_settings() {
         'NetGsm_sms_url_send' => $defaultValues['select'],
         'kargoTr_sms_template' => $defaultValues['smsTemplate'],
         'kargoTr_email_template' => $defaultValues['emailTemplate'],
+        'kargoTr_use_wc_template' => $defaultValues['select'],
         'Kobikom_ApiKey' => $defaultValues['field'],
         'Kobikom_Header' => $defaultValues['field'],
     );
@@ -60,96 +61,291 @@ function kargoTR_register_settings() {
 
 
 function kargoTR_setting_page() {
-    $kargo_hazirlaniyor_text = get_option('kargo_hazirlaniyor_text');
-    $mail_send_general_option = get_option('mail_send_general');
-    $sms_provider = get_option('sms_provider');
+    $kargo_hazirlaniyor_text = get_option('kargo_hazirlaniyor_text', 'no');
+    $mail_send_general_option = get_option('mail_send_general', 'no');
 
-    $NetGsm_UserName = get_option('NetGsm_UserName');
-    $NetGsm_Password = get_option('NetGsm_Password');
-    $NetGsm_Header = get_option('NetGsm_Header');
-    $NetGsm_sms_url_send = get_option('NetGsm_sms_url_send');
+    // Kargo firmalarını al
+    $config = include plugin_dir_path(__FILE__) . 'config.php';
+    $cargoes = isset($config['cargoes']) ? $config['cargoes'] : array();
+    $cargo_count = count($cargoes);
 
     ?>
-    <div class="wrap">
-        <h1>Kargo Takip Türkiye</h1>
+    <div class="wrap kargotr-general-settings">
+        <h1>
+            <span class="dashicons dashicons-car" style="font-size: 30px; margin-right: 10px;"></span>
+            Genel Ayarlar
+        </h1>
 
-        <form method="post" action="options.php">
-            <?php settings_fields( 'kargoTR-settings-group' ); ?>
-            <?php do_settings_sections( 'kargoTR-settings-group' ); ?>
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row" style="width:50%">
-                        <?php _e( 'Kargo bilgisi girmeden önce şiparişlerin içinde gösterilen kargo hazırlanıyor yazısı gösterilsin mi ?', 'kargoTR' ) ?>
-                    </th>
-                    <td>
-                        <input type="radio" id="evet" <?php if( $kargo_hazirlaniyor_text == 'yes' ) echo 'checked'?>
-                            name="kargo_hazirlaniyor_text" value="yes">
-                        <label for="evet">Evet</label><br>
-                    </td>
-                    <td>
-                        <input type="radio" id="hayir" <?php if( $kargo_hazirlaniyor_text == 'no' ) echo 'checked'?>
-                            name="kargo_hazirlaniyor_text" value="no">
-                        <label for="hayir">Hayır</label><br>
-                    </td>
-                </tr>
+        <div class="kargotr-settings-container">
+            <!-- Sol Panel - Ana İçerik -->
+            <div class="kargotr-editor-panel">
+                <form method="post" action="options.php" id="kargotr-general-form">
+                    <?php settings_fields('kargoTR-settings-group'); ?>
+                    <?php do_settings_sections('kargoTR-settings-group'); ?>
 
-                <tr valign="top">
-                    <th scope="row" style="width:50%">
-                        <?php _e( 'Kargo bilgisi girildiğinde mail otomatik gönderilsin mi ?', 'kargoTR' ) ?>
-                    </th>
-                    <td>
-                        <input type="radio" id="evetmail" <?php if( $mail_send_general_option == 'yes' ) echo 'checked'?>
-                            name="mail_send_general" value="yes">
-                        <label for="evetmail">Evet</label><br>
-                    </td>
-                    <td>
-                        <input type="radio" id="hayirmail" <?php if( $mail_send_general_option == 'no' ) echo 'checked'?>
-                            name="mail_send_general" value="no">
-                        <label for="hayirmail">Hayır</label><br>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row" style="width:50%">
-                        <hr>
-                    </th>
-                    <td>
-                        <hr>
-                    </td>
-                    <td>
-                        <hr>
-                    </td>
-                </tr>
- 
+                    <!-- KART 1: Sipariş Görünüm Ayarları -->
+                    <div class="kargotr-card">
+                        <div class="kargotr-card-header">
+                            <h2>
+                                <span class="dashicons dashicons-visibility"></span>
+                                Sipariş Görünüm Ayarları
+                            </h2>
+                            <p class="description">Müşterilerinizin göreceği sipariş detaylarını yapılandırın.</p>
+                        </div>
+                        <div class="kargotr-card-body">
+                            <div class="kargotr-setting-item">
+                                <label class="kargotr-toggle-label">
+                                    <input type="checkbox" name="kargo_hazirlaniyor_text" value="yes"
+                                           <?php checked($kargo_hazirlaniyor_text, 'yes'); ?>
+                                           id="kargo-hazirlaniyor-toggle">
+                                    <strong>"Kargo Hazırlanıyor" Yazısını Göster</strong>
+                                </label>
+                                <p class="description" style="margin-top: 8px; margin-left: 24px;">
+                                    Kargo bilgisi girilmeden önce sipariş detaylarında "Kargo hazırlanıyor" mesajı gösterilir.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-             
- 
+                    <!-- KART 2: Bildirim Ayarları -->
+                    <div class="kargotr-card">
+                        <div class="kargotr-card-header">
+                            <h2>
+                                <span class="dashicons dashicons-email-alt"></span>
+                                Otomatik Bildirim Ayarları
+                            </h2>
+                            <p class="description">Kargo bilgisi girildiğinde otomatik gönderilecek bildirimleri yapılandırın.</p>
+                        </div>
+                        <div class="kargotr-card-body">
+                            <div class="kargotr-setting-item">
+                                <label class="kargotr-toggle-label">
+                                    <input type="checkbox" name="mail_send_general" value="yes"
+                                           <?php checked($mail_send_general_option, 'yes'); ?>
+                                           id="mail-send-toggle">
+                                    <strong>Otomatik E-posta Gönderimi</strong>
+                                </label>
+                                <p class="description" style="margin-top: 8px; margin-left: 24px;">
+                                    Kargo takip bilgisi girildiğinde müşteriye otomatik olarak e-posta gönderilir.
+                                </p>
+                            </div>
 
-            </table>
+                            <div class="kargotr-tip" style="margin-top: 20px;">
+                                <span class="dashicons dashicons-admin-customizer"></span>
+                                <strong>İpucu:</strong> E-posta şablonunu özelleştirmek için
+                                <a href="<?php echo admin_url('admin.php?page=kargo-takip-turkiye-email-settings'); ?>">E-Mail Ayarları</a>
+                                sayfasını ziyaret edin.
+                            </div>
 
-            <?php submit_button(); ?>
+                            <div class="kargotr-tip" style="margin-top: 10px;">
+                                <span class="dashicons dashicons-smartphone"></span>
+                                <strong>SMS Bildirimleri:</strong> SMS ayarlarını yapılandırmak için
+                                <a href="<?php echo admin_url('admin.php?page=kargo-takip-turkiye-sms-settings'); ?>">SMS Ayarları</a>
+                                sayfasını ziyaret edin.
+                            </div>
+                        </div>
+                        <div class="kargotr-card-footer">
+                            <?php submit_button('Ayarları Kaydet', 'primary', 'submit', false); ?>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-            <script>
-                jQuery(document).ready(function ($) {
-                    $('input[type=radio][name=sms_provider]').change(function () {
-                        if (this.value == 'no') {
-                            $('.netgsm').hide();
+            <!-- Sağ Panel - Bilgi -->
+            <div class="kargotr-info-panel">
+                <div class="kargotr-card">
+                    <div class="kargotr-card-header">
+                        <h3>
+                            <span class="dashicons dashicons-info"></span>
+                            Eklenti Hakkında
+                        </h3>
+                    </div>
+                    <div class="kargotr-card-body">
+                        <p><strong>Kargo Takip Türkiye</strong> eklentisi ile WooCommerce siparişlerinize kargo takip bilgisi ekleyebilir ve müşterilerinize otomatik bildirimler gönderebilirsiniz.</p>
 
-                        } else if (this.value == 'NetGSM') {
-                            $('.netgsm').show(2000);
-                        }
-                    });
-                })
-            </script>
+                        <h4>Nasıl Kullanılır?</h4>
+                        <ol style="margin-left: 20px; padding-left: 0;">
+                            <li>Sipariş düzenleme sayfasına gidin</li>
+                            <li>Kargo firmasını seçin</li>
+                            <li>Takip numarasını girin</li>
+                            <li>Siparişi kaydedin</li>
+                        </ol>
 
-            <style>
-                .label-bold {
-                    text-align: center;
-                    font-weight: bold;
-                }
-            </style>
-        </form>
+                        <p class="description">Bildirimler otomatik olarak gönderilecektir.</p>
+                    </div>
+                </div>
+
+                <div class="kargotr-card">
+                    <div class="kargotr-card-header">
+                        <h3>
+                            <span class="dashicons dashicons-car"></span>
+                            Desteklenen Kargo Firmaları
+                        </h3>
+                    </div>
+                    <div class="kargotr-card-body">
+                        <div class="kargotr-stat-box">
+                            <span class="kargotr-stat-number"><?php echo esc_html($cargo_count); ?></span>
+                            <span class="kargotr-stat-label">Kargo Firması</span>
+                        </div>
+                        <p class="description" style="margin-top: 15px;">
+                            PTT, Yurtiçi, Aras, MNG, UPS, DHL, FedEx, HepsiJET, Trendyol Express ve daha fazlası desteklenmektedir.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="kargotr-card">
+                    <div class="kargotr-card-header">
+                        <h3>
+                            <span class="dashicons dashicons-sos"></span>
+                            Destek
+                        </h3>
+                    </div>
+                    <div class="kargotr-card-body">
+                        <p>Sorun veya önerileriniz için:</p>
+                        <p>
+                            <a href="https://github.com/unbelievable-digital/kargo-takip-turkiye/issues" target="_blank" class="button">
+                                <span class="dashicons dashicons-external" style="margin-top: 4px;"></span> GitHub Issues
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-<?php
+
+    <style>
+        .kargotr-general-settings {
+            max-width: 1400px;
+        }
+
+        .kargotr-settings-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .kargotr-editor-panel {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .kargotr-info-panel {
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        .kargotr-card {
+            background: #fff;
+            border: 1px solid #ccd0d4;
+            border-radius: 4px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.04);
+            margin-bottom: 20px;
+        }
+
+        .kargotr-card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ccd0d4;
+            background: #f6f7f7;
+        }
+
+        .kargotr-card-header h2,
+        .kargotr-card-header h3 {
+            margin: 0 0 5px 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .kargotr-card-header .description {
+            margin: 0;
+            color: #666;
+        }
+
+        .kargotr-card-body {
+            padding: 20px;
+        }
+
+        .kargotr-card-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #ccd0d4;
+            background: #f6f7f7;
+        }
+
+        .kargotr-setting-item {
+            margin-bottom: 15px;
+        }
+
+        .kargotr-setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .kargotr-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .kargotr-toggle-label input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .kargotr-tip {
+            background: #fff8e5;
+            border-left: 4px solid #ffb900;
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        .kargotr-tip .dashicons {
+            color: #ffb900;
+            margin-right: 5px;
+        }
+
+        .kargotr-tip a {
+            color: #0073aa;
+            text-decoration: none;
+        }
+
+        .kargotr-tip a:hover {
+            text-decoration: underline;
+        }
+
+        .kargotr-stat-box {
+            background: #f0f6fc;
+            border: 1px solid #c3c4c7;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .kargotr-stat-number {
+            display: block;
+            font-size: 36px;
+            font-weight: 600;
+            color: #0073aa;
+            line-height: 1;
+        }
+
+        .kargotr-stat-label {
+            display: block;
+            margin-top: 5px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .kargotr-settings-container {
+                flex-direction: column;
+            }
+
+            .kargotr-info-panel {
+                width: 100%;
+            }
+        }
+    </style>
+    <?php
 }
 
 // Register new status
@@ -320,21 +516,127 @@ function kargoTR_add_kargo_button_in_order($actions, $order) {
 }
 
 function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
-    $template = 'email-shipment-template.php';
-    $mailTemplatePath = untrailingslashit(plugin_dir_path(__FILE__)) . '/mail-template/';
-
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    $use_wc_template = get_option('kargoTr_use_wc_template', 'no');
 
-    return wc_get_template_html($template, array(
-        'order' => $order,
-        'email_heading' => $mail_title,
-        'sent_to_admin' => false,
-        'plain_text' => false,
-        'email' => $mailer,
-        'tracking_company' => $tracking_company,
-        'tracking_code' => $tracking_code,
-    ), '', $mailTemplatePath);
+    // Kaydedilen şablonu al
+    $email_template = get_option('kargoTr_email_template');
+
+    // Varsayılan şablon
+    if (empty($email_template)) {
+        $email_template = 'Merhaba {customer_name},
+
+{order_id} numaralı siparişiniz kargoya verilmiştir.
+
+<strong>Kargo Firması:</strong> {company_name}
+<strong>Takip Numarası:</strong> {tracking_number}
+
+<a href="{tracking_url}" style="display: inline-block; padding: 10px 20px; background-color: #0073aa; color: #ffffff; text-decoration: none; border-radius: 4px;">Kargonuzu Takip Edin</a>
+
+İyi günler dileriz.';
+    }
+
+    // Şablon değişkenlerini değiştir
+    $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+    $tracking_url = kargoTR_getCargoTrack($tracking_company, $tracking_code);
+    $company_name = kargoTR_get_company_name($tracking_company);
+
+    $content = str_replace(
+        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}'),
+        array($customer_name, $order->get_id(), $company_name, $tracking_code, $tracking_url),
+        $email_template
+    );
+
+    // Seçenek kontrolü: WooCommerce template mi özel wrapper mı?
+    if ($use_wc_template === 'yes') {
+        return kargoTR_wrap_with_wc_template($content, $mail_title, $order, $mailer);
+    } else {
+        return kargoTR_wrap_email_content($content, $mail_title, $mailer);
+    }
+}
+
+// Email içeriğini WooCommerce stili ile sar
+function kargoTR_wrap_email_content($content, $email_heading, $mailer) {
+    // WooCommerce email stilleri
+    $bg_color = get_option('woocommerce_email_background_color', '#f7f7f7');
+    $body_bg = get_option('woocommerce_email_body_background_color', '#ffffff');
+    $base_color = get_option('woocommerce_email_base_color', '#0073aa');
+    $text_color = get_option('woocommerce_email_text_color', '#3c3c3c');
+    $header_image = get_option('woocommerce_email_header_image', '');
+
+    $html = '<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: ' . esc_attr($bg_color) . ';
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            }
+            .wrapper {
+                padding: 20px;
+            }
+            .email-container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: ' . esc_attr($body_bg) . ';
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .email-header {
+                background: ' . esc_attr($base_color) . ';
+                padding: 30px;
+                text-align: center;
+            }
+            .email-header img {
+                max-width: 200px;
+                height: auto;
+            }
+            .email-header h1 {
+                color: #ffffff;
+                margin: 0;
+                font-size: 24px;
+            }
+            .email-body {
+                padding: 30px;
+                color: ' . esc_attr($text_color) . ';
+                line-height: 1.6;
+            }
+            .email-footer {
+                padding: 20px 30px;
+                text-align: center;
+                font-size: 12px;
+                color: #888;
+                border-top: 1px solid #eee;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="email-container">
+                <div class="email-header">';
+
+    if ($header_image) {
+        $html .= '<img src="' . esc_url($header_image) . '" alt="Logo">';
+    } else {
+        $html .= '<h1>' . esc_html($email_heading) . '</h1>';
+    }
+
+    $html .= '</div>
+                <div class="email-body">' . wpautop($content) . '</div>
+                <div class="email-footer">
+                    Bu e-posta ' . get_bloginfo('name') . ' tarafından gönderilmiştir.
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>';
+
+    return $html;
 }
 
 
@@ -361,3 +663,27 @@ function kargoTR_kargo_eposta_details($order_id) {
 }
 
 add_action('order_ship_mail', 'kargoTR_kargo_eposta_details');
+
+// WooCommerce template ile email içeriği sar
+function kargoTR_wrap_with_wc_template($content, $email_heading, $order, $mailer) {
+    // WooCommerce yüklü değilse fallback kullan
+    if (!class_exists('WooCommerce') || !class_exists('WC_Email')) {
+        return kargoTR_wrap_email_content($content, $email_heading, $mailer);
+    }
+
+    ob_start();
+
+    // WooCommerce email header
+    do_action('woocommerce_email_header', $email_heading, null);
+
+    // Özel içerik
+    echo wpautop($content);
+
+    // WooCommerce email footer
+    do_action('woocommerce_email_footer', null);
+
+    $email_content = ob_get_clean();
+
+    // WooCommerce'in wrap_message metodunu kullan
+    return $mailer->wrap_message($email_heading, $email_content);
+}
