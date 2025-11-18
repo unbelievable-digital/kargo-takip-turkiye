@@ -691,7 +691,16 @@ function kargoTR_add_custom_cargo() {
 
     $key = sanitize_key($_POST['key']);
     $name = sanitize_text_field($_POST['name']);
-    $url = esc_url_raw($_POST['url']);
+
+    // URL'de {code} placeholder'ını korumak için özel işlem
+    $url = $_POST['url'];
+    // {code} placeholder'ını geçici olarak değiştir
+    $url = str_replace('{code}', '___CODE_PLACEHOLDER___', $url);
+    // URL'i temizle
+    $url = esc_url_raw($url);
+    // Placeholder'ı geri getir
+    $url = str_replace('___CODE_PLACEHOLDER___', '{code}', $url);
+
     $logo = esc_url_raw($_POST['logo']);
 
     // Validasyon
