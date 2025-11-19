@@ -21,6 +21,7 @@ function kargoTR_api_add_tracking_code() {
     $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
     $shipment_company = isset($_POST['shipment_company']) ? sanitize_text_field($_POST['shipment_company']) : '';
     $tracking_code = isset($_POST['tracking_code']) ? sanitize_text_field($_POST['tracking_code']) : '';
+    $tracking_estimated_date = isset($_POST['tracking_estimated_date']) ? sanitize_text_field($_POST['tracking_estimated_date']) : '';
 
     // Check if the user is logged in
     if (!is_user_logged_in()) {
@@ -68,6 +69,10 @@ function kargoTR_api_add_tracking_code() {
     if ($tracking_company_order && $tracking_code_order) {
         update_post_meta($order_id, 'tracking_company', $shipment_company);
         update_post_meta($order_id, 'tracking_code', $tracking_code);
+        
+        if ($tracking_estimated_date) {
+            update_post_meta($order_id, 'tracking_estimated_date', $tracking_estimated_date);
+        }
 
         $order_note->add_order_note(
             sprintf(
@@ -86,6 +91,24 @@ function kargoTR_api_add_tracking_code() {
     } else {
         add_post_meta($order_id, 'tracking_company', $shipment_company);
         add_post_meta($order_id, 'tracking_code', $tracking_code);
+        
+        if ($tracking_estimated_date) {
+            add_post_meta($order_id, 'tracking_estimated_date', $tracking_estimated_date);
+        } else {
+            // Auto-calculate if not provided
+            $default_days = get_option('kargo_estimated_delivery_days', '3');
+            $company_days = get_option('kargoTR_cargo_delivery_times', array());
+            
+            $days = $default_days;
+            if ($shipment_company && isset($company_days[$shipment_company])) {
+                $days = $company_days[$shipment_company];
+            }
+            
+            if ($days > 0) {
+                $estimated_date = date('Y-m-d', strtotime("+$days days"));
+                add_post_meta($order_id, 'tracking_estimated_date', $estimated_date);
+            }
+        }
 
         $order_note->add_order_note(
             sprintf(

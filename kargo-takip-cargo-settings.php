@@ -98,6 +98,7 @@ function kargoTR_cargo_setting_page() {
                                     <th>Firma Adı</th>
                                     <th>Anahtar</th>
                                     <th>Takip URL</th>
+                                    <th style="width: 100px;">Teslimat (Gün)</th>
                                     <th style="width: 80px;">Durum</th>
                                 </tr>
                             </thead>
@@ -136,6 +137,16 @@ function kargoTR_cargo_setting_page() {
                                         <a href="<?php echo esc_url($cargo['url']); ?>" target="_blank" title="<?php echo esc_attr($cargo['url']); ?>">
                                             <?php echo esc_html(substr($cargo['url'], 0, 40)); ?>...
                                         </a>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                            $delivery_times = get_option('kargoTR_cargo_delivery_times', array());
+                                            $days = isset($delivery_times[$key]) ? $delivery_times[$key] : '';
+                                        ?>
+                                        <input type="number" class="cargo-days-input" 
+                                               data-key="<?php echo esc_attr($key); ?>" 
+                                               value="<?php echo esc_attr($days); ?>" 
+                                               placeholder="3" min="0" style="width: 60px;">
                                     </td>
                                     <td>
                                         <label class="kargotr-switch">
@@ -675,6 +686,37 @@ function kargoTR_cargo_setting_page() {
                         } else {
                             $row.addClass('disabled-row');
                         }
+                    } else {
+                        alert('Hata: ' + response.data);
+                    }
+                },
+                error: function() {
+                    alert('Bağlantı hatası oluştu.');
+                }
+            });
+        });
+
+        // Teslimat Süresi Kaydetme
+        $('.cargo-days-input').on('change', function() {
+            var key = $(this).data('key');
+            var days = $(this).val();
+            var $input = $(this);
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'kargotr_save_cargo_days',
+                    key: key,
+                    days: days,
+                    nonce: '<?php echo wp_create_nonce('kargotr_save_days'); ?>'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $input.css('border-color', '#46b450');
+                        setTimeout(function() {
+                            $input.css('border-color', '#ddd');
+                        }, 1000);
                     } else {
                         alert('Hata: ' + response.data);
                     }

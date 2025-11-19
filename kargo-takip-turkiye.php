@@ -53,7 +53,10 @@ function kargoTR_register_settings() {
         'kargoTr_email_template' => $defaultValues['emailTemplate'],
         'kargoTr_use_wc_template' => $defaultValues['select'],
         'Kobikom_ApiKey' => $defaultValues['field'],
+        'kargoTr_use_wc_template' => $defaultValues['select'],
+        'Kobikom_ApiKey' => $defaultValues['field'],
         'Kobikom_Header' => $defaultValues['field'],
+        'kargo_estimated_delivery_days' => '3', // Default 3 days
     );
 
     foreach ($settings as $settingKey => $settingDefault) {
@@ -65,6 +68,7 @@ function kargoTR_register_settings() {
 function kargoTR_setting_page() {
     $kargo_hazirlaniyor_text = get_option('kargo_hazirlaniyor_text', 'no');
     $mail_send_general_option = get_option('mail_send_general', 'no');
+    $estimated_days = get_option('kargo_estimated_delivery_days', '3');
 
     // Kargo firmalarını al
     $config = include plugin_dir_path(__FILE__) . 'config.php';
@@ -104,6 +108,17 @@ function kargoTR_setting_page() {
                                 </label>
                                 <p class="description" style="margin-top: 8px; margin-left: 24px;">
                                     Kargo bilgisi girilmeden önce sipariş detaylarında "Kargo hazırlanıyor" mesajı gösterilir.
+                                </p>
+                            </div>
+
+                            <div class="kargotr-setting-item">
+                                <label for="kargo_estimated_delivery_days">
+                                    <strong>Varsayılan Tahmini Teslimat Süresi (Gün)</strong>
+                                </label>
+                                <input type="number" name="kargo_estimated_delivery_days" id="kargo_estimated_delivery_days" 
+                                       value="<?php echo esc_attr($estimated_days); ?>" class="small-text" min="0">
+                                <p class="description">
+                                    Sipariş detaylarında tahmini teslimat tarihi otomatik hesaplanırken bu değer (bugün + X gün) kullanılır.
                                 </p>
                             </div>
                         </div>
@@ -376,6 +391,10 @@ function kargoTR_general_shipment_details_for_admin($order) {
     // Get post meta values
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
+    
+    $default_days = get_option('kargo_estimated_delivery_days', '3');
+    $company_days = get_option('kargoTR_cargo_delivery_times', array());
     
     // Use output buffer to capture the HTML markup and return it as a string
     ob_start();
@@ -400,6 +419,62 @@ function kargoTR_general_shipment_details_for_admin($order) {
             $('#tracking_company').select2();
         });
     ");
+
+    woocommerce_wp_text_input(array(
+        'id' => 'tracking_estimated_date',
+        'label' => 'Tahmini Teslimat Tarihi:',
+        'description' => 'Opsiyonel. Müşteriye gösterilecek tahmini teslimat tarihi.',
+        'desc_tip' => true,
+        'value' => $tracking_estimated_date,
+        'type' => 'date',
+        'wrapper_class' => 'form-field-wide shipment-set-tip-style',
+    ));
+
+    // Auto-fill date script
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        var defaultDays = <?php echo intval($default_days); ?>;
+        var companyDays = <?php echo json_encode($company_days); ?>;
+        
+        function calculateDate(days) {
+            var date = new Date();
+            date.setDate(date.getDate() + parseInt(days));
+            var day = ("0" + date.getDate()).slice(-2);
+            var month = ("0" + (date.getMonth() + 1)).slice(-2);
+            return date.getFullYear() + "-" + (month) + "-" + (day);
+        }
+
+        // Initial check if empty
+        if (!$('#tracking_estimated_date').val()) {
+            var currentCompany = $('#tracking_company').val();
+            var days = defaultDays;
+            
+            if (currentCompany && companyDays[currentCompany]) {
+                days = companyDays[currentCompany];
+            }
+            
+            if (days > 0) {
+                $('#tracking_estimated_date').val(calculateDate(days));
+            }
+        }
+
+        // On change
+        $('#tracking_company').on('change', function() {
+            var selectedCompany = $(this).val();
+            var days = defaultDays;
+            
+            if (selectedCompany && companyDays[selectedCompany]) {
+                days = companyDays[selectedCompany];
+            }
+            
+            if (days > 0) {
+                $('#tracking_estimated_date').val(calculateDate(days));
+            }
+        });
+    });
+    </script>
+    <?php
 
     woocommerce_wp_text_input(array(
         'id' => 'tracking_code',
@@ -471,6 +546,7 @@ add_action('woocommerce_process_shop_order_meta', 'kargoTR_tracking_save_general
 function kargoTR_tracking_save_general_details($ord_id) {
     $tracking_company = get_post_meta($ord_id, 'tracking_company', true);
     $tracking_code = get_post_meta($ord_id, 'tracking_code', true);
+    $tracking_estimated_date = get_post_meta($ord_id, 'tracking_estimated_date', true);
     $order_note = wc_get_order($ord_id);
     $mail_send_general_option = get_option('mail_send_general');
     $sms_provider = get_option('sms_provider');
@@ -485,6 +561,11 @@ function kargoTR_tracking_save_general_details($ord_id) {
     if ($tracking_code != $_POST['tracking_code']) {
         update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
         $note = __("Kargo takip kodu güncellendi.");
+    }
+
+    if (isset($_POST['tracking_estimated_date']) && $tracking_estimated_date != $_POST['tracking_estimated_date']) {
+        update_post_meta($ord_id, 'tracking_estimated_date', wc_clean($_POST['tracking_estimated_date']));
+        // Note is optional here, maybe not needed to spam order notes
     }
 
     if (!empty($note)) {
@@ -525,6 +606,7 @@ function kargoTR_shipment_fix_wc_tooltips() {
 function kargoTR_shipment_details($order) {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
     $kargo_hazirlaniyor_text_option = get_option('kargo_hazirlaniyor_text');
     if ( $order->get_status() != 'cancelled') {
         if ($tracking_company == '') {
@@ -542,6 +624,9 @@ function kargoTR_shipment_details($order) {
     <h2 id="kargoTakipSection">Kargo Takip</h2>
     <h4>Kargo firması : </h4> <?php echo kargoTR_get_company_name($tracking_company); ?>
     <h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo esc_attr($tracking_code) ?>
+    <?php if (!empty($tracking_estimated_date)): ?>
+        <h4><?php _e( 'Tahmini Teslimat:','kargoTR');?></h4> <?php echo date_i18n(get_option('date_format'), strtotime($tracking_estimated_date)); ?>
+    <?php endif; ?>
     <br>
     <?php echo '<a href="' . kargoTR_getCargoTrack($tracking_company, $tracking_code) . '"target="_blank" rel="noopener noreferrer">'; _e( 'Kargonuzu takibi için buraya tıklayın.','kargoTR' );  echo '</a>'; ?>
 </div>
@@ -572,6 +657,7 @@ function kargoTR_add_kargo_button_in_order($actions, $order) {
 function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
     $use_wc_template = get_option('kargoTr_use_wc_template', 'no');
 
     // Kaydedilen şablonu al
@@ -595,10 +681,15 @@ function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
     $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
     $tracking_url = kargoTR_getCargoTrack($tracking_company, $tracking_code);
     $company_name = kargoTR_get_company_name($tracking_company);
+    
+    $formatted_date = '';
+    if (!empty($tracking_estimated_date)) {
+        $formatted_date = date_i18n(get_option('date_format'), strtotime($tracking_estimated_date));
+    }
 
     $content = str_replace(
-        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}'),
-        array($customer_name, $order->get_id(), $company_name, $tracking_code, $tracking_url),
+        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
+        array($customer_name, $order->get_id(), $company_name, $tracking_code, $tracking_url, $formatted_date),
         $email_template
     );
 
