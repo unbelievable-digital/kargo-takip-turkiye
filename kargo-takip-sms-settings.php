@@ -1114,36 +1114,38 @@ function kargoTR_send_test_sms_kobikom($phone, $message) {
         return 'Kobikom ayarları eksik.';
     }
 
-    $url = 'https://sms.kobikom.com.tr/api/message/send';
+    // Telefon numarası formatlama (905xxxxxxxxx)
+    $phone = preg_replace('/[^0-9]/', '', $phone);
+    if (strlen($phone) == 10) {
+        $phone = '90' . $phone;
+    } elseif (strlen($phone) == 11 && substr($phone, 0, 1) == '0') {
+        $phone = '90' . substr($phone, 1);
+    }
 
-    $data = array(
-        'type' => 1,
-        'title' => $header,
+    $url = 'https://sms.kobikom.com.tr/api/message/send';
+    
+    $params = array(
+        'api_token' => $api_key,
+        'to' => $phone,
+        'from' => $header,
         'message' => $message,
-        'recipient' => array($phone)
+        'unicode' => 1
     );
 
-    $response = wp_remote_post($url, array(
-        'headers' => array(
-            'Authorization' => 'Bearer ' . $api_key,
-            'Content-Type' => 'application/json'
-        ),
-        'body' => json_encode($data),
-        'timeout' => 30
-    ));
+    $request_url = add_query_arg($params, $url);
+    $response = wp_remote_get($request_url);
 
     if (is_wp_error($response)) {
         return 'Bağlantı hatası: ' . $response->get_error_message();
     }
 
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-
-    if (isset($body['status']) && $body['status'] === true) {
+    $body = wp_remote_retrieve_body($response);
+    $result = json_decode($body, true);
+    
+    // Başarılı yanıt kontrolü (uuid varsa başarılıdır)
+    if (!empty($result['data'][0]['uuid'])) {
         return true;
     }
 
-    print_r($body);die;
-
-    $error_message = isset($body['message']) ? $body['message'] : 'Bilinmeyen hata';
-    return 'Kobikom Hatası: ' . $error_message;
+    return 'Kobikom Hatası: ' . $body;
 }
