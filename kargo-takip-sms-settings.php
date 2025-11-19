@@ -19,7 +19,7 @@ function kargoTR_sms_setting_page() {
 
     // Varsayılan şablon
     if (empty($sms_template)) {
-        $sms_template = 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.';
+        $sms_template = 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Tahmini Teslimat: {estimated_delivery_date}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.';
     }
 
     ?>
@@ -255,6 +255,9 @@ function kargoTR_sms_setting_page() {
                                     <button type="button" class="button kargotr-var-btn" data-var="{tracking_url}">
                                         <span class="dashicons dashicons-admin-links"></span> Takip Linki
                                     </button>
+                                    <button type="button" class="button kargotr-var-btn" data-var="{estimated_delivery_date}">
+                                        <span class="dashicons dashicons-calendar-alt"></span> Tahmini Teslimat
+                                    </button>
                                 </div>
                             </div>
 
@@ -315,6 +318,10 @@ function kargoTR_sms_setting_page() {
                             <tr>
                                 <td><code>{tracking_url}</code></td>
                                 <td>Kargo takip linki</td>
+                            </tr>
+                            <tr>
+                                <td><code>{estimated_delivery_date}</code></td>
+                                <td>Tahmini teslimat tarihi</td>
                             </tr>
                         </table>
 
@@ -1134,6 +1141,8 @@ function kargoTR_send_test_sms_kobikom($phone, $message) {
     if (isset($body['status']) && $body['status'] === true) {
         return true;
     }
+
+    print_r($body);die;
 
     $error_message = isset($body['message']) ? $body['message'] : 'Bilinmeyen hata';
     return 'Kobikom Hatası: ' . $error_message;

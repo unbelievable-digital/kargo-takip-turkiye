@@ -12,6 +12,7 @@ function kargoTR_email_setting_page() {
 
 <strong>Kargo Firması:</strong> {company_name}
 <strong>Takip Numarası:</strong> {tracking_number}
+<strong>Tahmini Teslimat Tarihi:</strong> {estimated_delivery_date}
 
 <a href="{tracking_url}" style="display: inline-block; padding: 10px 20px; background-color: #0073aa; color: #ffffff; text-decoration: none; border-radius: 4px;">Kargonuzu Takip Edin</a>
 
@@ -79,6 +80,9 @@ function kargoTR_email_setting_page() {
                                     </button>
                                     <button type="button" class="button kargotr-var-btn" data-var="{tracking_url}">
                                         <span class="dashicons dashicons-admin-links"></span> Takip Linki
+                                    </button>
+                                    <button type="button" class="button kargotr-var-btn" data-var="{estimated_delivery_date}">
+                                        <span class="dashicons dashicons-calendar-alt"></span> Tahmini Teslimat
                                     </button>
                                 </div>
                             </div>
@@ -148,6 +152,10 @@ function kargoTR_email_setting_page() {
                             <tr>
                                 <td><code>{tracking_url}</code></td>
                                 <td>Kargo takip linki</td>
+                            </tr>
+                            <tr>
+                                <td><code>{estimated_delivery_date}</code></td>
+                                <td>Tahmini teslimat tarihi</td>
                             </tr>
                         </table>
 
@@ -518,7 +526,8 @@ function kargoTR_email_setting_page() {
             var sampleTemplate = 'Merhaba {customer_name},\n\n' +
                 '{order_id} numaralı siparişiniz kargoya verilmiştir.\n\n' +
                 '<strong>Kargo Firması:</strong> {company_name}\n' +
-                '<strong>Takip Numarası:</strong> {tracking_number}\n\n' +
+                '<strong>Takip Numarası:</strong> {tracking_number}\n' +
+                '<strong>Tahmini Teslimat Tarihi:</strong> {estimated_delivery_date}\n\n' +
                 '<a href="{tracking_url}" style="display: inline-block; padding: 10px 20px; background-color: #0073aa; color: #ffffff; text-decoration: none; border-radius: 4px;">Kargonuzu Takip Edin</a>\n\n' +
                 'İyi günler dileriz.';
 
@@ -668,8 +677,8 @@ function kargoTR_ajax_email_preview() {
 
     // Örnek verilerle değiştir
     $preview_content = str_replace(
-        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}'),
-        array('Ahmet Yılmaz', '12345', 'Yurtiçi Kargo', 'YK123456789', 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YK123456789'),
+        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
+        array('Ahmet Yılmaz', '12345', 'Yurtiçi Kargo', 'YK123456789', 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YK123456789', date('d.m.Y', strtotime('+3 days'))),
         $template
     );
 
@@ -702,8 +711,8 @@ function kargoTR_ajax_send_test_email() {
 
     // Örnek verilerle değiştir
     $content = str_replace(
-        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}'),
-        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456'),
+        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
+        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456', date('d.m.Y', strtotime('+3 days'))),
         $template
     );
 

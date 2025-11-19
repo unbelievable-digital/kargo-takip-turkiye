@@ -49,12 +49,18 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
     $tracking_company = get_post_meta($order_id, 'tracking_company', true);
     $tracking_code = get_post_meta($order_id, 'tracking_code', true);
 
+    // Use the configurable SMS template
+    $message = kargoTR_get_sms_template($order_id, get_option('kargoTR_sms_template'));
+    $message = urlencode($message);
+
+    /* Legacy logic - removed in favor of template
     $message = "Siparişinizin kargo takip numarası : " . $tracking_code . ", " . kargoTR_get_company_name($tracking_company) . " kargo firması ile takip edebilirsiniz.";
     $message = urlencode($message);
 
     if ($NetGsm_sms_url_send == 'yes') {
         $message = $message." ".urlencode("Takip URL : ").kargoTR_getCargoTrack($tracking_company, $tracking_code);
     }
+    */
 
     if($NetGsm_Header == "yes"){
         $NetGsm_Header = kargoTR_get_netgsm_headers($NetGsm_UserName, $NetGsm_Password);

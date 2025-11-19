@@ -5,6 +5,11 @@
  * Version: 0.2.0
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
+ * Text Domain: kargo-takip-turkiye
+ * Domain Path: /languages
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * 
  */
 
 
@@ -35,8 +40,8 @@ function kargoTR_register_settings() {
     $defaultValues = array(
         'select'        => 'no',
         'field'         => '',
-        'smsTemplate'   => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
-        'emailTemplate' => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
+        'smsTemplate'   => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Tahmini Teslimat: {estimated_delivery_date}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
+        'emailTemplate' => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Tahmini Teslimat: {estimated_delivery_date}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
     );
 
     // Use a foreach loop to register settings more efficiently
