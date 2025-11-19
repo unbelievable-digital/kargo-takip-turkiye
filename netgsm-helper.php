@@ -13,27 +13,68 @@ function kargoTR_get_netgsm_headers($username,$password) {
 }
 
 function kargoTR_get_netgsm_packet_info($username,$password) {
-    $password= urlencode($password);
-    $url= "https://api.netgsm.com.tr/balance/list/get/?usercode=$username&password=$password&tip=1";
-    $request = wp_remote_get($url);
-
-    if ($request['body'] !=30) {
-        return $request['body'];
-    } else {
+    // NetGSM now uses JSON POST for balance queries
+    $url = "https://api.netgsm.com.tr/balance/list/";
+    
+    $body = json_encode(array(
+        'usercode' => $username,
+        'password' => $password,
+        'tip' => '1' // 1 = Paket sorgusu
+    ));
+    
+    $request = wp_remote_post($url, array(
+        'headers' => array('Content-Type' => 'application/json'),
+        'body' => $body,
+        'timeout' => 15
+    ));
+    
+    if (is_wp_error($request)) {
         return false;
     }
+    
+    $response = trim($request['body']);
+    
+    // Error code 30 = Invalid credentials
+    if ($response == '30') {
+        return false;
+    }
+    
+    // Success response format: "XX ADET" or just "XX"
+    return $response;
+    
 }
 
 function kargoTR_get_netgsm_credit_info($username,$password) {
-    $password= urlencode($password);
-    $url= "https://api.netgsm.com.tr/balance/list/get/?usercode=$username&password=$password";
-    $request = wp_remote_get($url);
-
-    if ($request['body'] !=30) {
-        return  explode(" ",$request['body'])[1];
-    } else {
+    // NetGSM now uses JSON POST for balance queries
+    $url = "https://api.netgsm.com.tr/balance/list/";
+    
+    $body = json_encode(array(
+        'usercode' => $username,
+        'password' => $password
+        // No 'tip' parameter = Kredi sorgusu
+    ));
+    
+    $request = wp_remote_post($url, array(
+        'headers' => array('Content-Type' => 'application/json'),
+        'body' => $body,
+        'timeout' => 15
+    ));
+    
+    if (is_wp_error($request)) {
         return false;
     }
+    
+    $response = trim($request['body']);
+    
+    // Error code 30 = Invalid credentials
+    if ($response == '30') {
+        return false;
+    }
+    
+    // Success response format: "XX TL" or "XX.XX TL"
+    // Extract just the number part
+    $parts = explode(" ", $response);
+    return isset($parts[0]) ? $parts[0] : $response;
 }
 
 
@@ -72,10 +113,30 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
     $url= "https://api.netgsm.com.tr/sms/send/get/?usercode=$NetGsm_UserName&password=$NetGsm_Password&gsmno=$phone&message=$message&dil=TR&msgheader=$NetGsm_Header";
 
     $request = wp_remote_get($url);
-    if ($request['body'] !=30 || $request['body'] !=20 || $request['body'] !=40 || $request['body'] !=50 || $request['body'] != 51 || $request['body'] != 70 || $request['body'] != 85) {
-        $order->add_order_note("Sms Gönderildi - NetGSM SMS Kodu : ".explode(" ",$request['body'])[1]);
+    
+    // NetGSM API returns numeric error codes: 20, 30, 40, 50, 51, 70, 85
+    // Success returns a job ID (can be "00 JOBID" format or just "JOBID")
+    $response = trim($request['body']);
+    $error_codes = array('20', '30', '40', '50', '51', '70', '85');
+    
+    if (in_array($response, $error_codes)) {
+        // Error occurred
+        $error_messages = array(
+            '20' => 'Mesaj metninde ki problemden dolayı gönderilemediğini veya standart maksimum mesaj karakter sayısını geçtiğini ifade eder.',
+            '30' => 'Geçersiz kullanıcı adı, şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.',
+            '40' => 'Mesaj başlığınızın (gönderici adınızın) sistemde tanımlı olmadığını ifade eder.',
+            '50' => 'Abone hesabınız ile İYS kontrollü gönderimler yapılamamaktadır.',
+            '51' => 'Erişim izninizin olmadığı bir hesaba işlem yapmaya çalıştığınızı ifade eder.',
+            '70' => 'Hatalı sorgulama. Gönderdiğiniz parametrelerden birisi hatalı veya zorunlu alanlardan birinin eksik olduğunu ifade eder.',
+            '85' => 'Başlık kullanım izni olmayan bir API kullanıcısı ile başlıklı mesaj gönderilmeye çalışıldığını ifade eder.'
+        );
+        $error_msg = isset($error_messages[$response]) ? $error_messages[$response] : 'Bilinmeyen hata';
+        $order->add_order_note("SMS Gönderilemedi - NetGSM Hata Kodu: {$response} - {$error_msg}");
     } else {
-        $order->add_order_note("Sms Gönderilemedi - NetGSM SMS HATA Kodu : ".$request['body']);
+        // Success - response is job ID (can be "00 JOBID" or just "JOBID")
+        $parts = explode(" ", $response);
+        $job_id = isset($parts[1]) ? $parts[1] : $response;
+        $order->add_order_note("SMS Gönderildi - NetGSM İşlem Kodu: {$job_id}");
     }
   
     // $order->add_order_note("Debug : ".$request['body']);
