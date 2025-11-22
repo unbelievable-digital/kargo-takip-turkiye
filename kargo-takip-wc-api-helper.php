@@ -75,6 +75,9 @@ function kargoTR_api_add_tracking_code() {
             update_post_meta($order_id, 'tracking_estimated_date', $tracking_estimated_date);
         }
 
+        // Save specific timestamp for statistics
+        update_post_meta($order_id, '_kargo_takip_timestamp', current_time('mysql'));
+
         $order_note->add_order_note(
             sprintf(
                 __('Kargo takip numarası güncellendi. Kargo şirketi: %s, Takip numarası: %s', 'woocommerce'),

@@ -22,6 +22,8 @@ include 'kargo-takip-sms-settings.php';
 include 'kargo-takip-cargo-settings.php';
 // include 'kargo-takip-content-edit-helper.php';
 include 'kargo-takip-wc-api-helper.php';
+include 'kargo-takip-bulk-import.php';
+include 'kargo-takip-dashboard.php';
 add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
 function kargoTR_register_admin_menu() {
     $menu_slug = 'kargo-takip-turkiye';
@@ -31,6 +33,7 @@ function kargoTR_register_admin_menu() {
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Kargo Ayarlari', 'manage_options', 'kargo-takip-turkiye-cargo-settings', 'kargoTR_cargo_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'E-Mail Ayarlari', 'read', 'kargo-takip-turkiye-email-settings', 'kargoTR_email_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'SMS Ayarlari', 'read', 'kargo-takip-turkiye-sms-settings', 'kargoTR_sms_setting_page' );
+    add_submenu_page( $menu_slug, 'Toplu Kargo Girişi', 'Toplu İşlemler', 'manage_options', 'kargo-takip-turkiye-bulk-import', 'kargoTR_bulk_import_page' );
     add_action( 'admin_init', 'kargoTR_register_settings' );
 }
 
@@ -591,14 +594,18 @@ function kargoTR_tracking_save_general_details($ord_id) {
 
     $note = '';
 
+    $tracking_changed = false;
+
     if ($tracking_company != $_POST['tracking_company']) {
         update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
         $note = __("Kargo firması güncellendi.");
+        $tracking_changed = true;
     }
 
     if ($tracking_code != $_POST['tracking_code']) {
         update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
         $note = __("Kargo takip kodu güncellendi.");
+        $tracking_changed = true;
     }
 
     if (isset($_POST['tracking_estimated_date']) && $tracking_estimated_date != $_POST['tracking_estimated_date']) {
@@ -610,9 +617,16 @@ function kargoTR_tracking_save_general_details($ord_id) {
         $order_note->add_order_note($note);
     }
 
-    if (!empty($_POST['tracking_company']) && !empty($_POST['tracking_code'])) {
+    // Only send notifications if tracking info is present AND it has changed
+    if (!empty($_POST['tracking_company']) && !empty($_POST['tracking_code']) && $tracking_changed) {
         $order = new WC_Order($ord_id);
-        $order->update_status('kargo-verildi', 'Sipariş takip kodu eklendi');
+        
+        // Save specific timestamp for statistics
+        update_post_meta($ord_id, '_kargo_takip_timestamp', current_time('mysql'));
+        
+        // Only update status if it's not already shipped or completed (optional, but good practice)
+        // But user might want to force it. Let's keep original behavior but only on change.
+        $order->update_status('kargo-verildi', 'Sipariş takip kodu eklendi/güncellendi');
 
         if ($mail_send_general_option == 'yes') {
             do_action('order_ship_mail', $ord_id);
