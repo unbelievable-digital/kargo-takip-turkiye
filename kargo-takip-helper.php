@@ -174,8 +174,10 @@ function kargoTR_get_sms_template($order_id, $template) {
     //client name
     $client_name = $order->get_billing_first_name() . " " . $order->get_billing_last_name();
 
-    //template from database
-    $template = get_option("kargoTR_sms_template");
+    //template from database if not provided
+    if (empty($template)) {
+        $template = get_option("kargoTR_sms_template");
+    }
 
     //replace fields
     //{customer_name} for client name

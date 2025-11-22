@@ -4,14 +4,15 @@
  
 
 //Create new api endpoint in WC API
+//Create new api endpoint in WC API
 add_action( 'rest_api_init', function () {
     register_rest_route( 'wc/v3', '/kargo_takip', array(
         'methods' => 'post',
         'callback' => 'kargoTR_api_add_tracking_code',
-        'permission_callback' => '__return_true',
+        'permission_callback' => function () {
+            return current_user_can( 'edit_shop_orders' );
+        },
         'check_authentication' => true,
-
-
     ) );
 } );
 
