@@ -8,6 +8,7 @@ function kargoTR_sms_setting_page() {
     $NetGsm_UserName = get_option('NetGsm_UserName');
     $NetGsm_Password = get_option('NetGsm_Password');
     $NetGsm_Header = get_option('NetGsm_Header');
+    $NetGsm_AppKey = get_option('NetGsm_AppKey');
     $NetGsm_sms_url_send = get_option('NetGsm_sms_url_send');
 
     // Kobikom
@@ -101,6 +102,14 @@ function kargoTR_sms_setting_page() {
                                     <input type="password" id="NetGsm_Password" name="NetGsm_Password"
                                            value="<?php echo esc_attr($NetGsm_Password); ?>">
                                 </div>
+                                
+                                <div class="kargotr-form-field">
+                                    <label for="NetGsm_AppKey">App Key</label>
+                                    <input type="text" id="NetGsm_AppKey" name="NetGsm_AppKey"
+                                           value="<?php echo esc_attr($NetGsm_AppKey); ?>"
+                                           placeholder="API App Key (opsiyonel)">
+                                    <p class="description">NetGSM panelinden alabilirsiniz</p>
+                                </div>
                             </div>
 
                             <?php if ($NetGsm_Password && $NetGsm_UserName): ?>
@@ -126,8 +135,8 @@ function kargoTR_sms_setting_page() {
                                         <label>Hesap Durumu</label>
                                         <div class="kargotr-account-info">
                                             <?php
-                                            $NetGSM_packet_info = kargoTR_get_netgsm_packet_info($NetGsm_UserName, $NetGsm_Password);
-                                            $NetGSM_credit_info = kargoTR_get_netgsm_credit_info($NetGsm_UserName, $NetGsm_Password);
+                                            $NetGSM_packet_info = kargoTR_get_netgsm_packet_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
+                                            $NetGSM_credit_info = kargoTR_get_netgsm_credit_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
 
                                             if ($NetGSM_packet_info) {
                                                 echo '<div class="kargotr-account-stat">';

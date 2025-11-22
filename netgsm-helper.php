@@ -1,25 +1,47 @@
 <?php
 
-function kargoTR_get_netgsm_headers($username,$password) {
-    $password= urlencode($password);
-    $url= "https://api.netgsm.com.tr/sms/header/?usercode=$username&password=$password";
-    $request = wp_remote_get($url);
-
-    if ($request['body'] !=30) {
-        return array_filter(explode("<br>",$request['body']));
-    } else {
+function kargoTR_get_netgsm_headers($username, $password) {
+    // NetGSM REST v2 API for message headers
+    $url = "https://api.netgsm.com.tr/sms/rest/v2/msgheader";
+    
+    $request = wp_remote_get($url, array(
+        'headers' => array(
+            'Authorization' => 'Basic ' . base64_encode($username . ':' . $password)
+        ),
+        'timeout' => 15
+    ));
+    
+    if (is_wp_error($request)) {
         return false;
     }
+    
+    $response = trim($request['body']);
+    
+    // Try to decode JSON response
+    $data = json_decode($response, true);
+    
+    // Check if response is successful
+    if (!$data || !isset($data['code']) || $data['code'] !== '00') {
+        return false;
+    }
+    
+    // Return msgheaders array
+    if (isset($data['msgheaders']) && is_array($data['msgheaders'])) {
+        return $data['msgheaders'];
+    }
+    
+    return false;
 }
 
-function kargoTR_get_netgsm_packet_info($username,$password) {
-    // NetGSM now uses JSON POST for balance queries
-    $url = "https://api.netgsm.com.tr/balance/list/";
+function kargoTR_get_netgsm_packet_info($username, $password, $appkey = '') {
+    // NetGSM Balance API - Returns JSON response
+    $url = "https://api.netgsm.com.tr/balance";
     
     $body = json_encode(array(
         'usercode' => $username,
         'password' => $password,
-        'tip' => '1' // 1 = Paket sorgusu
+        'stip' => 1, // 1 = All balance types
+        'appkey' => $appkey
     ));
     
     $request = wp_remote_post($url, array(
@@ -34,24 +56,38 @@ function kargoTR_get_netgsm_packet_info($username,$password) {
     
     $response = trim($request['body']);
     
-    // Error code 30 = Invalid credentials
-    if ($response == '30') {
+    // Try to decode JSON response
+    $data = json_decode($response, true);
+    
+    if (!$data || !isset($data['balance'])) {
         return false;
     }
     
-    // Success response format: "XX ADET" or just "XX"
-    return $response;
+    // Find SMS balance from the array
+    foreach ($data['balance'] as $item) {
+        if (strpos($item['balance_name'], 'SMS') !== false) {
+            return $item['amount'] . ' Adet SMS';
+        }
+    }
+    
+    // Return all balances as formatted string
+    $balances = array();
+    foreach ($data['balance'] as $item) {
+        $balances[] = $item['amount'] . ' ' . $item['balance_name'];
+    }
+    return implode(', ', $balances);
     
 }
 
-function kargoTR_get_netgsm_credit_info($username,$password) {
-    // NetGSM now uses JSON POST for balance queries
-    $url = "https://api.netgsm.com.tr/balance/list/";
+function kargoTR_get_netgsm_credit_info($username, $password, $appkey = '') {
+    // NetGSM Balance API - Returns JSON response
+    $url = "https://api.netgsm.com.tr/balance";
     
     $body = json_encode(array(
         'usercode' => $username,
-        'password' => $password
-        // No 'tip' parameter = Kredi sorgusu
+        'password' => $password,
+        'stip' => 1,
+        'appkey' => $appkey
     ));
     
     $request = wp_remote_post($url, array(
@@ -66,15 +102,21 @@ function kargoTR_get_netgsm_credit_info($username,$password) {
     
     $response = trim($request['body']);
     
-    // Error code 30 = Invalid credentials
-    if ($response == '30') {
+    // Try to decode JSON response
+    $data = json_decode($response, true);
+    
+    if (!$data || !isset($data['balance'])) {
         return false;
     }
     
-    // Success response format: "XX TL" or "XX.XX TL"
-    // Extract just the number part
-    $parts = explode(" ", $response);
-    return isset($parts[0]) ? $parts[0] : $response;
+    // Find SMS balance and return just the number
+    foreach ($data['balance'] as $item) {
+        if (strpos($item['balance_name'], 'SMS') !== false) {
+            return $item['amount'];
+        }
+    }
+    
+    return false;
 }
 
 

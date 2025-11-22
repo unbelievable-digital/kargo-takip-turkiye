@@ -53,6 +53,7 @@ function kargoTR_register_settings() {
         'NetGsm_UserName' => $defaultValues['field'],
         'NetGsm_Password' => $defaultValues['field'],
         'NetGsm_Header' => $defaultValues['select'],
+        'NetGsm_AppKey' => $defaultValues['field'],
         'NetGsm_sms_url_send' => $defaultValues['select'],
         'kargoTr_sms_template' => $defaultValues['smsTemplate'],
         'kargoTr_email_template' => $defaultValues['emailTemplate'],
