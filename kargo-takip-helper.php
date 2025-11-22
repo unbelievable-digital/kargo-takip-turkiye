@@ -191,10 +191,13 @@ function kargoTR_get_sms_template($order_id, $template) {
     $template = str_replace("{order_id}", $order_id, $template);
 
     // Estimated Delivery Date
-    $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
+    $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
     $formatted_date = '';
-    if ($tracking_estimated_date) {
-        $formatted_date = date_i18n(get_option('date_format'), strtotime($tracking_estimated_date));
+    if ($estimated_delivery_enabled === 'yes') {
+        $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
+        if ($tracking_estimated_date) {
+            $formatted_date = date_i18n(get_option('date_format'), strtotime($tracking_estimated_date));
+        }
     }
     $template = str_replace("{estimated_delivery_date}", $formatted_date, $template);
 

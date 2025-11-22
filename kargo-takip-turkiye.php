@@ -63,6 +63,7 @@ function kargoTR_register_settings() {
         'Kobikom_ApiKey' => $defaultValues['field'],
         'Kobikom_Header' => $defaultValues['field'],
         'kargo_estimated_delivery_days' => '3', // Default 3 days
+        'kargo_estimated_delivery_enabled' => $defaultValues['select'], // Default: no (disabled)
     );
 
     foreach ($settings as $settingKey => $settingDefault) {
@@ -75,6 +76,7 @@ function kargoTR_setting_page() {
     $kargo_hazirlaniyor_text = get_option('kargo_hazirlaniyor_text', 'no');
     $mail_send_general_option = get_option('mail_send_general', 'no');
     $estimated_days = get_option('kargo_estimated_delivery_days', '3');
+    $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
 
     // Kargo firmalarını al
     $config = include plugin_dir_path(__FILE__) . 'config.php';
@@ -118,6 +120,18 @@ function kargoTR_setting_page() {
                             </div>
 
                             <div class="kargotr-setting-item">
+                                <label class="kargotr-toggle-label">
+                                    <input type="checkbox" name="kargo_estimated_delivery_enabled" value="yes"
+                                           <?php checked($estimated_delivery_enabled, 'yes'); ?>
+                                           id="kargo-estimated-delivery-enabled">
+                                    <strong>Tahmini Teslimat Tarihi Özelliğini Aktif Et</strong>
+                                </label>
+                                <p class="description" style="margin-top: 8px; margin-left: 24px;">
+                                    Bu özelliği aktif ettiğinizde, sipariş detaylarında tahmini teslimat tarihi gösterilir ve otomatik hesaplanır.
+                                </p>
+                            </div>
+
+                            <div class="kargotr-setting-item" id="kargo-estimated-days-wrapper" style="<?php echo $estimated_delivery_enabled !== 'yes' ? 'display: none;' : ''; ?>">
                                 <label for="kargo_estimated_delivery_days">
                                     <strong>Varsayılan Tahmini Teslimat Süresi (Gün)</strong>
                                 </label>
@@ -368,6 +382,18 @@ function kargoTR_setting_page() {
             }
         }
     </style>
+    <script>
+    jQuery(document).ready(function($) {
+        // Toggle estimated delivery days field based on checkbox
+        $('#kargo-estimated-delivery-enabled').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#kargo-estimated-days-wrapper').slideDown();
+            } else {
+                $('#kargo-estimated-days-wrapper').slideUp();
+            }
+        });
+    });
+    </script>
     <?php
 }
 
@@ -394,6 +420,9 @@ add_filter('wc_order_statuses', 'kargoTR_add_shipment_to_order_statuses');
 
 add_action('woocommerce_admin_order_data_after_order_details', 'kargoTR_general_shipment_details_for_admin');
 function kargoTR_general_shipment_details_for_admin($order) {
+    // Check if estimated delivery feature is enabled
+    $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
+    
     // Get post meta values
     $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
     $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
@@ -426,61 +455,64 @@ function kargoTR_general_shipment_details_for_admin($order) {
         });
     ");
 
-    woocommerce_wp_text_input(array(
-        'id' => 'tracking_estimated_date',
-        'label' => 'Tahmini Teslimat Tarihi:',
-        'description' => 'Opsiyonel. Müşteriye gösterilecek tahmini teslimat tarihi.',
-        'desc_tip' => true,
-        'value' => $tracking_estimated_date,
-        'type' => 'date',
-        'wrapper_class' => 'form-field-wide shipment-set-tip-style',
-    ));
+    // Only show estimated date field if feature is enabled
+    if ($estimated_delivery_enabled === 'yes') {
+        woocommerce_wp_text_input(array(
+            'id' => 'tracking_estimated_date',
+            'label' => 'Tahmini Teslimat Tarihi:',
+            'description' => 'Opsiyonel. Müşteriye gösterilecek tahmini teslimat tarihi.',
+            'desc_tip' => true,
+            'value' => $tracking_estimated_date,
+            'type' => 'date',
+            'wrapper_class' => 'form-field-wide shipment-set-tip-style',
+        ));
 
-    // Auto-fill date script
-    ?>
-    <script>
-    jQuery(document).ready(function($) {
-        var defaultDays = <?php echo intval($default_days); ?>;
-        var companyDays = <?php echo json_encode($company_days); ?>;
-        
-        function calculateDate(days) {
-            var date = new Date();
-            date.setDate(date.getDate() + parseInt(days));
-            var day = ("0" + date.getDate()).slice(-2);
-            var month = ("0" + (date.getMonth() + 1)).slice(-2);
-            return date.getFullYear() + "-" + (month) + "-" + (day);
-        }
+        // Auto-fill date script
+        ?>
+        <script>
+        jQuery(document).ready(function($) {
+            var defaultDays = <?php echo intval($default_days); ?>;
+            var companyDays = <?php echo json_encode($company_days); ?>;
+            
+            function calculateDate(days) {
+                var date = new Date();
+                date.setDate(date.getDate() + parseInt(days));
+                var day = ("0" + date.getDate()).slice(-2);
+                var month = ("0" + (date.getMonth() + 1)).slice(-2);
+                return date.getFullYear() + "-" + (month) + "-" + (day);
+            }
 
-        // Initial check if empty
-        if (!$('#tracking_estimated_date').val()) {
-            var currentCompany = $('#tracking_company').val();
-            var days = defaultDays;
-            
-            if (currentCompany && companyDays[currentCompany]) {
-                days = companyDays[currentCompany];
+            // Initial check if empty
+            if (!$('#tracking_estimated_date').val()) {
+                var currentCompany = $('#tracking_company').val();
+                var days = defaultDays;
+                
+                if (currentCompany && companyDays[currentCompany]) {
+                    days = companyDays[currentCompany];
+                }
+                
+                if (days > 0) {
+                    $('#tracking_estimated_date').val(calculateDate(days));
+                }
             }
-            
-            if (days > 0) {
-                $('#tracking_estimated_date').val(calculateDate(days));
-            }
-        }
 
-        // On change
-        $('#tracking_company').on('change', function() {
-            var selectedCompany = $(this).val();
-            var days = defaultDays;
-            
-            if (selectedCompany && companyDays[selectedCompany]) {
-                days = companyDays[selectedCompany];
-            }
-            
-            if (days > 0) {
-                $('#tracking_estimated_date').val(calculateDate(days));
-            }
+            // On change
+            $('#tracking_company').on('change', function() {
+                var selectedCompany = $(this).val();
+                var days = defaultDays;
+                
+                if (selectedCompany && companyDays[selectedCompany]) {
+                    days = companyDays[selectedCompany];
+                }
+                
+                if (days > 0) {
+                    $('#tracking_estimated_date').val(calculateDate(days));
+                }
+            });
         });
-    });
-    </script>
-    <?php
+        </script>
+        <?php
+    }
 
     woocommerce_wp_text_input(array(
         'id' => 'tracking_code',
@@ -630,7 +662,9 @@ function kargoTR_shipment_details($order) {
     <h2 id="kargoTakipSection">Kargo Takip</h2>
     <h4>Kargo firması : </h4> <?php echo kargoTR_get_company_name($tracking_company); ?>
     <h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo esc_attr($tracking_code) ?>
-    <?php if (!empty($tracking_estimated_date)): ?>
+    <?php 
+    $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
+    if ($estimated_delivery_enabled === 'yes' && !empty($tracking_estimated_date)): ?>
         <h4><?php _e( 'Tahmini Teslimat:','kargoTR');?></h4> <?php echo date_i18n(get_option('date_format'), strtotime($tracking_estimated_date)); ?>
     <?php endif; ?>
     <br>
@@ -689,7 +723,8 @@ function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
     $company_name = kargoTR_get_company_name($tracking_company);
     
     $formatted_date = '';
-    if (!empty($tracking_estimated_date)) {
+    $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
+    if ($estimated_delivery_enabled === 'yes' && !empty($tracking_estimated_date)) {
         $formatted_date = date_i18n(get_option('date_format'), strtotime($tracking_estimated_date));
     }
 

@@ -95,18 +95,21 @@ function kargoTR_api_add_tracking_code() {
         if ($tracking_estimated_date) {
             add_post_meta($order_id, 'tracking_estimated_date', $tracking_estimated_date);
         } else {
-            // Auto-calculate if not provided
-            $default_days = get_option('kargo_estimated_delivery_days', '3');
-            $company_days = get_option('kargoTR_cargo_delivery_times', array());
-            
-            $days = $default_days;
-            if ($shipment_company && isset($company_days[$shipment_company])) {
-                $days = $company_days[$shipment_company];
-            }
-            
-            if ($days > 0) {
-                $estimated_date = date('Y-m-d', strtotime("+$days days"));
-                add_post_meta($order_id, 'tracking_estimated_date', $estimated_date);
+            // Auto-calculate if not provided and feature is enabled
+            $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
+            if ($estimated_delivery_enabled === 'yes') {
+                $default_days = get_option('kargo_estimated_delivery_days', '3');
+                $company_days = get_option('kargoTR_cargo_delivery_times', array());
+                
+                $days = $default_days;
+                if ($shipment_company && isset($company_days[$shipment_company])) {
+                    $days = $company_days[$shipment_company];
+                }
+                
+                if ($days > 0) {
+                    $estimated_date = date('Y-m-d', strtotime("+$days days"));
+                    add_post_meta($order_id, 'tracking_estimated_date', $estimated_date);
+                }
             }
         }
 
