@@ -23,7 +23,7 @@ include 'kargo-takip-cargo-settings.php';
 // include 'kargo-takip-content-edit-helper.php';
 include 'kargo-takip-wc-api-helper.php';
 include 'kargo-takip-bulk-import.php';
-include 'kargo-takip-checkout-fields.php';
+// include 'kargo-takip-checkout-fields.php'; // Disabled
 include 'kargo-takip-dashboard.php';
 add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
 function kargoTR_register_admin_menu() {
@@ -68,9 +68,6 @@ function kargoTR_register_settings() {
         'Kobikom_Header' => $defaultValues['field'],
         'kargo_estimated_delivery_days' => '3', // Default 3 days
         'kargo_estimated_delivery_enabled' => $defaultValues['select'], // Default: no (disabled)
-        'kargo_turkey_address_enabled' => $defaultValues['select'],
-        'kargo_tc_id_enabled' => $defaultValues['select'],
-        'kargo_tax_info_enabled' => $defaultValues['select'],
     );
 
     foreach ($settings as $settingKey => $settingDefault) {
@@ -84,9 +81,6 @@ function kargoTR_setting_page() {
     $mail_send_general_option = get_option('mail_send_general', 'no');
     $estimated_days = get_option('kargo_estimated_delivery_days', '3');
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
-    $turkey_address_enabled = get_option('kargo_turkey_address_enabled', 'no');
-    $tc_id_enabled = get_option('kargo_tc_id_enabled', 'no');
-    $tax_info_enabled = get_option('kargo_tax_info_enabled', 'no');
 
     // Kargo firmalarını al
     $config = include plugin_dir_path(__FILE__) . 'config.php';
@@ -149,51 +143,6 @@ function kargoTR_setting_page() {
                                        value="<?php echo esc_attr($estimated_days); ?>" class="small-text" min="0">
                                 <p class="description">
                                     Sipariş detaylarında tahmini teslimat tarihi otomatik hesaplanırken bu değer (bugün + X gün) kullanılır.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- KART 1.5: Türkiye Adres ve Vergi Ayarları -->
-                    <div class="kargotr-card">
-                        <div class="kargotr-card-header">
-                            <h2>
-                                <span class="dashicons dashicons-location"></span>
-                                Türkiye Adres ve Vergi Ayarları
-                            </h2>
-                            <p class="description">WooCommerce ödeme sayfası için Türkiye'ye özel alanlar.</p>
-                        </div>
-                        <div class="kargotr-card-body">
-                            <div class="kargotr-setting-item">
-                                <label class="kargotr-toggle-label">
-                                    <input type="checkbox" name="kargo_turkey_address_enabled" value="yes"
-                                           <?php checked($turkey_address_enabled, 'yes'); ?>>
-                                    <strong>İl/İlçe Seçimini Aktif Et</strong>
-                                </label>
-                                <p class="description" style="margin-top: 8px; margin-left: 24px;">
-                                    Ödeme sayfasında Türkiye için İl ve İlçe seçimini açılır liste (dropdown) olarak gösterir.
-                                </p>
-                            </div>
-
-                            <div class="kargotr-setting-item">
-                                <label class="kargotr-toggle-label">
-                                    <input type="checkbox" name="kargo_tc_id_enabled" value="yes"
-                                           <?php checked($tc_id_enabled, 'yes'); ?>>
-                                    <strong>TC Kimlik No Alanını Aktif Et</strong>
-                                </label>
-                                <p class="description" style="margin-top: 8px; margin-left: 24px;">
-                                    Ödeme sayfasına TC Kimlik No alanı ekler ve doğrulama yapar.
-                                </p>
-                            </div>
-
-                            <div class="kargotr-setting-item">
-                                <label class="kargotr-toggle-label">
-                                    <input type="checkbox" name="kargo_tax_info_enabled" value="yes"
-                                           <?php checked($tax_info_enabled, 'yes'); ?>>
-                                    <strong>Vergi Bilgileri Alanlarını Aktif Et</strong>
-                                </label>
-                                <p class="description" style="margin-top: 8px; margin-left: 24px;">
-                                    Ödeme sayfasına Vergi Dairesi ve Vergi Numarası alanlarını ekler.
                                 </p>
                             </div>
                         </div>

@@ -53,6 +53,10 @@ function kargoTR_custom_checkout_fields($fields) {
             $fields['billing']['billing_city']['type'] = 'select';
             $fields['billing']['billing_city']['options'] = array('' => __('Önce İl Seçiniz', 'kargo-takip-turkiye'));
             $fields['billing']['billing_city']['class'][] = 'kargo-district-select';
+            
+            // Reorder: State (Il) first, then City (Ilce)
+            $fields['billing']['billing_state']['priority'] = 70;
+            $fields['billing']['billing_city']['priority'] = 80;
         }
 
         // Check shipping country
@@ -66,6 +70,10 @@ function kargoTR_custom_checkout_fields($fields) {
             $fields['shipping']['shipping_city']['type'] = 'select';
             $fields['shipping']['shipping_city']['options'] = array('' => __('Önce İl Seçiniz', 'kargo-takip-turkiye'));
             $fields['shipping']['shipping_city']['class'][] = 'kargo-district-select';
+            
+            // Reorder: State (Il) first, then City (Ilce)
+            $fields['shipping']['shipping_state']['priority'] = 70;
+            $fields['shipping']['shipping_city']['priority'] = 80;
         }
     }
 
@@ -102,6 +110,22 @@ function kargoTR_custom_checkout_fields($fields) {
     }
 
     return $fields;
+}
+
+// Modify Country Locale to ensure City is a select for TR
+add_filter('woocommerce_get_country_locale', 'kargoTR_custom_country_locale');
+function kargoTR_custom_country_locale($locale) {
+    $address_enabled = get_option('kargo_turkey_address_enabled', 'no');
+    if ($address_enabled === 'yes') {
+        $locale['TR']['city']['type'] = 'select';
+        $locale['TR']['city']['options'] = array('' => __('Önce İl Seçiniz', 'kargo-takip-turkiye'));
+        $locale['TR']['city']['class'] = array('kargo-district-select');
+        
+        // Ensure state is labeled correctly (usually it is, but let's be safe)
+        $locale['TR']['state']['label'] = __('İl', 'kargo-takip-turkiye');
+        $locale['TR']['city']['label'] = __('İlçe', 'kargo-takip-turkiye');
+    }
+    return $locale;
 }
 
 // Filter States for Turkey to match our DB if Address enabled
