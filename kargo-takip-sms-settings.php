@@ -138,7 +138,12 @@ function kargoTR_sms_setting_page() {
                                             $NetGSM_packet_info = kargoTR_get_netgsm_packet_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
                                             $NetGSM_credit_info = kargoTR_get_netgsm_credit_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
 
-                                            if ($NetGSM_packet_info) {
+                                            // Check if packet info is an error array
+                                            if (is_array($NetGSM_packet_info) && isset($NetGSM_packet_info['error'])) {
+                                                echo '<div class="kargotr-error-message" style="color: #d63638; padding: 10px; background: #fcf0f1; border-left: 4px solid #d63638; margin: 10px 0;">';
+                                                echo '<strong>Paket Bilgisi Hatası:</strong> ' . esc_html($NetGSM_packet_info['error']);
+                                                echo '</div>';
+                                            } elseif ($NetGSM_packet_info && !is_array($NetGSM_packet_info)) {
                                                 echo '<div class="kargotr-account-stat">';
                                                 echo '<span class="dashicons dashicons-email"></span>';
                                                 echo '<span class="stat-label">Kalan Paket:</span>';
@@ -151,6 +156,13 @@ function kargoTR_sms_setting_page() {
                                                 echo '<span class="dashicons dashicons-money-alt"></span>';
                                                 echo '<span class="stat-label">Kalan Kredi:</span>';
                                                 echo '<span class="stat-value">' . esc_attr($NetGSM_credit_info) . ' TL</span>';
+                                                echo '</div>';
+                                            }
+                                            
+                                            // Show info if no data and no errors
+                                            if (!$NetGSM_packet_info && !$NetGSM_credit_info && (!is_array($NetGSM_packet_info) || !isset($NetGSM_packet_info['error']))) {
+                                                echo '<div class="kargotr-info-message" style="color: #2271b1; padding: 10px; background: #f0f6fc; border-left: 4px solid #2271b1; margin: 10px 0;">';
+                                                echo 'Hesap bilgileri alınamadı. Lütfen kullanıcı adı, şifre ve App Key bilgilerini kontrol edin.';
                                                 echo '</div>';
                                             }
                                             ?>
