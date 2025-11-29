@@ -119,7 +119,9 @@ function kargoTR_cargo_company_list() : array {
 
 function kargoTR_get_order_cargo_logo($order_id) {
     $order = wc_get_order($order_id);
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
+    if (!$order) return "";
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
 
     if($tracking_company) {
         $cargoes = kargoTR_get_all_cargoes();
@@ -136,8 +138,10 @@ function kargoTR_get_order_cargo_logo($order_id) {
 
 function kargoTR_get_order_cargo_information($order_id) {
     $order = wc_get_order($order_id);
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    if (!$order) return "";
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
 
     if($tracking_company) {
         $cargoes = kargoTR_get_all_cargoes();
@@ -169,8 +173,10 @@ function kargoTR_get_order_cargo_information($order_id) {
 
 function kargoTR_get_sms_template($order_id, $template) {
     $order = wc_get_order($order_id);
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    if (!$order) return $template;
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
     //client name
     $client_name = $order->get_billing_first_name() . " " . $order->get_billing_last_name();
 
@@ -192,11 +198,11 @@ function kargoTR_get_sms_template($order_id, $template) {
     $template = str_replace("{company_name}", kargoTR_get_company_name($tracking_company), $template);
     $template = str_replace("{order_id}", $order_id, $template);
 
-    // Estimated Delivery Date
+    // Estimated Delivery Date (HPOS uyumlu)
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
     $formatted_date = '';
     if ($estimated_delivery_enabled === 'yes') {
-        $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
+        $tracking_estimated_date = $order->get_meta('tracking_estimated_date', true);
         if ($tracking_estimated_date) {
             $formatted_date = date_i18n(get_option('date_format'), strtotime($tracking_estimated_date));
         }

@@ -150,12 +150,13 @@ function kargoTR_handle_csv_upload() {
             continue;
         }
 
-        // Update Order Meta
-        update_post_meta($order_id, 'tracking_company', $cargo_company_key);
-        update_post_meta($order_id, 'tracking_code', $tracking_code);
-        
+        // Update Order Meta (HPOS uyumlu)
+        $order->update_meta_data('tracking_company', $cargo_company_key);
+        $order->update_meta_data('tracking_code', $tracking_code);
+
         // Save specific timestamp for statistics
-        update_post_meta($order_id, '_kargo_takip_timestamp', current_time('mysql'));
+        $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
+        $order->save();
 
         // Add Note
         $order->add_order_note(sprintf('Toplu yükleme ile kargo bilgisi girildi. Firma: %s, Takip No: %s', $cargo_company_key, $tracking_code));

@@ -9,9 +9,42 @@
  * Domain Path: /languages
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * 
+ * Requires Plugins: woocommerce
+ *
  */
 
+// HPOS (High-Performance Order Storage) Uyumluluk Bildirimi
+add_action('before_woocommerce_init', function() {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
+
+/**
+ * HPOS uyumlu meta okuma fonksiyonu
+ * Hem HPOS hem de klasik post meta ile çalışır
+ */
+function kargoTR_get_order_meta($order_id, $meta_key, $single = true) {
+    $order = wc_get_order($order_id);
+    if (!$order) {
+        return $single ? '' : array();
+    }
+    return $order->get_meta($meta_key, $single);
+}
+
+/**
+ * HPOS uyumlu meta yazma fonksiyonu
+ * Hem HPOS hem de klasik post meta ile çalışır
+ */
+function kargoTR_update_order_meta($order_id, $meta_key, $meta_value) {
+    $order = wc_get_order($order_id);
+    if (!$order) {
+        return false;
+    }
+    $order->update_meta_data($meta_key, $meta_value);
+    $order->save();
+    return true;
+}
 
 //Add Menu to WPadmin
 include 'netgsm-helper.php';
@@ -19,6 +52,7 @@ include 'kargo-takip-helper.php';
 include 'kargo-takip-order-list.php';
 include 'kargo-takip-email-settings.php';
 include 'kargo-takip-sms-settings.php';
+include 'kargo-takip-whatsapp-settings.php';
 include 'kargo-takip-cargo-settings.php';
 // include 'kargo-takip-content-edit-helper.php';
 include 'kargo-takip-wc-api-helper.php';
@@ -34,6 +68,7 @@ function kargoTR_register_admin_menu() {
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Kargo Ayarlari', 'manage_options', 'kargo-takip-turkiye-cargo-settings', 'kargoTR_cargo_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'E-Mail Ayarlari', 'read', 'kargo-takip-turkiye-email-settings', 'kargoTR_email_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'SMS Ayarlari', 'read', 'kargo-takip-turkiye-sms-settings', 'kargoTR_sms_setting_page' );
+    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'WhatsApp Ayarlari', 'read', 'kargo-takip-turkiye-whatsapp-settings', 'kargoTR_whatsapp_setting_page' );
     add_submenu_page( $menu_slug, 'Toplu Kargo Girişi', 'Toplu İşlemler', 'manage_options', 'kargo-takip-turkiye-bulk-import', 'kargoTR_bulk_import_page' );
     add_action( 'admin_init', 'kargoTR_register_settings' );
 }
@@ -68,6 +103,10 @@ function kargoTR_register_settings() {
         'Kobikom_Header' => $defaultValues['field'],
         'kargo_estimated_delivery_days' => '3', // Default 3 days
         'kargo_estimated_delivery_enabled' => $defaultValues['select'], // Default: no (disabled)
+        'kargoTr_whatsapp_enabled' => $defaultValues['select'], // Default: no (disabled)
+        'kargoTr_whatsapp_token' => $defaultValues['field'],
+        'kargoTr_whatsapp_phone_id' => $defaultValues['field'],
+        'kargoTr_whatsapp_template_name' => 'kargo_takip_wp',
     );
 
     foreach ($settings as $settingKey => $settingDefault) {
@@ -427,10 +466,10 @@ function kargoTR_general_shipment_details_for_admin($order) {
     // Check if estimated delivery feature is enabled
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
     
-    // Get post meta values
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
-    $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
+    // Get order meta values (HPOS uyumlu)
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
+    $tracking_estimated_date = $order->get_meta('tracking_estimated_date', true);
     
     $default_days = get_option('kargo_estimated_delivery_days', '3');
     $company_days = get_option('kargoTR_cargo_delivery_times', array());
@@ -580,50 +619,144 @@ function kargoTR_general_shipment_details_for_admin($order) {
         </script>
         <?php
     }
+
+    // WhatsApp ile Gönder butonu (eğer aktifse) - Kargo bilgisi olmasa da göster
+    $whatsapp_enabled = get_option('kargoTr_whatsapp_enabled', 'no');
+    if ($whatsapp_enabled === 'yes') {
+        ?>
+        <p class="form-field form-field-wide kargotr-whatsapp-wrapper" style="margin-top: 10px;">
+            <button type="button" class="button kargotr-whatsapp-btn" id="kargotr-whatsapp-btn"
+                    data-order-id="<?php echo esc_attr($order->get_id()); ?>"
+                    style="background: #25D366; color: #fff; border-color: #25D366;">
+                <span class="dashicons dashicons-phone" style="vertical-align: middle; margin-right: 3px;"></span>
+                WhatsApp ile Gönder
+            </button>
+            <span id="kargotr-whatsapp-status" style="margin-left: 10px;"></span>
+        </p>
+        <style>
+            .kargotr-whatsapp-btn:hover {
+                background: #128C7E !important;
+                border-color: #128C7E !important;
+            }
+            .kargotr-whatsapp-btn:focus {
+                background: #128C7E !important;
+                border-color: #128C7E !important;
+                box-shadow: 0 0 0 1px #128C7E !important;
+            }
+        </style>
+        <script>
+        jQuery(document).ready(function($) {
+            $('#kargotr-whatsapp-btn').on('click', function(e) {
+                e.preventDefault();
+                var $btn = $(this);
+                var $status = $('#kargotr-whatsapp-status');
+                var orderId = $btn.data('order-id');
+
+                // Önce kargo bilgilerinin girilip girilmediğini kontrol et
+                var trackingCompany = $('#tracking_company').val();
+                var trackingCode = $('#tracking_code').val();
+
+                if (!trackingCompany || trackingCompany === '') {
+                    $status.html('<span style="color: red;"><span class="dashicons dashicons-warning"></span> Lütfen önce kargo firmasını seçin!</span>');
+                    return;
+                }
+
+                if (!trackingCode || trackingCode.trim() === '') {
+                    $status.html('<span style="color: red;"><span class="dashicons dashicons-warning"></span> Lütfen önce takip numarasını girin!</span>');
+                    return;
+                }
+
+                // Siparişin kaydedilip kaydedilmediğini kontrol et
+                $status.html('<span style="color: #996800;"><span class="dashicons dashicons-info"></span> Sipariş kaydedilmeden WhatsApp gönderilemez. Önce siparişi kaydedin.</span>');
+
+                // AJAX ile gönder
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'kargotr_send_whatsapp',
+                        order_id: orderId,
+                        nonce: '<?php echo wp_create_nonce('kargotr_whatsapp_nonce'); ?>'
+                    },
+                    beforeSend: function() {
+                        $btn.prop('disabled', true).text('Gönderiliyor...');
+                        $status.html('');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $status.html('<span style="color: green;"><span class="dashicons dashicons-yes-alt"></span> ' + response.data + '</span>');
+                        } else {
+                            $status.html('<span style="color: red;"><span class="dashicons dashicons-dismiss"></span> ' + response.data + '</span>');
+                        }
+                    },
+                    error: function() {
+                        $status.html('<span style="color: red;"><span class="dashicons dashicons-dismiss"></span> Bağlantı hatası</span>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<span class="dashicons dashicons-phone" style="vertical-align: middle; margin-right: 3px;"></span> WhatsApp ile Gönder');
+                    }
+                });
+            });
+        });
+        </script>
+        <?php
+    }
 }
 
- 
+
 add_action('woocommerce_process_shop_order_meta', 'kargoTR_tracking_save_general_details');
 
 function kargoTR_tracking_save_general_details($ord_id) {
-    $tracking_company = get_post_meta($ord_id, 'tracking_company', true);
-    $tracking_code = get_post_meta($ord_id, 'tracking_code', true);
-    $tracking_estimated_date = get_post_meta($ord_id, 'tracking_estimated_date', true);
-    $order_note = wc_get_order($ord_id);
+    $order = wc_get_order($ord_id);
+    if (!$order) {
+        return;
+    }
+
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
+    $tracking_estimated_date = $order->get_meta('tracking_estimated_date', true);
+
     $mail_send_general_option = get_option('mail_send_general');
     $sms_provider = get_option('sms_provider');
 
     $note = '';
-
     $tracking_changed = false;
+    $meta_updated = false;
 
-    if ($tracking_company != $_POST['tracking_company']) {
-        update_post_meta($ord_id, 'tracking_company', wc_clean($_POST['tracking_company']));
+    if (isset($_POST['tracking_company']) && $tracking_company != $_POST['tracking_company']) {
+        $order->update_meta_data('tracking_company', wc_clean($_POST['tracking_company']));
         $note = __("Kargo firması güncellendi.");
         $tracking_changed = true;
+        $meta_updated = true;
     }
 
-    if ($tracking_code != $_POST['tracking_code']) {
-        update_post_meta($ord_id, 'tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
+    if (isset($_POST['tracking_code']) && $tracking_code != $_POST['tracking_code']) {
+        $order->update_meta_data('tracking_code', wc_sanitize_textarea($_POST['tracking_code']));
         $note = __("Kargo takip kodu güncellendi.");
         $tracking_changed = true;
+        $meta_updated = true;
     }
 
     if (isset($_POST['tracking_estimated_date']) && $tracking_estimated_date != $_POST['tracking_estimated_date']) {
-        update_post_meta($ord_id, 'tracking_estimated_date', wc_clean($_POST['tracking_estimated_date']));
-        // Note is optional here, maybe not needed to spam order notes
+        $order->update_meta_data('tracking_estimated_date', wc_clean($_POST['tracking_estimated_date']));
+        $meta_updated = true;
+    }
+
+    // Meta değişikliklerini kaydet
+    if ($meta_updated) {
+        $order->save();
     }
 
     if (!empty($note)) {
-        $order_note->add_order_note($note);
+        $order->add_order_note($note);
     }
 
     // Only send notifications if tracking info is present AND it has changed
     if (!empty($_POST['tracking_company']) && !empty($_POST['tracking_code']) && $tracking_changed) {
-        $order = new WC_Order($ord_id);
-        
-        // Save specific timestamp for statistics
-        update_post_meta($ord_id, '_kargo_takip_timestamp', current_time('mysql'));
+        // Save specific timestamp for statistics (HPOS uyumlu)
+        $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
+        $order->save();
         
         // Only update status if it's not already shipped or completed (optional, but good practice)
         // But user might want to force it. Let's keep original behavior but only on change.
@@ -657,9 +790,10 @@ function kargoTR_shipment_fix_wc_tooltips() {
 }
 
 function kargoTR_shipment_details($order) {
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
-    $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
+    $tracking_estimated_date = $order->get_meta('tracking_estimated_date', true);
     $kargo_hazirlaniyor_text_option = get_option('kargo_hazirlaniyor_text');
     if ( $order->get_status() != 'cancelled') {
         if ($tracking_company == '') {
@@ -693,8 +827,9 @@ function kargoTR_shipment_details($order) {
 add_action('woocommerce_after_order_details', 'kargoTR_shipment_details');
 add_filter('woocommerce_my_account_my_orders_actions', 'kargoTR_add_kargo_button_in_order', 10, 2);
 function kargoTR_add_kargo_button_in_order($actions, $order) {
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
     $action_slug = 'kargoButonu';
 
     if (!empty($tracking_code)) {
@@ -710,9 +845,10 @@ function kargoTR_add_kargo_button_in_order($actions, $order) {
 }
 
 function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
-    $tracking_company = get_post_meta($order->get_id(), 'tracking_company', true);
-    $tracking_code = get_post_meta($order->get_id(), 'tracking_code', true);
-    $tracking_estimated_date = get_post_meta($order->get_id(), 'tracking_estimated_date', true);
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
+    $tracking_estimated_date = $order->get_meta('tracking_estimated_date', true);
     $use_wc_template = get_option('kargoTr_use_wc_template', 'no');
 
     // Kaydedilen şablonu al
@@ -889,9 +1025,9 @@ function kargoTR_resend_cargo_mail() {
         wp_send_json_error('Sipariş bulunamadı.');
     }
 
-    // Kargo bilgisi kontrolü
-    $tracking_company = get_post_meta($order_id, 'tracking_company', true);
-    $tracking_code = get_post_meta($order_id, 'tracking_code', true);
+    // Kargo bilgisi kontrolü (HPOS uyumlu)
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
 
     if (empty($tracking_company) || empty($tracking_code)) {
         wp_send_json_error('Kargo takip bilgisi bulunamadı.');

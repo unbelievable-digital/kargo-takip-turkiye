@@ -54,9 +54,10 @@ function kargoTR_shipping_information_column_content( $column, $post_id )
     switch ( $column )
     {
         case 'kargo-sent-with':
-            // Hidden fields for Quick Edit (moved here since we removed the other column)
-            $tracking_company = get_post_meta($post_id, 'tracking_company', true);
-            $tracking_code = get_post_meta($post_id, 'tracking_code', true);
+            // HPOS uyumlu meta okuma
+            $order = wc_get_order($post_id);
+            $tracking_company = $order ? $order->get_meta('tracking_company', true) : '';
+            $tracking_code = $order ? $order->get_meta('tracking_code', true) : '';
             echo '<input type="hidden" class="kargo_tracking_company_val" value="' . esc_attr($tracking_company) . '">';
             echo '<input type="hidden" class="kargo_tracking_code_val" value="' . esc_attr($tracking_code) . '">';
 

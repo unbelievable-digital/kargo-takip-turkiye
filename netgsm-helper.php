@@ -265,6 +265,8 @@ function kargoTR_get_netgsm_credit_info($username, $password, $appkey = '') {
 
 function kargoTR_SMS_gonder_netgsm($order_id) {
     $order = wc_get_order($order_id);
+    if (!$order) return;
+
     $phone = $order->get_billing_phone();
 
     $NetGsm_UserName = get_option('NetGsm_UserName');
@@ -272,8 +274,9 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
     $NetGsm_Header = get_option('NetGsm_Header');
     $NetGsm_sms_url_send = get_option('NetGsm_sms_url_send');
 
-    $tracking_company = get_post_meta($order_id, 'tracking_company', true);
-    $tracking_code = get_post_meta($order_id, 'tracking_code', true);
+    // HPOS uyumlu meta okuma
+    $tracking_company = $order->get_meta('tracking_company', true);
+    $tracking_code = $order->get_meta('tracking_code', true);
 
     // Use the configurable SMS template
     $message = kargoTR_get_sms_template($order_id, get_option('kargoTR_sms_template'));

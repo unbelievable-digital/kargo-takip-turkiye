@@ -59,26 +59,31 @@ function kargoTR_api_add_tracking_code() {
         return new WP_Error('rest_invalid_order_id', 'Invalid order id. Please check order id', array('status' => 401));
     }
 
-    // Get order details from order id
-    $tracking_company_order = get_post_meta($order_id, 'tracking_company', true);
-    $tracking_code_order = get_post_meta($order_id, 'tracking_code', true);
-    $order_note = wc_get_order($order_id);
+    // Get order details from order id (HPOS uyumlu)
+    $order = wc_get_order($order_id);
+    if (!$order) {
+        return new WP_Error('rest_invalid_order', 'Order not found', array('status' => 404));
+    }
+
+    $tracking_company_order = $order->get_meta('tracking_company', true);
+    $tracking_code_order = $order->get_meta('tracking_code', true);
     $mail_send_general_option = get_option('mail_send_general');
     $sms_provider = get_option('sms_provider');
 
     // Check if the order has a tracking code, if yes, update it
     if ($tracking_company_order && $tracking_code_order) {
-        update_post_meta($order_id, 'tracking_company', $shipment_company);
-        update_post_meta($order_id, 'tracking_code', $tracking_code);
-        
+        $order->update_meta_data('tracking_company', $shipment_company);
+        $order->update_meta_data('tracking_code', $tracking_code);
+
         if ($tracking_estimated_date) {
-            update_post_meta($order_id, 'tracking_estimated_date', $tracking_estimated_date);
+            $order->update_meta_data('tracking_estimated_date', $tracking_estimated_date);
         }
 
         // Save specific timestamp for statistics
-        update_post_meta($order_id, '_kargo_takip_timestamp', current_time('mysql'));
+        $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
+        $order->save();
 
-        $order_note->add_order_note(
+        $order->add_order_note(
             sprintf(
                 __('Kargo takip numarası güncellendi. Kargo şirketi: %s, Takip numarası: %s', 'woocommerce'),
                 $shipment_company,
@@ -93,31 +98,33 @@ function kargoTR_api_add_tracking_code() {
         );
 
     } else {
-        add_post_meta($order_id, 'tracking_company', $shipment_company);
-        add_post_meta($order_id, 'tracking_code', $tracking_code);
-        
+        $order->update_meta_data('tracking_company', $shipment_company);
+        $order->update_meta_data('tracking_code', $tracking_code);
+
         if ($tracking_estimated_date) {
-            add_post_meta($order_id, 'tracking_estimated_date', $tracking_estimated_date);
+            $order->update_meta_data('tracking_estimated_date', $tracking_estimated_date);
         } else {
             // Auto-calculate if not provided and feature is enabled
             $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
             if ($estimated_delivery_enabled === 'yes') {
                 $default_days = get_option('kargo_estimated_delivery_days', '3');
                 $company_days = get_option('kargoTR_cargo_delivery_times', array());
-                
+
                 $days = $default_days;
                 if ($shipment_company && isset($company_days[$shipment_company])) {
                     $days = $company_days[$shipment_company];
                 }
-                
+
                 if ($days > 0) {
                     $estimated_date = date('Y-m-d', strtotime("+$days days"));
-                    add_post_meta($order_id, 'tracking_estimated_date', $estimated_date);
+                    $order->update_meta_data('tracking_estimated_date', $estimated_date);
                 }
             }
         }
 
-        $order_note->add_order_note(
+        $order->save();
+
+        $order->add_order_note(
             sprintf(
                 __('Kargo takip numarası eklendi. Kargo şirketi: %s, Takip numarası: %s', 'woocommerce'),
                 $shipment_company,
