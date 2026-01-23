@@ -1,37 +1,54 @@
 === Kargo Takip ===
 Contributors: zgrkaralar,unbelievabledigital
-Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo,Trendyol Kargo,hepsijet kargo, trendyol, hepsijet
+Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo,Trendyol Kargo,hepsijet kargo, trendyol, hepsijet, woocommerce kargo, hpos
 Requires at least: 4.9
 Tested up to: 6.8
 WC tested up to: 10.0.0
 Requires PHP: 7.1
-Stable tag: 0.1.13
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Müşteri kargolarınızı kayıtlarını Siparişin içinde tutabilirsiniz bu eklenti sayesinde.
+WooCommerce siparişlerinize kargo takip bilgisi ekleyin ve müşterilerinize otomatik e-posta/SMS bildirimleri gönderin.
 
-Eklenti artık SMS de gönderebiliyor şimdilik sadece NetGSM ile fakat sonraki sürümlerde daha farklı firmalarıda ekleyeceğiz.
+== Description ==
 
-Eklentide bulunan kargolar,
+Kargo Takip Türkiye eklentisi ile WooCommerce siparişlerinize kargo takip bilgisi ekleyebilir ve müşterilerinize otomatik bildirimler gönderebilirsiniz.
 
-Trendyol Express
-HepsiJET
-PTT Kargo
-Aras Kargo
-Yurtiçi Kargo
-MNG Kargo
-Horoz Lojistik
-UPS Kargo
-Sürat Kargo
-Fedex Kargo
-DHL Kargo
-TNT Kargo
-Filo Kargo
-FoodMan Kargo
-Iyi Kargo
-Post Trans Kargo
-Sendo Kargo
+= Özellikler =
+
+* **HPOS Uyumlu** - WooCommerce High-Performance Order Storage desteği
+* **20+ Kargo Firması** - Türkiye'nin önde gelen kargo firmalarını destekler
+* **Otomatik E-posta** - Kargo bilgisi girildiğinde otomatik e-posta gönderimi
+* **SMS Entegrasyonu** - NetGSM ve Kobikom SMS desteği
+* **Toplu Kargo Girişi** - Excel/CSV ile toplu kargo bilgisi girişi
+* **REST API** - Dış sistemlerle entegrasyon için API desteği
+* **Özelleştirilebilir Şablonlar** - E-posta ve SMS şablonlarını düzenleyebilme
+* **Tahmini Teslimat** - Kargo firmasına göre tahmini teslimat tarihi hesaplama
+* **Dashboard** - Kargo istatistikleri ve özet görünümü
+
+= Desteklenen Kargo Firmaları =
+
+* Trendyol Express
+* HepsiJET
+* PTT Kargo
+* Aras Kargo
+* Yurtiçi Kargo
+* MNG Kargo
+* Horoz Lojistik
+* UPS Kargo
+* Sürat Kargo
+* Fedex Kargo
+* DHL Kargo
+* TNT Kargo
+* Filo Kargo
+* FoodMan Kargo
+* İyi Kargo
+* Postman Kargo
+* Sendeo Kargo
+* Carrtell Kargo
+* TexKargo
+* Kargoist
 
 
 
@@ -50,12 +67,26 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.2.1 =
+* HPOS (High-Performance Order Storage) tam uyumluluk
+* Dashboard sayfası eklendi - kargo istatistikleri görüntüleme
+* Toplu kargo girişi özelliği - Excel/CSV ile toplu işlem
+* Kargo firması bazlı tahmini teslimat süreleri ayarlama
+* Tahmini teslimat tarihi özelliği (açılıp kapatılabilir)
+* E-posta yeniden gönderme butonu sipariş sayfasına eklendi
+* WooCommerce e-posta şablonu kullanma seçeneği
+* Kargo ayarları sayfası - firma bazlı teslimat süreleri
+* Genel ayarlar sayfası yenilendi
+* TexKargo ve Kargoist firmaları eklendi 
+* Kod optimizasyonları ve hata düzeltmeleri
+
 = 0.2.0 =
-Sms ve E-mail templatleri artık düzenlenebilir panelden 
-Api eklendi artık dışardan kargo verisi girebilirsiniz woocommerce rest ile 
-Carrtell kargosu eklendi
-Kod yapısında bir kaç değişiklik yapıldı 
-Aras Kargo Url degistirildi. 
+* SMS ve E-mail şablonları artık düzenlenebilir panelden
+* API eklendi - dışardan kargo verisi girebilirsiniz WooCommerce REST ile
+* Carrtell kargosu eklendi
+* Kod yapısında iyileştirmeler yapıldı
+* Aras Kargo URL güncellendi 
 
 = 0.1.13 =
 Wp-Admin kargo takip sayfası düzenlendi.
