@@ -52,7 +52,7 @@ include 'kargo-takip-helper.php';
 include 'kargo-takip-order-list.php';
 include 'kargo-takip-email-settings.php';
 include 'kargo-takip-sms-settings.php';
-include 'kargo-takip-whatsapp-settings.php';
+// include 'kargo-takip-whatsapp-settings.php'; // WhatsApp şimdilik devre dışı
 include 'kargo-takip-cargo-settings.php';
 // include 'kargo-takip-content-edit-helper.php';
 include 'kargo-takip-wc-api-helper.php';
@@ -68,7 +68,7 @@ function kargoTR_register_admin_menu() {
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Kargo Ayarlari', 'manage_options', 'kargo-takip-turkiye-cargo-settings', 'kargoTR_cargo_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'E-Mail Ayarlari', 'read', 'kargo-takip-turkiye-email-settings', 'kargoTR_email_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'SMS Ayarlari', 'read', 'kargo-takip-turkiye-sms-settings', 'kargoTR_sms_setting_page' );
-    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'WhatsApp Ayarlari', 'read', 'kargo-takip-turkiye-whatsapp-settings', 'kargoTR_whatsapp_setting_page' );
+    // WhatsApp menüsü şimdilik gizli - add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'WhatsApp Ayarlari', 'read', 'kargo-takip-turkiye-whatsapp-settings', 'kargoTR_whatsapp_setting_page' );
     add_submenu_page( $menu_slug, 'Toplu Kargo Girişi', 'Toplu İşlemler', 'manage_options', 'kargo-takip-turkiye-bulk-import', 'kargoTR_bulk_import_page' );
     add_action( 'admin_init', 'kargoTR_register_settings' );
 }
@@ -98,15 +98,12 @@ function kargoTR_register_settings() {
         'kargoTr_email_template' => $defaultValues['emailTemplate'],
         'kargoTr_use_wc_template' => $defaultValues['select'],
         'Kobikom_ApiKey' => $defaultValues['field'],
-        'kargoTr_use_wc_template' => $defaultValues['select'],
-        'Kobikom_ApiKey' => $defaultValues['field'],
         'Kobikom_Header' => $defaultValues['field'],
         'kargo_estimated_delivery_days' => '3', // Default 3 days
         'kargo_estimated_delivery_enabled' => $defaultValues['select'], // Default: no (disabled)
-        'kargoTr_whatsapp_enabled' => $defaultValues['select'], // Default: no (disabled)
-        'kargoTr_whatsapp_token' => $defaultValues['field'],
-        'kargoTr_whatsapp_phone_id' => $defaultValues['field'],
-        'kargoTr_whatsapp_template_name' => 'kargo_takip_wp',
+        // WhatsApp - Kargowp.com entegrasyonu (şimdilik devre dışı)
+        // 'kargoTr_whatsapp_enabled' => $defaultValues['select'], // Default: no (disabled)
+        // 'kargoTr_kargowp_api_key' => $defaultValues['field'], // Kargowp.com API anahtarı
     );
 
     foreach ($settings as $settingKey => $settingDefault) {
@@ -620,7 +617,8 @@ function kargoTR_general_shipment_details_for_admin($order) {
         <?php
     }
 
-    // WhatsApp ile Gönder butonu (eğer aktifse) - Kargo bilgisi olmasa da göster
+    // WhatsApp ile Gönder butonu - şimdilik devre dışı
+    /*
     $whatsapp_enabled = get_option('kargoTr_whatsapp_enabled', 'no');
     if ($whatsapp_enabled === 'yes') {
         ?>
@@ -666,17 +664,14 @@ function kargoTR_general_shipment_details_for_admin($order) {
                     return;
                 }
 
-                // Siparişin kaydedilip kaydedilmediğini kontrol et
-                $status.html('<span style="color: #996800;"><span class="dashicons dashicons-info"></span> Sipariş kaydedilmeden WhatsApp gönderilemez. Önce siparişi kaydedin.</span>');
-
-                // AJAX ile gönder
+                // Kargowp.com API üzerinden WhatsApp mesajı gönder
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
                     data: {
                         action: 'kargotr_send_whatsapp',
                         order_id: orderId,
-                        nonce: '<?php echo wp_create_nonce('kargotr_whatsapp_nonce'); ?>'
+                        nonce: '<?php // echo wp_create_nonce('kargotr_whatsapp_nonce'); ?>'
                     },
                     beforeSend: function() {
                         $btn.prop('disabled', true).text('Gönderiliyor...');
@@ -701,6 +696,7 @@ function kargoTR_general_shipment_details_for_admin($order) {
         </script>
         <?php
     }
+    */
 }
 
 
