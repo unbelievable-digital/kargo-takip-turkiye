@@ -78,7 +78,8 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 * WooCommerce e-posta şablonu kullanma seçeneği
 * Kargo ayarları sayfası - firma bazlı teslimat süreleri
 * Genel ayarlar sayfası yenilendi
-* TexKargo ve Kargoist firmaları eklendi 
+* TexKargo ve Kargoist firmaları eklendi
+* WhatsApp entegrasyonu geçici olarak devre dışı bırakıldı
 * Kod optimizasyonları ve hata düzeltmeleri
 
 = 0.2.0 =
