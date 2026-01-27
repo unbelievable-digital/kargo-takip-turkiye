@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.8
 WC tested up to: 10.0.0
 Requires PHP: 7.1
-Stable tag: 0.2.1
+Stable tag: 0.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,13 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.2.2 =
+* Durum Eşlemesi özelliği eklendi - harici servislerle entegrasyon
+* yengec.co entegrasyonu için hazır preset desteği
+* Özel sipariş statülerini "Kargoya Verildi" ile eşleştirme
+* Çift bildirim engelleme sistemi
+* Her eşleme için ayrı e-posta/SMS bildirimi seçeneği
 
 = 0.2.1 =
 * HPOS (High-Performance Order Storage) tam uyumluluk
