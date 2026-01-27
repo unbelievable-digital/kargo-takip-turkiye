@@ -66,7 +66,7 @@ function kargoTR_bulk_import_page() {
                 <?php
                 $cargoes = kargoTR_get_all_cargoes(true);
                 $cargo_names = array_keys($cargoes);
-                echo implode(', ', $cargo_names);
+                echo esc_html(implode(', ', $cargo_names));
                 ?>
             </p>
         </div>
@@ -75,14 +75,47 @@ function kargoTR_bulk_import_page() {
 }
 
 function kargoTR_handle_csv_upload() {
+    // Security: Capability check
+    if (!current_user_can('manage_options')) {
+        echo '<div class="notice notice-error"><p>Bu işlem için yetkiniz bulunmuyor.</p></div>';
+        return;
+    }
+
     if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
         echo '<div class="notice notice-error"><p>Dosya yüklenirken bir hata oluştu.</p></div>';
         return;
     }
 
+    // Security: Validate file extension
+    $file_name = isset($_FILES['csv_file']['name']) ? sanitize_file_name($_FILES['csv_file']['name']) : '';
+    $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+    if ($file_ext !== 'csv') {
+        echo '<div class="notice notice-error"><p>Sadece .csv uzantılı dosyalar kabul edilmektedir.</p></div>';
+        return;
+    }
+
+    // Security: Validate file size (max 5MB)
+    $max_size = 5 * 1024 * 1024; // 5MB
+    if ($_FILES['csv_file']['size'] > $max_size) {
+        echo '<div class="notice notice-error"><p>Dosya boyutu 5MB\'dan büyük olamaz.</p></div>';
+        return;
+    }
+
+    // Security: Validate MIME type
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $_FILES['csv_file']['tmp_name']);
+    finfo_close($finfo);
+
+    $allowed_mimes = array('text/plain', 'text/csv', 'application/csv', 'application/vnd.ms-excel');
+    if (!in_array($mime_type, $allowed_mimes)) {
+        echo '<div class="notice notice-error"><p>Geçersiz dosya türü. Sadece CSV dosyaları kabul edilmektedir.</p></div>';
+        return;
+    }
+
     $file = $_FILES['csv_file']['tmp_name'];
     $handle = fopen($file, "r");
-    
+
     if ($handle === FALSE) {
         echo '<div class="notice notice-error"><p>Dosya açılamadı.</p></div>';
         return;

@@ -836,15 +836,15 @@ function kargoTR_shipment_details($order) {
             ?>
 <div class="shipment-order-page">
     <h2 id="kargoTakipSection">Kargo Takip</h2>
-    <h4>Kargo firması : </h4> <?php echo kargoTR_get_company_name($tracking_company); ?>
-    <h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo esc_attr($tracking_code) ?>
-    <?php 
+    <h4>Kargo firması : </h4> <?php echo esc_html(kargoTR_get_company_name($tracking_company)); ?>
+    <h4><?php _e( 'Kargo takip numarası:','kargoTR');?></h4> <?php echo esc_html($tracking_code); ?>
+    <?php
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
     if ($estimated_delivery_enabled === 'yes' && !empty($tracking_estimated_date)): ?>
-        <h4><?php _e( 'Tahmini Teslimat:','kargoTR');?></h4> <?php echo date_i18n(get_option('date_format'), strtotime($tracking_estimated_date)); ?>
+        <h4><?php _e( 'Tahmini Teslimat:','kargoTR');?></h4> <?php echo esc_html(date_i18n(get_option('date_format'), strtotime($tracking_estimated_date))); ?>
     <?php endif; ?>
     <br>
-    <?php echo '<a href="' . kargoTR_getCargoTrack($tracking_company, $tracking_code) . '"target="_blank" rel="noopener noreferrer">'; _e( 'Kargonuzu takibi için buraya tıklayın.','kargoTR' );  echo '</a>'; ?>
+    <?php echo '<a href="' . esc_url(kargoTR_getCargoTrack($tracking_company, $tracking_code)) . '" target="_blank" rel="noopener noreferrer">'; _e( 'Kargonuzu takibi için buraya tıklayın.','kargoTR' );  echo '</a>'; ?>
 </div>
 <?php
         }
@@ -895,20 +895,21 @@ function kargoTR_kargo_bildirim_icerik($order, $mailer, $mail_title = false) {
 İyi günler dileriz.';
     }
 
-    // Şablon değişkenlerini değiştir
-    $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
-    $tracking_url = kargoTR_getCargoTrack($tracking_company, $tracking_code);
-    $company_name = kargoTR_get_company_name($tracking_company);
-    
+    // Şablon değişkenlerini değiştir (XSS koruması için escape edilmiş)
+    $customer_name = esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+    $tracking_url = esc_url(kargoTR_getCargoTrack($tracking_company, $tracking_code));
+    $company_name = esc_html(kargoTR_get_company_name($tracking_company));
+    $safe_tracking_code = esc_html($tracking_code);
+
     $formatted_date = '';
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
     if ($estimated_delivery_enabled === 'yes' && !empty($tracking_estimated_date)) {
-        $formatted_date = date_i18n(get_option('date_format'), strtotime($tracking_estimated_date));
+        $formatted_date = esc_html(date_i18n(get_option('date_format'), strtotime($tracking_estimated_date)));
     }
 
     $content = str_replace(
         array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
-        array($customer_name, $order->get_id(), $company_name, $tracking_code, $tracking_url, $formatted_date),
+        array($customer_name, intval($order->get_id()), $company_name, $safe_tracking_code, $tracking_url, $formatted_date),
         $email_template
     );
 

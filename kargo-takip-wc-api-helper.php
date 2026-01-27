@@ -36,27 +36,42 @@ function kargoTR_api_add_tracking_code() {
 
     // Check if the shipment company is provided
     if (!$shipment_company) {
-        return new WP_Error('rest_invalid_shipment_company', 'Shipment company missing. Please post shipment_company', array('status' => 401));
+        return new WP_Error('rest_invalid_shipment_company', 'Shipment company missing. Please post shipment_company', array('status' => 400));
     }
 
     // Check if the tracking code is provided
     if (!$tracking_code) {
-        return new WP_Error('rest_invalid_tracking_code', 'Tracking code missing. Please post tracking_code', array('status' => 401));
+        return new WP_Error('rest_invalid_tracking_code', 'Tracking code missing. Please post tracking_code', array('status' => 400));
+    }
+
+    // Validate tracking code length (5-100 characters)
+    if (strlen($tracking_code) < 3 || strlen($tracking_code) > 100) {
+        return new WP_Error('rest_invalid_tracking_code_length', 'Tracking code must be between 3-100 characters', array('status' => 400));
+    }
+
+    // Validate tracking code format (alphanumeric, dash, underscore only)
+    if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $tracking_code)) {
+        return new WP_Error('rest_invalid_tracking_code_format', 'Tracking code contains invalid characters. Only alphanumeric, dash and underscore allowed.', array('status' => 400));
+    }
+
+    // Validate estimated date format if provided (YYYY-MM-DD)
+    if (!empty($tracking_estimated_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $tracking_estimated_date)) {
+        return new WP_Error('rest_invalid_date_format', 'Invalid date format. Use YYYY-MM-DD format.', array('status' => 400));
     }
 
     // Check if the order id is provided
     if (!$order_id) {
-        return new WP_Error('rest_invalid_order_id', 'Order id missing. Please post order_id', array('status' => 401));
+        return new WP_Error('rest_invalid_order_id', 'Order id missing. Please post order_id', array('status' => 400));
     }
 
     // Check if the shipment company is valid
     if (!kargoTR_is_valid_shipment_company($shipment_company)) {
-        return new WP_Error('rest_invalid_shipment_company', 'Invalid shipment company. Should be same as document list', array('status' => 401));
+        return new WP_Error('rest_invalid_shipment_company', 'Invalid shipment company. Should be same as document list', array('status' => 400));
     }
 
     // Check if the order id is valid
     if (!kargoTR_is_valid_order_id($order_id)) {
-        return new WP_Error('rest_invalid_order_id', 'Invalid order id. Please check order id', array('status' => 401));
+        return new WP_Error('rest_invalid_order_id', 'Invalid order id. Please check order id', array('status' => 404));
     }
 
     // Get order details from order id (HPOS uyumlu)
