@@ -73,6 +73,7 @@ include 'kargo-takip-cargo-settings.php';
 // include 'kargo-takip-content-edit-helper.php';
 include 'kargo-takip-wc-api-helper.php';
 include 'kargo-takip-bulk-import.php';
+include 'kargo-takip-status-mapping.php';
 // include 'kargo-takip-checkout-fields.php'; // Disabled
 include 'kargo-takip-dashboard.php';
 add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
@@ -86,6 +87,7 @@ function kargoTR_register_admin_menu() {
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'SMS Ayarlari', 'read', 'kargo-takip-turkiye-sms-settings', 'kargoTR_sms_setting_page' );
     // WhatsApp menüsü şimdilik gizli - add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'WhatsApp Ayarlari', 'read', 'kargo-takip-turkiye-whatsapp-settings', 'kargoTR_whatsapp_setting_page' );
     add_submenu_page( $menu_slug, 'Toplu Kargo Girişi', 'Toplu İşlemler', 'manage_options', 'kargo-takip-turkiye-bulk-import', 'kargoTR_bulk_import_page' );
+    add_submenu_page( $menu_slug, 'Durum Eşlemesi', 'Durum Eşlemesi', 'manage_options', 'kargo-takip-turkiye-status-mapping', 'kargoTR_status_mapping_page' );
     add_action( 'admin_init', 'kargoTR_register_settings' );
 }
 
@@ -117,6 +119,8 @@ function kargoTR_register_settings() {
         'Kobikom_Header' => $defaultValues['field'],
         'kargo_estimated_delivery_days' => '3', // Default 3 days
         'kargo_estimated_delivery_enabled' => $defaultValues['select'], // Default: no (disabled)
+        // Status Mapping
+        'kargoTR_prevent_duplicate_notification' => 'yes', // Default: yes (enabled)
         // WhatsApp - Kargowp.com entegrasyonu (şimdilik devre dışı)
         // 'kargoTr_whatsapp_enabled' => $defaultValues['select'], // Default: no (disabled)
         // 'kargoTr_kargowp_api_key' => $defaultValues['field'], // Kargowp.com API anahtarı
