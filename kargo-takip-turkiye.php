@@ -21,6 +21,22 @@ add_action('before_woocommerce_init', function() {
 });
 
 /**
+ * Option ismi tutarsızlığını düzeltmek için migrasyon
+ * Eski 'kargoTR_sms_template' option'ını yeni 'kargoTr_sms_template' option'ına taşır
+ * Bu düzeltme, NetGSM Hata Kodu 20 (boş mesaj) sorununu çözer
+ */
+add_action('admin_init', function() {
+    $old_template = get_option('kargoTR_sms_template');
+    $new_template = get_option('kargoTr_sms_template');
+
+    // Eski option varsa ve yeni yoksa veya boşsa, migrate et
+    if (!empty($old_template) && empty($new_template)) {
+        update_option('kargoTr_sms_template', $old_template);
+        delete_option('kargoTR_sms_template');
+    }
+}, 5); // Öncelik 5 - register_settings'den önce çalışsın
+
+/**
  * HPOS uyumlu meta okuma fonksiyonu
  * Hem HPOS hem de klasik post meta ile çalışır
  */

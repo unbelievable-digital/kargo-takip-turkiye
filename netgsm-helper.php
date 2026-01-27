@@ -279,7 +279,7 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
     $tracking_code = $order->get_meta('tracking_code', true);
 
     // Use the configurable SMS template
-    $message = kargoTR_get_sms_template($order_id, get_option('kargoTR_sms_template'));
+    $message = kargoTR_get_sms_template($order_id, get_option('kargoTr_sms_template'));
     $message = urlencode($message);
 
     /* Legacy logic - removed in favor of template

@@ -42,7 +42,7 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
     $Kobikom_ApiKey = get_option('Kobikom_ApiKey');
     $KobiKom_Header = get_option('Kobikom_Header');
 
-    $message = kargoTR_get_sms_template($order_id, get_option('kargoTR_sms_template'));
+    $message = kargoTR_get_sms_template($order_id, get_option('kargoTr_sms_template'));
     
     $url = "https://sms.kobikom.com.tr/api/message/send";
     $params = array(

@@ -182,7 +182,7 @@ function kargoTR_get_sms_template($order_id, $template) {
 
     //template from database if not provided
     if (empty($template)) {
-        $template = get_option("kargoTR_sms_template");
+        $template = get_option("kargoTr_sms_template");
     }
 
     //replace fields
