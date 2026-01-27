@@ -92,6 +92,8 @@ function kargoTR_register_admin_menu() {
 }
 
 // Improved function name for better readability and consistency
+// BUG FIX: Her sayfa için ayrı settings group kullanılıyor
+// Bu sayede bir sayfanın ayarları kaydedildiğinde diğer sayfaların ayarları sıfırlanmıyor
 function kargoTR_register_settings() {
     // Define default values as an array for easier management
     $defaultValues = array(
@@ -101,33 +103,42 @@ function kargoTR_register_settings() {
         'emailTemplate' => 'Merhaba {customer_name}, {order_id} nolu siparişiniz kargoya verildi. Kargo takip numaranız: {tracking_number}. Tahmini Teslimat: {estimated_delivery_date}. Kargo takip linkiniz: {tracking_url}. İyi günler dileriz.',
     );
 
-    // Use a foreach loop to register settings more efficiently
-    $settings = array(
+    // GENEL AYARLAR GRUBU
+    $general_settings = array(
         'kargo_hazirlaniyor_text' => $defaultValues['select'],
         'mail_send_general' => $defaultValues['select'],
         'sms_provider' => $defaultValues['select'],
         'sms_send_general' => $defaultValues['select'],
+        'kargo_estimated_delivery_days' => '3',
+        'kargo_estimated_delivery_enabled' => $defaultValues['select'],
+        'kargoTR_prevent_duplicate_notification' => 'yes',
+    );
+    foreach ($general_settings as $key => $default) {
+        register_setting('kargoTR-general-settings-group', $key, array('default' => $default));
+    }
+
+    // EMAIL AYARLARI GRUBU
+    $email_settings = array(
+        'kargoTr_email_template' => $defaultValues['emailTemplate'],
+        'kargoTr_use_wc_template' => $defaultValues['select'],
+    );
+    foreach ($email_settings as $key => $default) {
+        register_setting('kargoTR-email-settings-group', $key, array('default' => $default));
+    }
+
+    // SMS AYARLARI GRUBU
+    $sms_settings = array(
         'NetGsm_UserName' => $defaultValues['field'],
         'NetGsm_Password' => $defaultValues['field'],
         'NetGsm_Header' => $defaultValues['select'],
         'NetGsm_AppKey' => $defaultValues['field'],
         'NetGsm_sms_url_send' => $defaultValues['select'],
-        'kargoTr_sms_template' => $defaultValues['smsTemplate'],
-        'kargoTr_email_template' => $defaultValues['emailTemplate'],
-        'kargoTr_use_wc_template' => $defaultValues['select'],
         'Kobikom_ApiKey' => $defaultValues['field'],
         'Kobikom_Header' => $defaultValues['field'],
-        'kargo_estimated_delivery_days' => '3', // Default 3 days
-        'kargo_estimated_delivery_enabled' => $defaultValues['select'], // Default: no (disabled)
-        // Status Mapping
-        'kargoTR_prevent_duplicate_notification' => 'yes', // Default: yes (enabled)
-        // WhatsApp - Kargowp.com entegrasyonu (şimdilik devre dışı)
-        // 'kargoTr_whatsapp_enabled' => $defaultValues['select'], // Default: no (disabled)
-        // 'kargoTr_kargowp_api_key' => $defaultValues['field'], // Kargowp.com API anahtarı
+        'kargoTr_sms_template' => $defaultValues['smsTemplate'],
     );
-
-    foreach ($settings as $settingKey => $settingDefault) {
-        register_setting('kargoTR-settings-group', $settingKey, array('default' => $settingDefault));
+    foreach ($sms_settings as $key => $default) {
+        register_setting('kargoTR-sms-settings-group', $key, array('default' => $default));
     }
 }
 
@@ -154,8 +165,8 @@ function kargoTR_setting_page() {
             <!-- Sol Panel - Ana İçerik -->
             <div class="kargotr-editor-panel">
                 <form method="post" action="options.php" id="kargotr-general-form">
-                    <?php settings_fields('kargoTR-settings-group'); ?>
-                    <?php do_settings_sections('kargoTR-settings-group'); ?>
+                    <?php settings_fields('kargoTR-general-settings-group'); ?>
+                    <?php do_settings_sections('kargoTR-general-settings-group'); ?>
 
                     <!-- KART 1: Sipariş Görünüm Ayarları -->
                     <div class="kargotr-card">

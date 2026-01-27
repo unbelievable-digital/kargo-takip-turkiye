@@ -30,8 +30,8 @@ function kargoTR_email_setting_page() {
             <!-- Sol Panel - Editör -->
             <div class="kargotr-editor-panel">
                 <form method="post" action="options.php" id="kargotr-email-form">
-                    <?php settings_fields('kargoTR-settings-group'); ?>
-                    <?php do_settings_sections('kargoTR-settings-group'); ?>
+                    <?php settings_fields('kargoTR-email-settings-group'); ?>
+                    <?php do_settings_sections('kargoTR-email-settings-group'); ?>
 
                     <!-- Template Ayarları -->
                     <div class="kargotr-card" style="margin-bottom: 20px;">

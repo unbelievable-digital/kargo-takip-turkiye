@@ -34,8 +34,8 @@ function kargoTR_sms_setting_page() {
             <!-- Sol Panel - Ana İçerik -->
             <div class="kargotr-editor-panel">
                 <form method="post" action="options.php" id="kargotr-sms-form">
-                    <?php settings_fields('kargoTR-settings-group'); ?>
-                    <?php do_settings_sections('kargoTR-settings-group'); ?>
+                    <?php settings_fields('kargoTR-sms-settings-group'); ?>
+                    <?php do_settings_sections('kargoTR-sms-settings-group'); ?>
 
                     <!-- KART 1: SMS Provider Seçimi -->
                     <div class="kargotr-card">
