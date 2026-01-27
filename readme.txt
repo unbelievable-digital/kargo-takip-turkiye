@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.8
 WC tested up to: 10.0.0
 Requires PHP: 7.1
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,14 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.2.3 =
+* **Güvenlik Güncellemesi** - 5 HIGH seviye güvenlik açığı düzeltildi
+* NetGSM Hata Kodu 20 sorunu çözüldü (SMS şablon option ismi tutarsızlığı)
+* REST API input validation güçlendirildi (tracking code format ve uzunluk kontrolü)
+* Toplu kargo girişinde dosya yükleme güvenliği artırıldı (extension, size, MIME kontrolü)
+* XSS koruması eklendi - tüm kullanıcı çıktıları escape edildi
+* Bulk import'ta capability check eklendi
 
 = 0.2.2 =
 * Durum Eşlemesi özelliği eklendi - harici servislerle entegrasyon
