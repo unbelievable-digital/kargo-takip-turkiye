@@ -263,72 +263,125 @@ function kargoTR_get_netgsm_credit_info($username, $password, $appkey = '') {
 }
 
 
+/**
+ * NetGSM telefon numarasını API formatına çevirir (905xxxxxxxxx).
+ */
+function kargoTR_netgsm_normalize_phone($phone) {
+    $phone = preg_replace('/[^0-9]/', '', $phone);
+    if (strlen($phone) === 10 && substr($phone, 0, 1) === '5') {
+        return '90' . $phone;
+    }
+    if (strlen($phone) === 11 && substr($phone, 0, 1) === '0') {
+        return '90' . substr($phone, 1);
+    }
+    if (strlen($phone) === 12 && substr($phone, 0, 2) === '90') {
+        return $phone;
+    }
+    return $phone;
+}
+
+/**
+ * NetGSM REST v2 API ile SMS gönderir.
+ *
+ * @param string $username NetGSM kullanıcı kodu
+ * @param string $password NetGSM şifre (ham, urlencode yok)
+ * @param string $msgheader Mesaj başlığı (gönderici adı)
+ * @param array  $messages [ ['msg' => '...', 'no' => '905xxxxxxxxx'], ... ]
+ * @return array ['success' => bool, 'jobid' => string|null, 'error' => string|null]
+ */
+function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages) {
+    $url = 'https://api.netgsm.com.tr/sms/rest/v2/send';
+
+    $body = array(
+        'msgheader'   => $msgheader,
+        'messages'    => $messages,
+        'encoding'    => 'TR',
+        'iysfilter'   => '',
+        'partnercode' => '',
+    );
+
+    $request = wp_remote_post($url, array(
+        'headers' => array(
+            'Content-Type'  => 'application/json',
+            'Authorization' => 'Basic ' . base64_encode($username . ':' . $password),
+        ),
+        'body'    => wp_json_encode($body),
+        'timeout' => 15,
+    ));
+
+    if (is_wp_error($request)) {
+        return array('success' => false, 'jobid' => null, 'error' => $request->get_error_message());
+    }
+
+    $response = trim(wp_remote_retrieve_body($request));
+    $data     = json_decode($response, true);
+
+    if (isset($data['code']) && $data['code'] === '00') {
+        return array(
+            'success' => true,
+            'jobid'   => isset($data['jobid']) ? $data['jobid'] : null,
+            'error'   => null,
+        );
+    }
+
+    $error_codes = array(
+        '20' => 'Mesaj metni hatası veya karakter limiti aşıldı.',
+        '30' => 'Geçersiz kullanıcı adı veya şifre.',
+        '40' => 'Mesaj başlığı sistemde tanımlı değil.',
+        '50' => 'Abone hesabı ile İYS kontrollü gönderim yapılamıyor.',
+        '51' => 'Erişim izni yok.',
+        '70' => 'Hatalı parametre veya eksik alan.',
+        '85' => 'Başlık kullanım izni yok.',
+    );
+    $code   = isset($data['code']) ? (string) $data['code'] : '';
+    $errmsg = isset($error_codes[$code]) ? $error_codes[$code] : ('NetGSM API: ' . ($response ?: 'Bilinmeyen yanıt'));
+
+    return array('success' => false, 'jobid' => null, 'error' => $errmsg . ' (Kod: ' . $code . ')');
+}
+
 function kargoTR_SMS_gonder_netgsm($order_id) {
     $order = wc_get_order($order_id);
-    if (!$order) return;
+    if (!$order) {
+        return;
+    }
 
     $phone = $order->get_billing_phone();
+    if (empty($phone)) {
+        $order->add_order_note('SMS Gönderilemedi - Siparişte telefon numarası yok.');
+        return;
+    }
 
     $NetGsm_UserName = get_option('NetGsm_UserName');
-    $NetGsm_Password = urlencode(get_option('NetGsm_Password'));
-    $NetGsm_Header = get_option('NetGsm_Header');
-    $NetGsm_sms_url_send = get_option('NetGsm_sms_url_send');
+    $NetGsm_Password = get_option('NetGsm_Password');
+    $NetGsm_Header   = get_option('NetGsm_Header');
 
-    // HPOS uyumlu meta okuma
-    $tracking_company = $order->get_meta('tracking_company', true);
-    $tracking_code = $order->get_meta('tracking_code', true);
+    if (empty($NetGsm_UserName) || empty($NetGsm_Password) || empty($NetGsm_Header)) {
+        $order->add_order_note('SMS Gönderilemedi - NetGSM kullanıcı adı, şifre veya başlık eksik.');
+        return;
+    }
 
-    // Use the configurable SMS template
+    // Dinamik başlık: "yes" ise API'den ilk başlığı al
+    if ($NetGsm_Header === 'yes') {
+        $headers = kargoTR_get_netgsm_headers($NetGsm_UserName, $NetGsm_Password);
+        if (!is_array($headers) || empty($headers)) {
+            $order->add_order_note('SMS Gönderilemedi - NetGSM mesaj başlıkları alınamadı.');
+            return;
+        }
+        $NetGsm_Header = $headers[0];
+    }
+
     $message = kargoTR_get_sms_template($order_id, get_option('kargoTr_sms_template'));
-    $message = urlencode($message);
+    $phone   = kargoTR_netgsm_normalize_phone($phone);
 
-    /* Legacy logic - removed in favor of template
-    $message = "Siparişinizin kargo takip numarası : " . $tracking_code . ", " . kargoTR_get_company_name($tracking_company) . " kargo firması ile takip edebilirsiniz.";
-    $message = urlencode($message);
+    $result = kargoTR_netgsm_send_rest_v2($NetGsm_UserName, $NetGsm_Password, $NetGsm_Header, array(
+        array('msg' => $message, 'no' => $phone),
+    ));
 
-    if ($NetGsm_sms_url_send == 'yes') {
-        $message = $message." ".urlencode("Takip URL : ").kargoTR_getCargoTrack($tracking_company, $tracking_code);
-    }
-    */
-
-    if($NetGsm_Header == "yes"){
-        $NetGsm_Header = kargoTR_get_netgsm_headers($NetGsm_UserName, $NetGsm_Password);
-        $NetGsm_Header = $NetGsm_Header[0];
-    }
-
-    $NetGsm_Header = urlencode($NetGsm_Header);
-
-    $url= "https://api.netgsm.com.tr/sms/send/get/?usercode=$NetGsm_UserName&password=$NetGsm_Password&gsmno=$phone&message=$message&dil=TR&msgheader=$NetGsm_Header";
-
-    $request = wp_remote_get($url);
-    
-    // NetGSM API returns numeric error codes: 20, 30, 40, 50, 51, 70, 85
-    // Success returns a job ID (can be "00 JOBID" format or just "JOBID")
-    $response = trim($request['body']);
-    $error_codes = array('20', '30', '40', '50', '51', '70', '85');
-    
-    if (in_array($response, $error_codes)) {
-        // Error occurred
-        $error_messages = array(
-            '20' => 'Mesaj metninde ki problemden dolayı gönderilemediğini veya standart maksimum mesaj karakter sayısını geçtiğini ifade eder.',
-            '30' => 'Geçersiz kullanıcı adı, şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.',
-            '40' => 'Mesaj başlığınızın (gönderici adınızın) sistemde tanımlı olmadığını ifade eder.',
-            '50' => 'Abone hesabınız ile İYS kontrollü gönderimler yapılamamaktadır.',
-            '51' => 'Erişim izninizin olmadığı bir hesaba işlem yapmaya çalıştığınızı ifade eder.',
-            '70' => 'Hatalı sorgulama. Gönderdiğiniz parametrelerden birisi hatalı veya zorunlu alanlardan birinin eksik olduğunu ifade eder.',
-            '85' => 'Başlık kullanım izni olmayan bir API kullanıcısı ile başlıklı mesaj gönderilmeye çalışıldığını ifade eder.'
-        );
-        $error_msg = isset($error_messages[$response]) ? $error_messages[$response] : 'Bilinmeyen hata';
-        $order->add_order_note("SMS Gönderilemedi - NetGSM Hata Kodu: {$response} - {$error_msg}");
+    if ($result['success']) {
+        $order->add_order_note('SMS Gönderildi - NetGSM İşlem Kodu: ' . ($result['jobid'] ?: '-'));
     } else {
-        // Success - response is job ID (can be "00 JOBID" or just "JOBID")
-        $parts = explode(" ", $response);
-        $job_id = isset($parts[1]) ? $parts[1] : $response;
-        $order->add_order_note("SMS Gönderildi - NetGSM İşlem Kodu: {$job_id}");
+        $order->add_order_note('SMS Gönderilemedi - ' . $result['error']);
     }
-  
-    // $order->add_order_note("Debug : ".$request['body']);
-
 }
 add_action('order_send_sms', 'kargoTR_SMS_gonder_netgsm');
 

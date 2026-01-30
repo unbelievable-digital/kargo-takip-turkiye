@@ -1074,56 +1074,34 @@ function kargoTR_ajax_send_test_sms() {
     }
 }
 
-// NetGSM ile test SMS gönder
+// NetGSM ile test SMS gönder (REST v2 API)
 function kargoTR_send_test_sms_netgsm($phone, $message) {
     $username = get_option('NetGsm_UserName');
     $password = get_option('NetGsm_Password');
-    $header = get_option('NetGsm_Header');
+    $header   = get_option('NetGsm_Header');
 
     if (!$username || !$password || !$header) {
         return 'NetGSM ayarları eksik.';
     }
 
-    $url = 'https://api.netgsm.com.tr/sms/send/get/?';
-    $params = array(
-        'usercode' => $username,
-        'password' => $password,
-        'gsmno' => $phone,
-        'message' => $message,
-        'msgheader' => $header,
-        'dil' => 'TR'
-    );
-
-    $response = wp_remote_get($url . http_build_query($params));
-
-    if (is_wp_error($response)) {
-        return 'Bağlantı hatası: ' . $response->get_error_message();
+    // Dinamik başlık: "yes" ise API'den ilk başlığı al
+    if ($header === 'yes') {
+        $headers = kargoTR_get_netgsm_headers($username, $password);
+        if (!is_array($headers) || empty($headers)) {
+            return 'NetGSM mesaj başlıkları alınamadı.';
+        }
+        $header = $headers[0];
     }
 
-    $body = wp_remote_retrieve_body($response);
+    $phone = kargoTR_netgsm_normalize_phone($phone);
+    $result = kargoTR_netgsm_send_rest_v2($username, $password, $header, array(
+        array('msg' => $message, 'no' => $phone),
+    ));
 
-    // NetGSM yanıt kodları
-    // 00, 01, 02 başarılı
-    if (preg_match('/^(00|01|02)/', $body)) {
+    if ($result['success']) {
         return true;
     }
-
-    // Hata kodları
-    $error_codes = array(
-        '20' => 'Mesaj metni boş',
-        '30' => 'Geçersiz kullanıcı adı/şifre',
-        '40' => 'Mesaj başlığı tanımlı değil',
-        '50' => 'Abone hesabı aktif değil',
-        '60' => 'Geçersiz istek',
-        '70' => 'Hatalı sorgu',
-        '80' => 'Gönderim sınırı aşıldı',
-        '85' => 'Mükerrer gönderim',
-    );
-
-    $error_code = trim($body);
-    $error_message = isset($error_codes[$error_code]) ? $error_codes[$error_code] : 'Bilinmeyen hata: ' . $error_code;
-
-    return 'NetGSM Hatası: ' . $error_message;
+    return 'NetGSM Hatası: ' . $result['error'];
 }
 
 // Kobikom ile test SMS gönder
