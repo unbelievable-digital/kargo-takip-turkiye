@@ -13,12 +13,14 @@ WooCommerce siparişlerinize kargo takip bilgisi ekleyin ve müşterilerinize ot
 
 == Description ==
 
+**3.000'den fazla aktif site tarafından kullanılmaktadır!**
+
 Kargo Takip Türkiye eklentisi ile WooCommerce siparişlerinize kargo takip bilgisi ekleyebilir ve müşterilerinize otomatik bildirimler gönderebilirsiniz.
 
 = Özellikler =
 
 * **HPOS Uyumlu** - WooCommerce High-Performance Order Storage desteği
-* **20+ Kargo Firması** - Türkiye'nin önde gelen kargo firmalarını destekler
+* **27+ Kargo Firması** - Türkiye'nin önde gelen kargo firmalarını destekler
 * **Otomatik E-posta** - Kargo bilgisi girildiğinde otomatik e-posta gönderimi
 * **SMS Entegrasyonu** - NetGSM ve Kobikom SMS desteği
 * **Toplu Kargo Girişi** - Excel/CSV ile toplu kargo bilgisi girişi
@@ -27,28 +29,36 @@ Kargo Takip Türkiye eklentisi ile WooCommerce siparişlerinize kargo takip bilg
 * **Tahmini Teslimat** - Kargo firmasına göre tahmini teslimat tarihi hesaplama
 * **Dashboard** - Kargo istatistikleri ve özet görünümü
 
-= Desteklenen Kargo Firmaları =
+= Desteklenen Kargo Firmaları (27+) =
 
+* PTT Kargo
+* Yurtiçi Kargo
+* Aras Kargo
+* MNG Kargo
+* Sürat Kargo
+* Horoz Lojistik
 * Trendyol Express
 * HepsiJET
-* PTT Kargo
-* Aras Kargo
-* Yurtiçi Kargo
-* MNG Kargo
-* Horoz Lojistik
 * UPS Kargo
-* Sürat Kargo
-* Fedex Kargo
 * DHL Kargo
+* DHL eCommerce
+* Fedex Kargo
 * TNT Kargo
 * Filo Kargo
+* Sendeo Kargo
+* Carrtell Kargo
+* Kolay Gelsin
+* Scotty
+* Jetizz
+* PackUpp
+* Birgünde Kargo
+* Kargo Türk
+* Kargoist
+* Brinks Kargo
+* CDEK
 * FoodMan Kargo
 * İyi Kargo
 * Postman Kargo
-* Sendeo Kargo
-* Carrtell Kargo
-* TexKargo
-* Kargoist
 
 
 
