@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.8
 WC tested up to: 10.0.0
 Requires PHP: 7.1
-Stable tag: 0.2.3
+Stable tag: 0.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,6 +77,11 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.2.4 =
+* 27+ kargo firması desteği - yeni firmalar eklendi
+* Eksik kargo logoları eklendi
+* Readme güncellendi - 3000+ aktif site bilgisi
 
 = 0.2.3 =
 * **Güvenlik Güncellemesi** - 5 HIGH seviye güvenlik açığı düzeltildi
