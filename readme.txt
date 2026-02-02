@@ -2,7 +2,7 @@
 Contributors: zgrkaralar,unbelievabledigital
 Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo,Trendyol Kargo,hepsijet kargo, trendyol, hepsijet, woocommerce kargo, hpos
 Requires at least: 4.9
-Tested up to: 6.8
+Tested up to: 6.9
 WC tested up to: 10.0.0
 Requires PHP: 7.1
 Stable tag: 0.2.4
