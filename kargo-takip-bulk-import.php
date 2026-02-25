@@ -191,6 +191,9 @@ function kargoTR_handle_csv_upload() {
         $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
         $order->save();
 
+        // Review notice için sayacı artır
+        kargoTR_increment_tracking_orders_count();
+
         // Add Note
         $order->add_order_note(sprintf('Toplu yükleme ile kargo bilgisi girildi. Firma: %s, Takip No: %s', $cargo_company_key, $tracking_code));
 

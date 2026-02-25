@@ -74,6 +74,7 @@ include 'kargo-takip-cargo-settings.php';
 include 'kargo-takip-wc-api-helper.php';
 include 'kargo-takip-bulk-import.php';
 include 'kargo-takip-status-mapping.php';
+include 'kargo-takip-review-notice.php';
 // include 'kargo-takip-checkout-fields.php'; // Disabled
 include 'kargo-takip-dashboard.php';
 add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
@@ -784,6 +785,9 @@ function kargoTR_tracking_save_general_details($ord_id) {
         // Save specific timestamp for statistics (HPOS uyumlu)
         $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
         $order->save();
+
+        // Review notice için sayacı artır
+        kargoTR_increment_tracking_orders_count();
         
         // Only update status if it's not already shipped or completed (optional, but good practice)
         // But user might want to force it. Let's keep original behavior but only on change.

@@ -139,6 +139,9 @@ function kargoTR_api_add_tracking_code() {
 
         $order->save();
 
+        // Review notice için sayacı artır
+        kargoTR_increment_tracking_orders_count();
+
         $order->add_order_note(
             sprintf(
                 __('Kargo takip numarası eklendi. Kargo şirketi: %s, Takip numarası: %s', 'woocommerce'),
