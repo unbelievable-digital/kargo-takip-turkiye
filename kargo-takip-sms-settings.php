@@ -1053,8 +1053,8 @@ function kargoTR_ajax_send_test_sms() {
 
     // Örnek verilerle şablonu doldur
     $message = str_replace(
-        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}'),
-        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456'),
+        array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
+        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456', date_i18n(get_option('date_format'), strtotime('+3 days'))),
         $template
     );
 

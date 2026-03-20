@@ -296,8 +296,6 @@ function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages
         'msgheader'   => $msgheader,
         'messages'    => $messages,
         'encoding'    => 'TR',
-        'iysfilter'   => '',
-        'partnercode' => '',
     );
 
     $request = wp_remote_post($url, array(
