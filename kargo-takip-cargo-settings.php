@@ -832,3 +832,32 @@ function kargoTR_toggle_cargo_status() {
 
     wp_send_json_success();
 }
+
+// AJAX: Kargo firması teslimat süresini kaydet
+add_action('wp_ajax_kargotr_save_cargo_days', 'kargoTR_save_cargo_days');
+function kargoTR_save_cargo_days() {
+    // Nonce kontrolü
+    if (!wp_verify_nonce($_POST['nonce'], 'kargotr_save_days')) {
+        wp_send_json_error('Güvenlik doğrulaması başarısız.');
+    }
+
+    // Yetki kontrolü
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Yetkiniz yok.');
+    }
+
+    $key = sanitize_key($_POST['key']);
+    $days = intval($_POST['days']);
+
+    $delivery_times = get_option('kargoTR_cargo_delivery_times', array());
+
+    if ($days > 0) {
+        $delivery_times[$key] = $days;
+    } else {
+        unset($delivery_times[$key]);
+    }
+
+    update_option('kargoTR_cargo_delivery_times', $delivery_times);
+
+    wp_send_json_success();
+}

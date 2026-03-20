@@ -82,7 +82,7 @@ return array(
             "url" => "https://www.hepsijet.com/gonderi-takibi/",
             "logo" => "assets/logos/hepsijet.png"
         ),
-        "Sendeo" => array(
+        "sendeo" => array(
             "company" => "Sendeo Kargo",
             "url" => "https://www.sendeo.com.tr/kargo-takip/",
             "logo" => "assets/logos/sendeo.png"
