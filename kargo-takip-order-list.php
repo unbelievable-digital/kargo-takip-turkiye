@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 
 // ADDING 2 NEW COLUMNS WITH THEIR TITLES (keeping "Total" and "Actions" columns at the end)
@@ -18,7 +21,7 @@ function kargoTR_shipping_information_column($columns)
         // Check for both legacy 'order_status' and HPOS 'status' keys
         if( $key == 'order_status' || $key == 'status' ){
             // Inserting after "Status" column
-            $reordered_columns['kargo-sent-with'] = __( 'Kargo Firması','theme_domain');
+            $reordered_columns['kargo-sent-with'] = __( 'Kargo Firması', 'kargo-takip-turkiye' );
             $inserted = true;
         }
     }
@@ -29,10 +32,10 @@ function kargoTR_shipping_information_column($columns)
         if (isset($reordered_columns['wc_actions'])) {
             $actions = $reordered_columns['wc_actions'];
             unset($reordered_columns['wc_actions']);
-            $reordered_columns['kargo-sent-with'] = __( 'Kargo Firması','theme_domain');
+            $reordered_columns['kargo-sent-with'] = __( 'Kargo Firması', 'kargo-takip-turkiye' );
             $reordered_columns['wc_actions'] = $actions;
         } else {
-            $reordered_columns['kargo-sent-with'] = __( 'Kargo Firması','theme_domain');
+            $reordered_columns['kargo-sent-with'] = __( 'Kargo Firması', 'kargo-takip-turkiye' );
         }
     }
 
@@ -69,16 +72,16 @@ function kargoTR_shipping_information_column_content( $column, $post_id )
                     $logo_url = plugin_dir_url( __FILE__ ).$information["logo"];
                     // Wrap with URL if tracking code exists
                     if (!empty($information["url"])) {
-                        echo "<a href='".$information["url"]."' target='_blank'>";
-                        echo "<img src='".$logo_url."' style='max-width: 80px; max-height: 40px; object-fit: contain;' title='".esc_attr($company_name)."'>";
+                        echo "<a href='".esc_url($information["url"])."' target='_blank'>";
+                        echo "<img src='".esc_url($logo_url)."' style='max-width: 80px; max-height: 40px; object-fit: contain;' title='".esc_attr($company_name)."'>";
                         echo "</a>";
                     } else {
-                        echo "<img src='".$logo_url."' style='max-width: 80px; max-height: 40px; object-fit: contain;' title='".esc_attr($company_name)."'>";
+                        echo "<img src='".esc_url($logo_url)."' style='max-width: 80px; max-height: 40px; object-fit: contain;' title='".esc_attr($company_name)."'>";
                     }
                 } else {
                     // Text fallback
                     if ($information && !empty($information["url"])) {
-                        echo "<a href='".$information["url"]."' target='_blank'>".esc_html($company_name)."</a>";
+                        echo "<a href='".esc_url($information["url"])."' target='_blank'>".esc_html($company_name)."</a>";
                     } else {
                         echo esc_html($company_name);
                     }

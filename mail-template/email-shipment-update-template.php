@@ -23,10 +23,11 @@ do_action('woocommerce_email_header', $email_heading, $email);
 
 ?>
 
-<?php /* translators: %s: Customer first name */?>
 
 
-<p><?php printf(esc_html__('Merhaba %s,', 'woocommerce'), esc_html($order->get_billing_first_name()));?></p>
+<p><?php
+/* translators: %s: Customer first name */
+printf(esc_html__('Merhaba %s,', 'kargo-takip-turkiye'), esc_html($order->get_billing_first_name()));?></p>
 <p> Siparişiniz kargoya verilmiştir. Takip bilgileri aşağıda yer almaktadır:<p>
 <p> Kargo Firması Adı: <strong> <?php
     echo esc_attr(kargoTR_get_company_name($tracking_company));

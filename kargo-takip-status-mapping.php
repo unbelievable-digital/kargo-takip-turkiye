@@ -219,10 +219,11 @@ function kargoTR_trigger_mapped_notifications($order_id, $mapping) {
 
     // Sipariş notu ekle
     $note = sprintf(
-        __('Durum eşlemesi tetiklendi: "%s" → "Kargoya Verildi". E-posta: %s, SMS: %s'),
+        /* translators: 1: mapped order status name, 2: whether email was sent (Evet/Hayır), 3: whether SMS was sent (Evet/Hayır) */
+        __('Durum eşlemesi tetiklendi: "%1$s" → "Kargoya Verildi". E-posta: %2$s, SMS: %3$s', 'kargo-takip-turkiye'),
         $mapping['name'],
         ($mapping['send_email'] && $mail_send_general === 'yes') ? 'Evet' : 'Hayır',
-        ($mapping['send_sms'] && $sms_provider !== 'no') ? 'Evet' : 'Hayır'
+        ($mapping['send_sms'] && in_array($sms_provider, array('NetGSM', 'Kobikom'), true)) ? 'Evet' : 'Hayır'
     );
     $order->add_order_note($note);
 }
@@ -251,7 +252,8 @@ function kargoTR_handle_status_change($order_id, $old_status, $new_status, $orde
         // Kargo bilgisi yok, sadece sipariş notu ekle
         $order->add_order_note(
             sprintf(
-                __('Durum eşlemesi algılandı: "%s". Ancak kargo takip bilgisi eksik olduğu için bildirim gönderilmedi.'),
+                /* translators: %s: mapped order status name */
+                __('Durum eşlemesi algılandı: "%s". Ancak kargo takip bilgisi eksik olduğu için bildirim gönderilmedi.', 'kargo-takip-turkiye'),
                 $mapping['name']
             )
         );
@@ -259,10 +261,11 @@ function kargoTR_handle_status_change($order_id, $old_status, $new_status, $orde
     }
 
     // Çift bildirim kontrolü
+    // Eski sürümlerde Genel Ayarlar kaydı bu option'ı boşaltıyordu; boş değer varsayılan (açık) sayılır
     $prevent_duplicate = get_option('kargoTR_prevent_duplicate_notification', 'yes');
-    if ($prevent_duplicate === 'yes' && kargoTR_order_notification_sent($order_id)) {
+    if ($prevent_duplicate !== 'no' && kargoTR_order_notification_sent($order_id)) {
         $order->add_order_note(
-            __('Durum eşlemesi algılandı ancak bu sipariş için daha önce bildirim gönderilmiş. Çift bildirim engellendi.')
+            __('Durum eşlemesi algılandı ancak bu sipariş için daha önce bildirim gönderilmiş. Çift bildirim engellendi.', 'kargo-takip-turkiye')
         );
         return;
     }
@@ -270,7 +273,8 @@ function kargoTR_handle_status_change($order_id, $old_status, $new_status, $orde
     // Statüyü "Kargoya Verildi" olarak değiştir
     // woocommerce_order_status_changed hook'u tekrar tetiklenmemesi için remove_action yapıyoruz
     remove_action('woocommerce_order_status_changed', 'kargoTR_handle_status_change', 10);
-    $order->update_status('kargo-verildi', sprintf(__('Durum eşlemesi: "%s" → "Kargoya Verildi"'), $mapping['name']));
+    /* translators: %s: mapped order status name */
+    $order->update_status('kargo-verildi', sprintf(__('Durum eşlemesi: "%s" → "Kargoya Verildi"', 'kargo-takip-turkiye'), $mapping['name']));
     add_action('woocommerce_order_status_changed', 'kargoTR_handle_status_change', 10, 4);
 
     // Kargo takip timestamp'ini kaydet
@@ -467,7 +471,7 @@ function kargoTR_status_mapping_page() {
                         <div class="kargotr-setting-item">
                             <label class="kargotr-toggle-label">
                                 <input type="checkbox" id="kargotr-prevent-duplicate"
-                                       <?php checked($prevent_duplicate, 'yes'); ?>>
+                                       <?php checked($prevent_duplicate !== 'no'); ?>>
                                 <strong>Çift Bildirim Engelle</strong>
                             </label>
                             <p class="description" style="margin-top: 8px; margin-left: 24px;">
@@ -891,7 +895,7 @@ function kargoTR_status_mapping_page() {
     <script>
     jQuery(document).ready(function($) {
         // Nonce for AJAX
-        var nonce = '<?php echo wp_create_nonce('kargotr_status_mapping'); ?>';
+        var nonce = '<?php echo esc_js(wp_create_nonce('kargotr_status_mapping')); ?>';
 
         // Preset toggle
         $('.kargotr-preset-toggle').on('change', function() {

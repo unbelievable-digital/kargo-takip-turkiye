@@ -90,7 +90,7 @@ class KargoTR_Review_Notice {
         }
 
         $orders_count = intval(get_option(self::OPTION_ORDERS_COUNT, 0));
-        $review_url = 'https://wordpress.org/support/plugin/kargo-takip-turkiye/reviews/?filter=5#new-post';
+        $review_url = 'https://wordpress.org/support/plugin/kargo-takip-turkiye/reviews/#new-post';
         ?>
         <div class="notice kargotr-review-notice" id="kargotr-review-notice">
             <div class="kargotr-review-notice-content">
@@ -100,7 +100,7 @@ class KargoTR_Review_Notice {
                 <div class="kargotr-review-notice-text">
                     <p class="kargotr-review-notice-message">
                         <strong>Kargo Takip Türkiye</strong> eklentisi ile şu ana kadar <strong><?php echo esc_html($orders_count); ?>+</strong> siparişe kargo bilgisi eklediniz. Harika! 🎉<br>
-                        Eklentiyi faydalı buldunuz mu? Bize WordPress.org'da 5 yıldız vererek destek olabilir misiniz?
+                        Eklentiyi faydalı buldunuz mu? Bize WordPress.org'da bir değerlendirme yazarak destek olabilir misiniz?
                     </p>
                     <p class="kargotr-review-notice-author">~ Unbelievable.Digital Ekibi</p>
                     <div class="kargotr-review-notice-actions">
@@ -148,7 +148,7 @@ class KargoTR_Review_Notice {
                     data: {
                         action: 'kargotr_dismiss_review_notice',
                         dismiss_action: action,
-                        nonce: '<?php echo wp_create_nonce('kargotr_review_notice'); ?>'
+                        nonce: '<?php echo esc_js(wp_create_nonce('kargotr_review_notice')); ?>'
                     },
                     success: function() {
                         $notice.fadeOut(300, function() {

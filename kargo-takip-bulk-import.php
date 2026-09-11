@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 function kargoTR_bulk_import_page() {
     // Handle CSV Upload
@@ -114,6 +117,7 @@ function kargoTR_handle_csv_upload() {
     }
 
     $file = $_FILES['csv_file']['tmp_name'];
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Streaming the uploaded temp CSV with fgetcsv(); WP_Filesystem has no streaming CSV reader.
     $handle = fopen($file, "r");
 
     if ($handle === FALSE) {
@@ -131,7 +135,6 @@ function kargoTR_handle_csv_upload() {
 
     // Get all cargo companies for validation (lowercase keys)
     $cargoes = kargoTR_get_all_cargoes(true);
-    $cargoes_lower = array_change_key_case($cargoes, CASE_LOWER);
 
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         // Skip empty rows
@@ -151,26 +154,19 @@ function kargoTR_handle_csv_upload() {
         }
 
         // Validate Cargo Company
-        $cargo_company_key = '';
-        $input_lower = strtolower($cargo_company_input);
-        
-        // Try to match input with keys
-        foreach ($cargoes as $key => $value) {
-            if (strtolower($key) == $input_lower || strtolower($value) == $input_lower) {
-                $cargo_company_key = $key;
-                break;
-            }
-        }
+        // Önce anahtar (harf duyarsız), sonra firma adı ile eşleştir (örn. "aras" veya "Aras Kargo")
+        $cargo_company_key = kargoTR_resolve_cargo_key($cargo_company_input);
 
-        // If not found, check if it's a valid key directly
-        if (empty($cargo_company_key) && array_key_exists($input_lower, $cargoes_lower)) {
-             // Find original case key
-             foreach ($cargoes as $key => $value) {
-                 if (strtolower($key) == $input_lower) {
-                     $cargo_company_key = $key;
-                     break;
-                 }
-             }
+        if (empty($cargo_company_key)) {
+            $input_lower = function_exists('mb_strtolower') ? mb_strtolower($cargo_company_input, 'UTF-8') : strtolower($cargo_company_input);
+            foreach ($cargoes as $key => $value) {
+                $company_name = isset($value['company']) ? $value['company'] : '';
+                $company_lower = function_exists('mb_strtolower') ? mb_strtolower($company_name, 'UTF-8') : strtolower($company_name);
+                if ($company_lower !== '' && $company_lower === $input_lower) {
+                    $cargo_company_key = $key;
+                    break;
+                }
+            }
         }
 
         if (empty($cargo_company_key)) {
@@ -225,13 +221,14 @@ function kargoTR_handle_csv_upload() {
         $success_count++;
     }
 
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closes the handle opened above for fgetcsv().
     fclose($handle);
 
     // Show Results
-    echo '<div class="notice notice-success is-dismissible"><p>İşlem Tamamlandı. Başarılı: <strong>' . $success_count . '</strong></p></div>';
+    echo '<div class="notice notice-success is-dismissible"><p>İşlem Tamamlandı. Başarılı: <strong>' . absint($success_count) . '</strong></p></div>';
     
     if ($error_count > 0) {
-        echo '<div class="notice notice-warning is-dismissible"><p>Bazı satırlar işlenemedi (' . $error_count . ' hata):</p>';
+        echo '<div class="notice notice-warning is-dismissible"><p>Bazı satırlar işlenemedi (' . absint($error_count) . ' hata):</p>';
         echo '<ul style="list-style: disc; margin-left: 20px;">';
         foreach ($errors as $err) {
             echo '<li>' . esc_html($err) . '</li>';

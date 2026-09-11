@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 //Kobikom Developer Document 
 // https://developer.kobikom.com.tr/#bb0d0c18-0eee-4101-b53d-b49361198f01
 

@@ -180,13 +180,13 @@ function kargoTR_display_admin_order_meta($order){
 
     if ($tc_enabled === 'yes') {
         $tc = $order->get_meta('_billing_tc_id');
-        if($tc) echo '<p><strong>'.__('TC Kimlik No').':</strong> ' . esc_html($tc) . '</p>';
+        if($tc) echo '<p><strong>'.esc_html__('TC Kimlik No', 'kargo-takip-turkiye').':</strong> ' . esc_html($tc) . '</p>';
     }
     
     if ($tax_enabled === 'yes') {
         $tax_office = $order->get_meta('_billing_tax_office');
         $tax_number = $order->get_meta('_billing_tax_number');
-        if($tax_office) echo '<p><strong>'.__('Vergi Dairesi').':</strong> ' . esc_html($tax_office) . '</p>';
-        if($tax_number) echo '<p><strong>'.__('Vergi Numarası').':</strong> ' . esc_html($tax_number) . '</p>';
+        if($tax_office) echo '<p><strong>'.esc_html__('Vergi Dairesi', 'kargo-takip-turkiye').':</strong> ' . esc_html($tax_office) . '</p>';
+        if($tax_number) echo '<p><strong>'.esc_html__('Vergi Numarası', 'kargo-takip-turkiye').':</strong> ' . esc_html($tax_number) . '</p>';
     }
 }

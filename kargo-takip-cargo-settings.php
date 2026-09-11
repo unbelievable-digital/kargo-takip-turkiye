@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 function kargoTR_cargo_setting_page() {
     // Mevcut kargo firmalarını al
@@ -677,7 +680,7 @@ function kargoTR_cargo_setting_page() {
                     action: 'kargotr_toggle_cargo_status',
                     key: key,
                     enabled: enabled ? 1 : 0,
-                    nonce: '<?php echo wp_create_nonce('kargotr_toggle_cargo'); ?>'
+                    nonce: '<?php echo esc_js(wp_create_nonce('kargotr_toggle_cargo')); ?>'
                 },
                 success: function(response) {
                     if (response.success) {
@@ -709,7 +712,7 @@ function kargoTR_cargo_setting_page() {
                     action: 'kargotr_save_cargo_days',
                     key: key,
                     days: days,
-                    nonce: '<?php echo wp_create_nonce('kargotr_save_days'); ?>'
+                    nonce: '<?php echo esc_js(wp_create_nonce('kargotr_save_days')); ?>'
                 },
                 success: function(response) {
                     if (response.success) {
@@ -760,7 +763,7 @@ function kargoTR_add_custom_cargo() {
         $key = strtolower($key);
         $key = preg_replace('/\s+/', '_', $key); // Boşlukları _ yap
         $key = preg_replace('/[^a-z0-9_]/', '', $key); // Sadece harf, rakam ve _
-        $key = $key . '_' . rand(100, 999); // Random sayı ekle
+        $key = $key . '_' . wp_rand(100, 999); // Random sayı ekle
     }
 
     // URL'de {code} placeholder'ını korumak için özel işlem
@@ -804,7 +807,7 @@ function kargoTR_add_custom_cargo() {
 add_action('wp_ajax_kargotr_toggle_cargo_status', 'kargoTR_toggle_cargo_status');
 function kargoTR_toggle_cargo_status() {
     // Nonce kontrolü
-    if (!wp_verify_nonce($_POST['nonce'], 'kargotr_toggle_cargo')) {
+    if (!isset($_POST['nonce'], $_POST['key'], $_POST['enabled']) || !wp_verify_nonce($_POST['nonce'], 'kargotr_toggle_cargo')) {
         wp_send_json_error('Güvenlik doğrulaması başarısız.');
     }
 
@@ -837,7 +840,7 @@ function kargoTR_toggle_cargo_status() {
 add_action('wp_ajax_kargotr_save_cargo_days', 'kargoTR_save_cargo_days');
 function kargoTR_save_cargo_days() {
     // Nonce kontrolü
-    if (!wp_verify_nonce($_POST['nonce'], 'kargotr_save_days')) {
+    if (!isset($_POST['nonce'], $_POST['key'], $_POST['days']) || !wp_verify_nonce($_POST['nonce'], 'kargotr_save_days')) {
         wp_send_json_error('Güvenlik doğrulaması başarısız.');
     }
 

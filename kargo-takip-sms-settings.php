@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 include('kobikom-helper.php');
 
@@ -124,7 +127,7 @@ function kargoTR_sms_setting_page() {
                                             echo '<select name="NetGsm_Header" id="NetGsm_Header" class="kargotr-select">';
                                             foreach ($netGsm_Header_get as $value) {
                                                 $selected = ($NetGsm_Header == $value) ? 'selected' : '';
-                                                echo '<option ' . $selected . ' value="' . esc_attr($value) . '">' . esc_html($value) . '</option>';
+                                                echo '<option ' . esc_attr($selected) . ' value="' . esc_attr($value) . '">' . esc_html($value) . '</option>';
                                             }
                                             echo '</select>';
                                         }
@@ -206,7 +209,7 @@ function kargoTR_sms_setting_page() {
                                             echo '<select name="Kobikom_Header" id="Kobikom_Header" class="kargotr-select">';
                                             foreach ($KobiKom_get_Headers as $value) {
                                                 $selected = ($Kobikom_option_Header == $value['title']) ? 'selected' : '';
-                                                echo '<option ' . $selected . ' value="' . esc_attr($value['title']) . '">' . esc_html($value['title']) . '</option>';
+                                                echo '<option ' . esc_attr($selected) . ' value="' . esc_attr($value['title']) . '">' . esc_html($value['title']) . '</option>';
                                             }
                                             echo '</select>';
                                         }
@@ -982,7 +985,7 @@ function kargoTR_sms_setting_page() {
                     action: 'kargotr_send_test_sms',
                     phone: phone,
                     template: template,
-                    nonce: '<?php echo wp_create_nonce('kargotr_test_sms'); ?>'
+                    nonce: '<?php echo esc_js(wp_create_nonce('kargotr_test_sms')); ?>'
                 },
                 beforeSend: function() {
                     $btn.prop('disabled', true).text('Gönderiliyor...');

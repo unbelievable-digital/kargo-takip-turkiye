@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 add_action('wp_dashboard_setup', 'kargoTR_add_dashboard_widgets');
 
@@ -18,7 +21,8 @@ function kargoTR_dashboard_widget_function() {
 
     // Get Shipped in Last 24 Hours
     // This avoids "midnight" issues where "Today" resets at 00:00 but user is still working.
-    $yesterday = date('Y-m-d H:i:s', strtotime('-24 hours'));
+    // _kargo_takip_timestamp current_time('mysql') ile (site saat dilimi) kaydedilir; karşılaştırma da site saatinde yapılır
+    $yesterday = gmdate('Y-m-d H:i:s', current_time('timestamp') - DAY_IN_SECONDS);
     $args = array(
         'status' => array('wc-kargo-verildi', 'wc-completed'),
         'meta_query' => array(
@@ -40,19 +44,19 @@ function kargoTR_dashboard_widget_function() {
         <div class="kargotr-stats-grid">
             <div class="kargotr-stat-item pending">
                 <span class="dashicons dashicons-clock"></span>
-                <div class="stat-value"><?php echo $pending_counts; ?></div>
+                <div class="stat-value"><?php echo esc_html($pending_counts); ?></div>
                 <div class="stat-label">Bekleyen Sipariş</div>
             </div>
             <div class="kargotr-stat-item shipped">
                 <span class="dashicons dashicons-car"></span>
-                <div class="stat-value"><?php echo $shipped_today_count; ?></div>
+                <div class="stat-value"><?php echo esc_html($shipped_today_count); ?></div>
                 <div class="stat-label">Son 24 Saatte Kargolanan</div>
             </div>
         </div>
         
         <div class="kargotr-widget-actions">
-            <a href="<?php echo admin_url('edit.php?post_type=shop_order&wc-status=processing'); ?>" class="button button-small">Siparişleri Gör</a>
-            <a href="<?php echo admin_url('admin.php?page=kargo-takip-turkiye-bulk-import'); ?>" class="button button-primary button-small">Toplu Kargo Girişi</a>
+            <a href="<?php echo esc_url(admin_url('edit.php?post_type=shop_order&wc-status=processing')); ?>" class="button button-small">Siparişleri Gör</a>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=kargo-takip-turkiye-bulk-import')); ?>" class="button button-primary button-small">Toplu Kargo Girişi</a>
         </div>
     </div>
 

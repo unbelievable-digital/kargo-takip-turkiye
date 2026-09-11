@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 function kargoTR_email_setting_page() {
     $email_template = get_option('kargoTr_email_template');
@@ -563,7 +566,7 @@ function kargoTR_email_setting_page() {
                     action: 'kargotr_email_preview',
                     template: content,
                     use_wc_template: useWcTemplate,
-                    nonce: '<?php echo wp_create_nonce('kargotr_email_preview'); ?>'
+                    nonce: '<?php echo esc_js(wp_create_nonce('kargotr_email_preview')); ?>'
                 },
                 beforeSend: function() {
                     previewModal.show();
@@ -607,7 +610,7 @@ function kargoTR_email_setting_page() {
                     template: content,
                     email: email,
                     use_wc_template: useWcTemplate,
-                    nonce: '<?php echo wp_create_nonce('kargotr_test_email'); ?>'
+                    nonce: '<?php echo esc_js(wp_create_nonce('kargotr_test_email')); ?>'
                 },
                 beforeSend: function() {
                     $btn.prop('disabled', true).text('Gönderiliyor...');
@@ -678,7 +681,7 @@ function kargoTR_ajax_email_preview() {
     // Örnek verilerle değiştir
     $preview_content = str_replace(
         array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
-        array('Ahmet Yılmaz', '12345', 'Yurtiçi Kargo', 'YK123456789', 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YK123456789', date('d.m.Y', strtotime('+3 days'))),
+        array('Ahmet Yılmaz', '12345', 'Yurtiçi Kargo', 'YK123456789', 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YK123456789', gmdate('d.m.Y', strtotime('+3 days', current_time('timestamp')))),
         $template
     );
 
@@ -712,7 +715,7 @@ function kargoTR_ajax_send_test_email() {
     // Örnek verilerle değiştir
     $content = str_replace(
         array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
-        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456', date('d.m.Y', strtotime('+3 days'))),
+        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456', gmdate('d.m.Y', strtotime('+3 days', current_time('timestamp')))),
         $template
     );
 
@@ -856,7 +859,7 @@ function kargoTR_get_wc_email_preview_html($content) {
     do_action('woocommerce_email_header', $email_heading, null);
 
     // Özel içerik
-    echo wpautop($content);
+    echo wp_kses_post(wpautop($content));
 
     // WooCommerce email footer
     do_action('woocommerce_email_footer', null);

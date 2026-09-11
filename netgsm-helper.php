@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 function kargoTR_get_netgsm_headers($username, $password) {
     // NetGSM REST v2 API for message headers

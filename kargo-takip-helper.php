@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 /**
  * Tüm kargo firmalarını birleştirir (config.php + custom)
@@ -27,6 +30,33 @@ function kargoTR_get_all_cargoes($include_disabled = true) {
     }
 
     return $all_cargoes;
+}
+
+/**
+ * Dışarıdan gelen kargo anahtarını sistemdeki anahtara eşler
+ * Önce birebir, sonra büyük/küçük harf duyarsız eşleştirme yapar (örn. eski "Sendeo" → "sendeo")
+ *
+ * @param string $input kargo anahtarı
+ * @return string sistemdeki anahtar veya bulunamazsa boş
+ */
+function kargoTR_resolve_cargo_key($input) {
+    $input = (string) $input;
+    if ($input === '') {
+        return '';
+    }
+
+    $cargoes = kargoTR_get_all_cargoes();
+    if (isset($cargoes[$input])) {
+        return $input;
+    }
+
+    foreach (array_keys($cargoes) as $key) {
+        if (strcasecmp($key, $input) === 0) {
+            return $key;
+        }
+    }
+
+    return '';
 }
 
 /*

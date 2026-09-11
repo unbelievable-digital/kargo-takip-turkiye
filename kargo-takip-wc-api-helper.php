@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
  
  
@@ -16,13 +19,13 @@ add_action( 'rest_api_init', function () {
     ) );
 } );
 
-function kargoTR_api_add_tracking_code() {
+function kargoTR_api_add_tracking_code($request) {
 
-    // Get order id, shipment company, and tracking code from the request
-    $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
-    $shipment_company = isset($_POST['shipment_company']) ? sanitize_text_field($_POST['shipment_company']) : '';
-    $tracking_code = isset($_POST['tracking_code']) ? sanitize_text_field($_POST['tracking_code']) : '';
-    $tracking_estimated_date = isset($_POST['tracking_estimated_date']) ? sanitize_text_field($_POST['tracking_estimated_date']) : '';
+    // Get order id, shipment company, and tracking code from the request (form-data veya JSON gövde)
+    $order_id = intval($request->get_param('order_id'));
+    $shipment_company = sanitize_text_field((string) $request->get_param('shipment_company'));
+    $tracking_code = sanitize_text_field((string) $request->get_param('tracking_code'));
+    $tracking_estimated_date = sanitize_text_field((string) $request->get_param('tracking_estimated_date'));
 
     // Check if the user is logged in
     if (!is_user_logged_in()) {
@@ -64,8 +67,9 @@ function kargoTR_api_add_tracking_code() {
         return new WP_Error('rest_invalid_order_id', 'Order id missing. Please post order_id', array('status' => 400));
     }
 
-    // Check if the shipment company is valid
-    if (!kargoTR_is_valid_shipment_company($shipment_company)) {
+    // Check if the shipment company is valid (harf duyarsız, sistemdeki anahtara eşlenir)
+    $shipment_company = kargoTR_resolve_cargo_key($shipment_company);
+    if (!$shipment_company) {
         return new WP_Error('rest_invalid_shipment_company', 'Invalid shipment company. Should be same as document list', array('status' => 400));
     }
 
@@ -100,7 +104,8 @@ function kargoTR_api_add_tracking_code() {
 
         $order->add_order_note(
             sprintf(
-                __('Kargo takip numarası güncellendi. Kargo şirketi: %s, Takip numarası: %s', 'woocommerce'),
+                /* translators: 1: cargo company key, 2: tracking number */
+                __('Kargo takip numarası güncellendi. Kargo şirketi: %1$s, Takip numarası: %2$s', 'kargo-takip-turkiye'),
                 $shipment_company,
                 $tracking_code
             )
@@ -131,7 +136,7 @@ function kargoTR_api_add_tracking_code() {
                 }
 
                 if ($days > 0) {
-                    $estimated_date = date('Y-m-d', strtotime("+$days days"));
+                    $estimated_date = gmdate('Y-m-d', strtotime("+$days days", current_time('timestamp')));
                     $order->update_meta_data('tracking_estimated_date', $estimated_date);
                 }
             }
@@ -144,7 +149,8 @@ function kargoTR_api_add_tracking_code() {
 
         $order->add_order_note(
             sprintf(
-                __('Kargo takip numarası eklendi. Kargo şirketi: %s, Takip numarası: %s', 'woocommerce'),
+                /* translators: 1: cargo company key, 2: tracking number */
+                __('Kargo takip numarası eklendi. Kargo şirketi: %1$s, Takip numarası: %2$s', 'kargo-takip-turkiye'),
                 $shipment_company,
                 $tracking_code
             )
@@ -155,9 +161,13 @@ function kargoTR_api_add_tracking_code() {
             do_action('order_ship_mail', $order_id);
         }
 
-        // Send SMS to customer if SMS provider is NetGSM
+        // Send SMS to customer via selected provider
         if ($sms_provider == 'NetGSM') {
             do_action('order_send_sms', $order_id);
+        }
+
+        if ($sms_provider == 'Kobikom') {
+            do_action('order_send_sms_kobikom', $order_id);
         }
 
         // Return success message
@@ -176,11 +186,8 @@ function kargoTR_is_valid_shipment_company($shipment_company) {
         return false;
     }
 
-    // Tüm kargo firmalarını al (config + custom, disabled dahil)
-    $all_cargoes = kargoTR_get_all_cargoes(true);
-
-    // Check if shipment company is in array keys
-    return array_key_exists($shipment_company, $all_cargoes);
+    // Tüm kargo firmaları içinde (config + custom, disabled dahil) harf duyarsız ara
+    return kargoTR_resolve_cargo_key($shipment_company) !== '';
 }
 
 

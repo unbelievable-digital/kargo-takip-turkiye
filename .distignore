@@ -1,0 +1,10 @@
+/.git
+/.github
+/.idea
+/.wordpress-org
+.gitignore
+.distignore
+.DS_Store
+CLAUDE.md
+Tasks.md
+*.log

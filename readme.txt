@@ -1,11 +1,11 @@
 === Kargo Takip ===
 Contributors: zgrkaralar,unbelievabledigital
-Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo, yurtici kargo, yurt ici kargo, mng kargo, surat kargo, sürat kargo, shipment tracking, foodman kargo,Trendyol Kargo,hepsijet kargo, trendyol, hepsijet, woocommerce kargo, hpos
+Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo
 Requires at least: 4.9
-Tested up to: 6.9
-WC tested up to: 10.0.0
+Tested up to: 7.1
+WC tested up to: 11.1.0
 Requires PHP: 7.1
-Stable tag: 0.2.4
+Stable tag: 0.2.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,6 +78,20 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 
 == Changelog ==
 
+= 0.2.5 =
+* Sendeo Kargo devre dışı bırakılamama sorunu düzeltildi. Eski "Sendeo" anahtarıyla kaydedilmiş siparişler otomatik olarak yeni anahtara taşınır
+* SMS servis sağlayıcı seçimi SMS Ayarları sayfasından kaydedilemiyordu, düzeltildi
+* Genel Ayarlar kaydedildiğinde SMS servis sağlayıcı ve çift bildirim engelleme ayarlarının sıfırlanması düzeltildi
+* Toplu kargo girişinde PHP 8 hatası düzeltildi, firma adıyla eşleştirme (örn. "Aras Kargo") çalışır hale getirildi
+* Devre dışı bırakılan kargo firmasına ait bir sipariş kaydedildiğinde firma bilgisinin silinmesi düzeltildi
+* Takip kodu değişikliği algılama iyileştirildi (örn. baştaki sıfırın silinmesi artık kaydediliyor)
+* REST API: Kobikom SMS gönderimi eklendi, JSON gövde desteği eklendi, kargo firması anahtarı büyük/küçük harf duyarsız
+* Kargo Ayarları sayfasında teslimat süresi kaydetme hatası düzeltildi
+* NetGSM Hata Kodu 70 sorunu düzeltildi
+* Kargoist takip adresi güncellendi
+* Güvenlik ve kod kalitesi iyileştirmeleri (çıktı escape, doğrudan dosya erişimi koruması, WordPress.org Plugin Check uyumluluğu)
+* WordPress 7.1 ve WooCommerce 11.1 ile test edildi
+
 = 0.2.4 =
 * 27+ kargo firması desteği - yeni firmalar eklendi
 * Eksik kargo logoları eklendi
@@ -134,7 +148,6 @@ NetGSM hatasi duzeltildi.
 Firma logolari eklendi
 Güvenlik güncellemesi yapıldı
 
-== Changelog ==
 = 0.0.99 =
 Kargo firma listesi (select2) verisi config.php dosyasından alıncak şekilde düzenlendi.
 Sendo Kargo eklendi
