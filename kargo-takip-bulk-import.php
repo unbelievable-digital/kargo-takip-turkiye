@@ -179,6 +179,18 @@ function kargoTR_handle_csv_upload() {
             continue;
         }
 
+        // Kullanımdan kaldırılan firma girildiyse devralan firmaya kaydet
+        $mapped_key = kargoTR_map_deprecated_key($cargo_company_key);
+        if ($mapped_key !== $cargo_company_key) {
+            $order->add_order_note(sprintf(
+                /* translators: 1: deprecated cargo company name, 2: successor cargo company name */
+                __('%1$s kullanımdan kaldırıldı, kargo bilgisi %2$s firmasına kaydedildi.', 'kargo-takip-turkiye'),
+                kargoTR_get_company_name($cargo_company_key),
+                kargoTR_get_company_name($mapped_key)
+            ));
+            $cargo_company_key = $mapped_key;
+        }
+
         // Update Order Meta (HPOS uyumlu)
         $order->update_meta_data('tracking_company', $cargo_company_key);
         $order->update_meta_data('tracking_code', $tracking_code);

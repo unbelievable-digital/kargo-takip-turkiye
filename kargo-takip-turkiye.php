@@ -568,13 +568,16 @@ function kargoTR_general_shipment_details_for_admin($order) {
     $default_days = get_option('kargo_estimated_delivery_days', '3');
     $company_days = get_option('kargoTR_cargo_delivery_times', array());
     
-    // Siparişin mevcut firması devre dışıysa da listede kalsın, yoksa kaydetmede firma silinir
+    // Siparişin mevcut firması listede yoksa da seçili kalsın, yoksa kaydetmede firma silinir
     $company_options = kargoTR_cargo_company_list();
     if ($tracking_company && !isset($company_options[$tracking_company])) {
         $all_cargoes = kargoTR_get_all_cargoes();
-        $company_options[$tracking_company] = isset($all_cargoes[$tracking_company])
-            ? $all_cargoes[$tracking_company]['company'] . ' (devre dışı)'
-            : $tracking_company;
+        if (isset($all_cargoes[$tracking_company])) {
+            $suffix = kargoTR_is_deprecated_cargo($tracking_company) ? ' (kullanımdan kaldırıldı)' : ' (devre dışı)';
+            $company_options[$tracking_company] = $all_cargoes[$tracking_company]['company'] . $suffix;
+        } else {
+            $company_options[$tracking_company] = $tracking_company;
+        }
     }
 
     // Use output buffer to capture the HTML markup and return it as a string

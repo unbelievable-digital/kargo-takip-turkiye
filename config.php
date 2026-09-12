@@ -20,7 +20,13 @@ return array(
             "url" => "https://ebranch.araskargo.com.tr/track/",
             "logo" => "assets/logos/aras.png"
         ),
+        // Kullanımdan kaldırıldı: yeni siparişlerde seçilemez, eski siparişler etkilenmez
         "mng" => array(
+            "deprecated" => array(
+                "since" => "2025-05-22",
+                "reason" => "MNG Kargo, DHL eCommerce Türkiye'ye devredildi.",
+                "successor" => "dhlecommerce",
+            ),
             "company" => "MNG Kargo",
             "url" => "http://service.mngkargo.com.tr/iactive/popup/KargoTakip/link1.asp?k=",
             "logo" => "assets/logos/mng.png"
@@ -85,7 +91,13 @@ return array(
             "url" => "https://www.hepsijet.com/gonderi-takibi/",
             "logo" => "assets/logos/hepsijet.png"
         ),
+        // Kullanımdan kaldırıldı: yeni siparişlerde seçilemez, eski siparişler etkilenmez
         "sendeo" => array(
+            "deprecated" => array(
+                "since" => "2025-01-01",
+                "reason" => "Sendeo Kargo faaliyetlerini Kolay Gelsin çatısı altına taşıdı.",
+                "successor" => "kolaygelsin",
+            ),
             "company" => "Sendeo Kargo",
             "url" => "https://www.sendeo.com.tr/kargo-takip/",
             "logo" => "assets/logos/sendeo.png"

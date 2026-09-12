@@ -17,6 +17,15 @@ function kargoTR_cargo_setting_page() {
     // Tüm firmalar
     $all_cargoes = array_merge($default_cargoes, $custom_cargoes);
 
+    // Kullanımdan kaldırılanları ayır: bunlar seçilemez, ayrı bölümde listelenir
+    $deprecated_cargoes = array();
+    foreach ($all_cargoes as $key => $cargo) {
+        if (!empty($cargo['deprecated'])) {
+            $deprecated_cargoes[$key] = $cargo;
+            unset($all_cargoes[$key]);
+        }
+    }
+
     ?>
     <div class="wrap kargotr-cargo-settings">
         <h1>
@@ -165,6 +174,69 @@ function kargoTR_cargo_setting_page() {
                         </table>
                     </div>
                 </div>
+
+                <?php if (!empty($deprecated_cargoes)): ?>
+                <!-- KART 3: Kullanımdan Kaldırılan Firmalar -->
+                <div class="kargotr-card">
+                    <div class="kargotr-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-archive"></span>
+                            Kullanımdan Kaldırılan Firmalar
+                        </h2>
+                        <p class="description">Bu firmalar kapandığı veya devredildiği için yeni siparişlerde seçilemez. Eski siparişlerin kargo bilgisi olduğu gibi korunur.</p>
+                    </div>
+                    <div class="kargotr-card-body" style="padding: 0;">
+                        <table class="kargotr-cargo-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Logo</th>
+                                    <th>Firma Adı</th>
+                                    <th>Anahtar</th>
+                                    <th>Açıklama</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($deprecated_cargoes as $key => $cargo):
+                                    $info = kargoTR_get_deprecated_info($key);
+                                    $successor_name = ($info && $info['successor']) ? kargoTR_get_company_name($info['successor']) : '';
+                                    $logo_url = '';
+
+                                    if (!empty($cargo['logo'])) {
+                                        if (strpos($cargo['logo'], 'http') === 0) {
+                                            $logo_url = $cargo['logo'];
+                                        } else {
+                                            $logo_url = plugin_dir_url(__FILE__) . $cargo['logo'];
+                                        }
+                                    }
+                                ?>
+                                <tr class="disabled-row" data-key="<?php echo esc_attr($key); ?>">
+                                    <td class="logo-cell">
+                                        <?php if ($logo_url): ?>
+                                            <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($cargo['company']); ?>">
+                                        <?php else: ?>
+                                            <span class="dashicons dashicons-format-image no-logo"></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <strong><?php echo esc_html($cargo['company']); ?></strong>
+                                        <span class="kargotr-badge kargotr-badge-default">Kullanımdan kaldırıldı</span>
+                                    </td>
+                                    <td><code><?php echo esc_html($key); ?></code></td>
+                                    <td>
+                                        <?php if ($info && $info['reason']): ?>
+                                            <?php echo esc_html($info['reason']); ?>
+                                        <?php endif; ?>
+                                        <?php if ($successor_name): ?>
+                                            <br><span class="description">Yeni kargolar için: <strong><?php echo esc_html($successor_name); ?></strong></span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- Sağ Panel - Bilgi -->

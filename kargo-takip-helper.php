@@ -59,6 +59,64 @@ function kargoTR_resolve_cargo_key($input) {
     return '';
 }
 
+/**
+ * Kullanımdan kaldırılmış bir firmanın bilgisini verir
+ * Kullanımdan kaldırılan firmalar yeni siparişlerde seçilemez ama eski siparişlerde
+ * firma adı, logosu ve takip bağlantısı çalışmaya devam eder.
+ *
+ * @param string $key kargo anahtarı
+ * @return array|null since / reason / successor bilgisi veya null
+ */
+function kargoTR_get_deprecated_info($key) {
+    $cargoes = kargoTR_get_all_cargoes();
+
+    if (!isset($cargoes[$key]) || empty($cargoes[$key]['deprecated'])) {
+        return null;
+    }
+
+    $info = $cargoes[$key]['deprecated'];
+
+    return array(
+        'since' => isset($info['since']) ? $info['since'] : '',
+        'reason' => isset($info['reason']) ? $info['reason'] : '',
+        'successor' => isset($info['successor']) ? $info['successor'] : '',
+    );
+}
+
+/**
+ * Firma kullanımdan kaldırıldı mı?
+ *
+ * @param string $key kargo anahtarı
+ * @return bool
+ */
+function kargoTR_is_deprecated_cargo($key) {
+    return kargoTR_get_deprecated_info($key) !== null;
+}
+
+/**
+ * Kullanımdan kaldırılmış anahtarı devralan firmanın anahtarına çevirir
+ * Devralan yoksa veya devralan da kullanımdan kaldırılmışsa anahtar değişmez.
+ *
+ * @param string $key kargo anahtarı
+ * @return string kullanılacak kargo anahtarı
+ */
+function kargoTR_map_deprecated_key($key) {
+    $info = kargoTR_get_deprecated_info($key);
+
+    if (!$info || $info['successor'] === '') {
+        return $key;
+    }
+
+    $cargoes = kargoTR_get_all_cargoes();
+    $successor = $info['successor'];
+
+    if (!isset($cargoes[$successor]) || !empty($cargoes[$successor]['deprecated'])) {
+        return $key;
+    }
+
+    return $successor;
+}
+
 /*
  * Kargo anahtarını kullanarak ilgili kargo firma ismini verir.
  *
@@ -124,7 +182,7 @@ function kargoTR_getCargoName($tracking_company = NULL) {
 
 /**
  * Sistemde tanımlı kargo firmalarının isim listesini verir
- * Devre dışı firmalar hariç tutulur
+ * Devre dışı ve kullanımdan kaldırılmış firmalar hariç tutulur
  *
  * @return array kargo firma ismi ve anahtarı
  */
@@ -134,6 +192,10 @@ function kargoTR_cargo_company_list() : array {
 
     $companies = ["" => "Kargo Firması Seçiniz"];
     foreach($cargoes as $key => $cargo) {
+        // Kullanımdan kaldırılan firmalar yeni siparişlerde seçilemez
+        if (!empty($cargo['deprecated'])) {
+            continue;
+        }
         $companies[$key] = $cargo["company"];
     }
     return $companies;
