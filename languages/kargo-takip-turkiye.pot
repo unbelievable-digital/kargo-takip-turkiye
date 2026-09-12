@@ -1,0 +1,234 @@
+# Copyright (C) 2026 Unbelievable.Digital
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Kargo Takip Türkiye - WooCommerce & Dokan Kargo Takip, SMS ve E-posta 0.4\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/kargo-takip-turkiye\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-12T20:21:44+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: kargo-takip-turkiye\n"
+
+#. Plugin Name of the plugin
+#: kargo-takip-turkiye.php
+msgid "Kargo Takip Türkiye - WooCommerce & Dokan Kargo Takip, SMS ve E-posta"
+msgstr ""
+
+#. Description of the plugin
+#: kargo-takip-turkiye.php
+msgid "WooCommerce ve Dokan siparişlerinize kargo takip bilgisi ekleyin, müşterilerinize otomatik SMS ve e-posta bildirimi gönderin."
+msgstr ""
+
+#. Author of the plugin
+#: kargo-takip-turkiye.php
+msgid "Unbelievable.Digital"
+msgstr ""
+
+#. Author URI of the plugin
+#: kargo-takip-turkiye.php
+msgid "https://unbelievable.digital"
+msgstr ""
+
+#. translators: 1: deprecated cargo company name, 2: successor cargo company name
+#: kargo-takip-bulk-import.php:228
+#: kargo-takip-wc-api-helper.php:83
+#, php-format
+msgid "%1$s kullanımdan kaldırıldı, kargo bilgisi %2$s firmasına kaydedildi."
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:25
+msgid "Lütfen İl Seçiniz"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:26
+msgid "Lütfen İlçe Seçiniz"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:27
+#: kargo-takip-checkout-fields.php:54
+#: kargo-takip-checkout-fields.php:71
+#: kargo-takip-checkout-fields.php:121
+msgid "Önce İl Seçiniz"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:84
+#: kargo-takip-checkout-fields.php:183
+msgid "TC Kimlik No"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:85
+msgid "11 haneli TC Kimlik Numaranız"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:96
+#: kargo-takip-checkout-fields.php:97
+#: kargo-takip-checkout-fields.php:189
+msgid "Vergi Dairesi"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:104
+#: kargo-takip-checkout-fields.php:105
+#: kargo-takip-checkout-fields.php:190
+msgid "Vergi Numarası"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:125
+msgid "İl"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:126
+msgid "İlçe"
+msgstr ""
+
+#: kargo-takip-checkout-fields.php:156
+#: kargo-takip-checkout-fields.php:165
+msgid "Lütfen geçerli bir TC Kimlik Numarası giriniz."
+msgstr ""
+
+#: kargo-takip-dokan.php:71
+msgid "Kargo Takip Bilgisi"
+msgstr ""
+
+#: kargo-takip-dokan.php:80
+#: kargo-takip-order-list.php:24
+#: kargo-takip-order-list.php:35
+#: kargo-takip-order-list.php:38
+msgid "Kargo Firması"
+msgstr ""
+
+#: kargo-takip-dokan.php:95
+msgid "Takip Numarası"
+msgstr ""
+
+#: kargo-takip-dokan.php:106
+msgid "Kargo Bilgisini Kaydet"
+msgstr ""
+
+#: kargo-takip-dokan.php:113
+msgid "Kargoyu takip et"
+msgstr ""
+
+#: kargo-takip-dokan.php:224
+msgid "Kargo bilgisi kaydedildi."
+msgstr ""
+
+#: kargo-takip-dokan.php:246
+msgid "Kargo Bilgileri"
+msgstr ""
+
+#: kargo-takip-dokan.php:265
+msgid "Takip et"
+msgstr ""
+
+#: kargo-takip-helper.php:70
+msgid "Siparişiniz Kargoya Verildi"
+msgstr ""
+
+#: kargo-takip-helper.php:71
+msgid "Kargo hazırlanıyor"
+msgstr ""
+
+#: kargo-takip-helper.php:72
+msgid "Kargo firması :"
+msgstr ""
+
+#: kargo-takip-helper.php:73
+msgid "Kargo takip numarası:"
+msgstr ""
+
+#: kargo-takip-helper.php:74
+msgid "Tahmini Teslimat:"
+msgstr ""
+
+#: kargo-takip-helper.php:75
+msgid "Kargonuzu takibi için buraya tıklayın."
+msgstr ""
+
+#: kargo-takip-helper.php:76
+msgid "Kargo Takibi"
+msgstr ""
+
+#. translators: 1: mapped order status name, 2: whether email was sent (Evet/Hayır), 3: whether SMS was sent (Evet/Hayır)
+#: kargo-takip-status-mapping.php:223
+#, php-format
+msgid "Durum eşlemesi tetiklendi: \"%1$s\" → \"Kargoya Verildi\". E-posta: %2$s, SMS: %3$s"
+msgstr ""
+
+#: kargo-takip-status-mapping.php:272
+msgid "Durum eşlemesi algılandı. Bu sipariş için daha önce bildirim gönderildiğinden ikinci bildirim gönderilmedi."
+msgstr ""
+
+#. translators: %s: mapped order status name
+#: kargo-takip-status-mapping.php:280
+#, php-format
+msgid "Durum eşlemesi: \"%s\" → \"Kargoya Verildi\""
+msgstr ""
+
+#. translators: %s: number of orders
+#: kargo-takip-turkiye.php:627
+#, php-format
+msgid "Kargoya verildi(%s)"
+msgid_plural "Kargoya verildi (%s)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: kargo-takip-turkiye.php:633
+msgctxt "WooCommerce Order status"
+msgid "Kargoya Verildi"
+msgstr ""
+
+#: kargo-takip-turkiye.php:663
+msgid "Kargoya Verildi olarak işaretle"
+msgstr ""
+
+#: kargo-takip-turkiye.php:965
+msgid "Kargo firması güncellendi."
+msgstr ""
+
+#: kargo-takip-turkiye.php:972
+msgid "Kargo takip kodu güncellendi."
+msgstr ""
+
+#: kargo-takip-turkiye.php:1242
+msgid "Kargo bildirim e-postası gönderilemedi: siparişte e-posta adresi yok."
+msgstr ""
+
+#. translators: %s: customer billing email address
+#: kargo-takip-turkiye.php:1250
+#, php-format
+msgid "Müşterinin %s e-postasına kargo takip bilgileri gönderilmiştir."
+msgstr ""
+
+#. translators: %s: customer billing email address
+#: kargo-takip-turkiye.php:1257
+#, php-format
+msgid "Kargo bildirim e-postası %s adresine gönderilemedi. Sitenizin e-posta ayarlarını kontrol edin."
+msgstr ""
+
+#. translators: 1: cargo company key, 2: tracking number
+#: kargo-takip-wc-api-helper.php:130
+#, php-format
+msgid "Kargo takip numarası güncellendi. Kargo şirketi: %1$s, Takip numarası: %2$s"
+msgstr ""
+
+#. translators: 1: cargo company key, 2: tracking number
+#: kargo-takip-wc-api-helper.php:177
+#, php-format
+msgid "Kargo takip numarası eklendi. Kargo şirketi: %1$s, Takip numarası: %2$s"
+msgstr ""
+
+#: kargo-takip-wc-api-helper.php:185
+msgid "Kargo takip bilgisi API ile eklendi"
+msgstr ""
+
+#. translators: %s: Customer first name
+#: mail-template/email-shipment-template.php:30
+#: mail-template/email-shipment-update-template.php:30
+#, php-format
+msgid "Merhaba %s,"
+msgstr ""

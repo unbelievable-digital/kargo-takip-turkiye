@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 7.1
 WC tested up to: 11.1.0
 Requires PHP: 7.1
-Stable tag: 0.4
+Stable tag: 0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.5 =
+* **Müşteriye görünen tüm metinler artık ayarlanabilir** - E-posta konusu, "Kargo hazırlanıyor" yazısı, kargo firması ve takip numarası etiketleri, takip bağlantısı metni ve Hesabım sayfasındaki buton kendi dilinizde yazılabilir. Çok dilli ve yabancı dildeki mağazalar artık eklenti dosyalarını düzenlemek zorunda değil
+* E-posta konusu E-Mail Ayarları, diğer metinler Genel Ayarlar sayfasından düzenlenir; boş bırakılan alanlarda varsayılan Türkçe metin kullanılır
+* Çeviri şablonu (languages/kargo-takip-turkiye.pot) eklendi; Loco Translate gibi araçlarla eklenti çevrilebilir
+* E-posta içeriğindeki {order_id} artık müşterinin gördüğü sipariş numarasını yazıyor
 
 = 0.4 =
 * Eklenti adı ve açıklaması güncellendi: Dokan uyumluluğu, toplu kargo girişi, durum eşlemesi ve REST API gibi özellikler artık açıklamada yer alıyor

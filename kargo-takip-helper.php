@@ -60,6 +60,39 @@ function kargoTR_resolve_cargo_key($input) {
 }
 
 /**
+ * Müşteriye görünen metinlerin varsayılanları
+ * Mağaza sahibi bunları ayarlar sayfasından kendi diline göre değiştirebilir.
+ *
+ * @return array anahtar => varsayılan metin
+ */
+function kargoTR_default_customer_texts() {
+    return array(
+        'kargoTR_text_email_subject' => __('Siparişiniz Kargoya Verildi', 'kargo-takip-turkiye'),
+        'kargoTR_text_preparing' => __('Kargo hazırlanıyor', 'kargo-takip-turkiye'),
+        'kargoTR_text_company_label' => __('Kargo firması :', 'kargo-takip-turkiye'),
+        'kargoTR_text_code_label' => __('Kargo takip numarası:', 'kargo-takip-turkiye'),
+        'kargoTR_text_estimated_label' => __('Tahmini Teslimat:', 'kargo-takip-turkiye'),
+        'kargoTR_text_track_link' => __('Kargonuzu takibi için buraya tıklayın.', 'kargo-takip-turkiye'),
+        'kargoTR_text_account_button' => __('Kargo Takibi', 'kargo-takip-turkiye'),
+    );
+}
+
+/**
+ * Müşteriye görünen bir metni verir
+ * Ayarlarda bir değer varsa onu, yoksa varsayılanı döndürür.
+ *
+ * @param string $key metin anahtarı (kargoTR_text_...)
+ * @return string
+ */
+function kargoTR_text($key) {
+    $defaults = kargoTR_default_customer_texts();
+    $default = isset($defaults[$key]) ? $defaults[$key] : '';
+    $value = get_option($key, '');
+
+    return (is_string($value) && trim($value) !== '') ? $value : $default;
+}
+
+/**
  * SMS sağlayıcı sorgularını kısa süreli önbelleğe alır
  * Ayarlar sayfası her açılışta bakiye/başlık isteği atıyordu; sayfa bu yüzden yavaştı.
  *

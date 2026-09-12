@@ -90,6 +90,16 @@ function kargoTR_email_setting_page() {
                                 </div>
                             </div>
 
+                            <!-- E-posta Konusu -->
+                            <div class="kargotr-form-field" style="margin-bottom: 16px;">
+                                <label for="kargoTR_text_email_subject"><strong>E-posta Konusu</strong></label>
+                                <input type="text" id="kargoTR_text_email_subject" name="kargoTR_text_email_subject"
+                                       value="<?php echo esc_attr(get_option('kargoTR_text_email_subject', '')); ?>"
+                                       placeholder="<?php echo esc_attr(kargoTR_text('kargoTR_text_email_subject')); ?>"
+                                       class="large-text">
+                                <p class="description">Bildirim e-postasının konu satırı. Boş bırakırsanız varsayılan metin kullanılır. Kendi dilinizde yazabilirsiniz.</p>
+                            </div>
+
                             <!-- WYSIWYG Editör -->
                             <div class="kargotr-editor-wrapper">
                                 <?php

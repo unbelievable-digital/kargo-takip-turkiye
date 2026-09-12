@@ -53,3 +53,17 @@ kargotr_unfake_http($filter);
 ```
 
 Test dosyaları `.distignore` ve `.pressshipignore` ile sürüm paketinin dışında tutulur.
+
+## Çeviri şablonunu güncelleme
+
+Metinler değiştiğinde `languages/kargo-takip-turkiye.pot` yeniden üretilmelidir:
+
+```bash
+npx --yes @wordpress/env run cli wp i18n make-pot \
+  wp-content/plugins/kargo-takip-turkiye \
+  wp-content/plugins/kargo-takip-turkiye/languages/kargo-takip-turkiye.pot \
+  --exclude=tests,bin --domain=kargo-takip-turkiye
+```
+
+Müşteriye görünen metinler ayrıca Genel Ayarlar ve E-Mail Ayarları sayfalarından
+doğrudan yazılabilir; bu yol çeviri dosyası gerektirmez.

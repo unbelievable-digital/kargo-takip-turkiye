@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye - WooCommerce & Dokan Kargo Takip, SMS ve E-posta
  * Description: WooCommerce ve Dokan siparişlerinize kargo takip bilgisi ekleyin, müşterilerinize otomatik SMS ve e-posta bildirimi gönderin.
- * Version: 0.4
+ * Version: 0.5
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  * Text Domain: kargo-takip-turkiye
@@ -178,6 +178,14 @@ function kargoTR_register_settings() {
         'kargo_estimated_delivery_days' => '3',
         'kargo_estimated_delivery_enabled' => $defaultValues['select'],
     );
+
+    // Müşteriye görünen metinler: boş bırakılırsa varsayılan (Türkçe) metin kullanılır
+    foreach (kargoTR_default_customer_texts() as $text_key => $text_default) {
+        if ($text_key === 'kargoTR_text_email_subject') {
+            continue; // E-posta konusu E-Mail Ayarları sayfasında
+        }
+        $general_settings[$text_key] = '';
+    }
     foreach ($general_settings as $key => $default) {
         register_setting('kargoTR-general-settings-group', $key, array('default' => $default));
     }
@@ -186,6 +194,7 @@ function kargoTR_register_settings() {
     $email_settings = array(
         'kargoTr_email_template' => $defaultValues['emailTemplate'],
         'kargoTr_use_wc_template' => $defaultValues['select'],
+        'kargoTR_text_email_subject' => '',
     );
     foreach ($email_settings as $key => $default) {
         register_setting('kargoTR-email-settings-group', $key, array('default' => $default));
@@ -345,6 +354,48 @@ function kargoTR_setting_page() {
                                 <strong>SMS Bildirimleri:</strong> SMS ayarlarını yapılandırmak için
                                 <a href="<?php echo esc_url(admin_url('admin.php?page=kargo-takip-turkiye-sms-settings')); ?>">SMS Ayarları</a>
                                 sayfasını ziyaret edin.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KART: Müşteriye Görünen Metinler -->
+                    <div class="kargotr-card">
+                        <div class="kargotr-card-header">
+                            <h2>
+                                <span class="dashicons dashicons-translation"></span>
+                                Müşteriye Görünen Metinler
+                            </h2>
+                            <p class="description">Müşterilerinizin gördüğü metinleri kendi dilinizde yazabilirsiniz. Boş bırakırsanız varsayılan Türkçe metin kullanılır.</p>
+                        </div>
+                        <div class="kargotr-card-body">
+                            <?php
+                            $customer_text_labels = array(
+                                'kargoTR_text_preparing' => 'Kargo hazırlanıyor yazısı',
+                                'kargoTR_text_company_label' => 'Kargo firması etiketi',
+                                'kargoTR_text_code_label' => 'Takip numarası etiketi',
+                                'kargoTR_text_estimated_label' => 'Tahmini teslimat etiketi',
+                                'kargoTR_text_track_link' => 'Takip bağlantısı metni',
+                                'kargoTR_text_account_button' => 'Hesabım sayfasındaki buton',
+                            );
+                            $customer_text_defaults = kargoTR_default_customer_texts();
+                            ?>
+                            <div class="kargotr-form-grid">
+                                <?php foreach ($customer_text_labels as $text_key => $label) : ?>
+                                    <div class="kargotr-form-field">
+                                        <label for="<?php echo esc_attr($text_key); ?>"><?php echo esc_html($label); ?></label>
+                                        <input type="text" id="<?php echo esc_attr($text_key); ?>" name="<?php echo esc_attr($text_key); ?>"
+                                               value="<?php echo esc_attr(get_option($text_key, '')); ?>"
+                                               placeholder="<?php echo esc_attr($customer_text_defaults[$text_key]); ?>"
+                                               class="regular-text">
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                            <div class="kargotr-tip" style="margin-top: 16px;">
+                                <span class="dashicons dashicons-email"></span>
+                                <strong>E-posta konusu:</strong> Bildirim e-postasının konu satırını
+                                <a href="<?php echo esc_url(admin_url('admin.php?page=kargo-takip-turkiye-email-settings')); ?>">E-Mail Ayarları</a>
+                                sayfasından değiştirebilirsiniz.
                             </div>
                         </div>
                         <div class="kargotr-card-footer">
@@ -994,7 +1045,7 @@ function kargoTR_shipment_details($order) {
     if ( $order->get_status() != 'cancelled') {
         if ($tracking_company == '') {
             if ($kargo_hazirlaniyor_text_option =='yes') {
-                echo "Kargo hazırlanıyor";
+                echo esc_html(kargoTR_text('kargoTR_text_preparing'));
             } else {
             ?>
 
@@ -1005,15 +1056,15 @@ function kargoTR_shipment_details($order) {
             ?>
 <div class="shipment-order-page">
     <h2 id="kargoTakipSection">Kargo Takip</h2>
-    <h4>Kargo firması : </h4> <?php echo esc_html(kargoTR_get_company_name($tracking_company)); ?>
-    <h4><?php esc_html_e( 'Kargo takip numarası:', 'kargo-takip-turkiye' );?></h4> <?php echo esc_html($tracking_code); ?>
+    <h4><?php echo esc_html(kargoTR_text('kargoTR_text_company_label')); ?></h4> <?php echo esc_html(kargoTR_get_company_name($tracking_company)); ?>
+    <h4><?php echo esc_html(kargoTR_text('kargoTR_text_code_label')); ?></h4> <?php echo esc_html($tracking_code); ?>
     <?php
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
     if ($estimated_delivery_enabled === 'yes' && !empty($tracking_estimated_date)): ?>
-        <h4><?php esc_html_e( 'Tahmini Teslimat:', 'kargo-takip-turkiye' );?></h4> <?php echo esc_html(date_i18n(get_option('date_format'), strtotime($tracking_estimated_date))); ?>
+        <h4><?php echo esc_html(kargoTR_text('kargoTR_text_estimated_label')); ?></h4> <?php echo esc_html(date_i18n(get_option('date_format'), strtotime($tracking_estimated_date))); ?>
     <?php endif; ?>
     <br>
-    <?php echo '<a href="' . esc_url(kargoTR_getCargoTrack($tracking_company, $tracking_code)) . '" target="_blank" rel="noopener noreferrer">'; esc_html_e( 'Kargonuzu takibi için buraya tıklayın.', 'kargo-takip-turkiye' );  echo '</a>'; ?>
+    <?php echo '<a href="' . esc_url(kargoTR_getCargoTrack($tracking_company, $tracking_code)) . '" target="_blank" rel="noopener noreferrer">'; echo esc_html(kargoTR_text('kargoTR_text_track_link'));  echo '</a>'; ?>
 </div>
 <?php
         }
@@ -1032,7 +1083,7 @@ function kargoTR_add_kargo_button_in_order($actions, $order) {
         $cargoTrackingUrl = kargoTR_getCargoTrack($tracking_company, $tracking_code);
         $actions[$action_slug] = array(
             'url' => $cargoTrackingUrl,
-            'name' => 'Kargo Takibi',
+            'name' => kargoTR_text('kargoTR_text_account_button'),
         );
         return $actions;
     } else {
@@ -1183,7 +1234,7 @@ function kargoTR_kargo_eposta_details($order_id) {
     $mailer = WC()->mailer();
 
     $mailTo = $order->get_billing_email();
-    $subject = "Siparişiniz Kargoya Verildi";
+    $subject = kargoTR_text('kargoTR_text_email_subject');
     $details = kargoTR_kargo_bildirim_icerik($order, $mailer, $subject);
     $mailHeaders[] = "Content-Type: text/html\r\n";
 
