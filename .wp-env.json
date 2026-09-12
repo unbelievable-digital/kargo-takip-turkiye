@@ -2,9 +2,10 @@
 	"core": null,
 	"phpVersion": "7.4",
 	"plugins": [
-		".",
-		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip"
+		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip",
+		"."
 	],
+	"testsEnvironment": false,
 	"config": {
 		"WP_DEBUG": true,
 		"WP_DEBUG_DISPLAY": false
