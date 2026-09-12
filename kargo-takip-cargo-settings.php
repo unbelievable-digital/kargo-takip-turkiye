@@ -167,6 +167,18 @@ function kargoTR_cargo_setting_page() {
                                                    <?php checked(!$is_disabled); ?>>
                                             <span class="kargotr-slider"></span>
                                         </label>
+                                        <?php if ($is_custom): ?>
+                                            <div style="margin-top: 6px; white-space: nowrap;">
+                                                <button type="button" class="button button-small kargotr-edit-cargo"
+                                                        data-key="<?php echo esc_attr($key); ?>"
+                                                        data-name="<?php echo esc_attr($cargo['company']); ?>"
+                                                        data-url="<?php echo esc_attr($cargo['url']); ?>"
+                                                        data-logo="<?php echo esc_attr(isset($cargo['logo']) ? $cargo['logo'] : ''); ?>">Düzenle</button>
+                                                <button type="button" class="button button-small kargotr-delete-cargo"
+                                                        data-key="<?php echo esc_attr($key); ?>"
+                                                        data-name="<?php echo esc_attr($cargo['company']); ?>">Sil</button>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -739,6 +751,61 @@ function kargoTR_cargo_setting_page() {
             });
         });
 
+        // Özel firmayı düzenle: anahtar değişmez, sadece ad/adres/logo güncellenir
+        $('.kargotr-edit-cargo').on('click', function() {
+            var $btn = $(this);
+            var key = $btn.data('key');
+            var name = prompt('Firma adı:', $btn.data('name'));
+            if (name === null) { return; }
+            var url = prompt('Takip adresi ({code} yer tutucusu kullanabilirsiniz):', $btn.data('url'));
+            if (url === null) { return; }
+            var logo = prompt('Logo adresi (boş bırakabilirsiniz):', $btn.data('logo'));
+            if (logo === null) { return; }
+
+            $btn.prop('disabled', true);
+            $.post(ajaxurl, {
+                action: 'kargotr_edit_custom_cargo',
+                key: key,
+                name: name,
+                url: url,
+                logo: logo,
+                nonce: '<?php echo esc_js(wp_create_nonce('kargotr_cargo_nonce')); ?>'
+            }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Hata: ' + response.data);
+                    $btn.prop('disabled', false);
+                }
+            }).fail(function() {
+                alert('Bağlantı hatası oluştu.');
+                $btn.prop('disabled', false);
+            });
+        });
+
+        // Özel firmayı sil: siparişlerde kullanılıyorsa sunucu tarafı engeller
+        $('.kargotr-delete-cargo').on('click', function() {
+            var $btn = $(this);
+            if (!confirm($btn.data('name') + ' firmasını silmek istediğinize emin misiniz?')) { return; }
+
+            $btn.prop('disabled', true);
+            $.post(ajaxurl, {
+                action: 'kargotr_delete_custom_cargo',
+                key: $btn.data('key'),
+                nonce: '<?php echo esc_js(wp_create_nonce('kargotr_cargo_nonce')); ?>'
+            }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.data);
+                    $btn.prop('disabled', false);
+                }
+            }).fail(function() {
+                alert('Bağlantı hatası oluştu.');
+                $btn.prop('disabled', false);
+            });
+        });
+
         // Durum Toggle
         $('.cargo-status-toggle').on('change', function() {
             var key = $(this).data('key');
@@ -813,7 +880,7 @@ function kargoTR_cargo_setting_page() {
 add_action('wp_ajax_kargotr_add_custom_cargo', 'kargoTR_add_custom_cargo');
 function kargoTR_add_custom_cargo() {
     // Nonce kontrolü
-    if (!wp_verify_nonce($_POST['nonce'], 'kargotr_cargo_nonce')) {
+    if (!isset($_POST['nonce'], $_POST['name'], $_POST['url']) || !wp_verify_nonce($_POST['nonce'], 'kargotr_cargo_nonce')) {
         wp_send_json_error('Güvenlik doğrulaması başarısız.');
     }
 
@@ -822,7 +889,7 @@ function kargoTR_add_custom_cargo() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $name = sanitize_text_field($_POST['name']);
+    $name = sanitize_text_field(wp_unslash($_POST['name']));
 
     // Anahtar geldiyse kullan, gelmediyse oluştur
     if (!empty($_POST['key'])) {
@@ -838,16 +905,8 @@ function kargoTR_add_custom_cargo() {
         $key = $key . '_' . wp_rand(100, 999); // Random sayı ekle
     }
 
-    // URL'de {code} placeholder'ını korumak için özel işlem
-    $url = $_POST['url'];
-    // {code} placeholder'ını geçici olarak değiştir
-    $url = str_replace('{code}', '___CODE_PLACEHOLDER___', $url);
-    // URL'i temizle
-    $url = esc_url_raw($url);
-    // Placeholder'ı geri getir
-    $url = str_replace('___CODE_PLACEHOLDER___', '{code}', $url);
-
-    $logo = esc_url_raw($_POST['logo']);
+    $url = kargoTR_sanitize_cargo_url(wp_unslash($_POST['url']));
+    $logo = isset($_POST['logo']) ? esc_url_raw(wp_unslash($_POST['logo'])) : '';
 
     // Validasyon
     if (empty($name) || empty($url)) {
@@ -871,6 +930,109 @@ function kargoTR_add_custom_cargo() {
     );
 
     update_option('kargoTR_custom_cargoes', $custom_cargoes);
+
+    wp_send_json_success();
+}
+
+/**
+ * Kargo takip URL'ini temizler, {code} yer tutucusunu korur
+ *
+ * @param string $url
+ * @return string
+ */
+function kargoTR_sanitize_cargo_url($url) {
+    // esc_url_raw süslü parantezleri bozduğu için yer tutucu geçici olarak değiştirilir
+    $url = str_replace('{code}', '___CODE_PLACEHOLDER___', $url);
+    $url = esc_url_raw($url);
+
+    return str_replace('___CODE_PLACEHOLDER___', '{code}', $url);
+}
+
+// AJAX: Özel kargo firmasını düzenle
+add_action('wp_ajax_kargotr_edit_custom_cargo', 'kargoTR_edit_custom_cargo');
+function kargoTR_edit_custom_cargo() {
+    if (!isset($_POST['nonce'], $_POST['key'], $_POST['name'], $_POST['url']) || !wp_verify_nonce($_POST['nonce'], 'kargotr_cargo_nonce')) {
+        wp_send_json_error('Güvenlik doğrulaması başarısız.');
+    }
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Yetkiniz yok.');
+    }
+
+    $key = sanitize_key($_POST['key']);
+    $custom_cargoes = get_option('kargoTR_custom_cargoes', array());
+
+    // Yalnızca özel eklenen firmalar düzenlenebilir, config.php'dekiler değil
+    if (!isset($custom_cargoes[$key])) {
+        wp_send_json_error('Bu firma düzenlenemez.');
+    }
+
+    $name = sanitize_text_field(wp_unslash($_POST['name']));
+    $url = kargoTR_sanitize_cargo_url(wp_unslash($_POST['url']));
+    $logo = isset($_POST['logo']) ? esc_url_raw(wp_unslash($_POST['logo'])) : '';
+
+    if (empty($name) || empty($url)) {
+        wp_send_json_error('Firma adı ve takip adresi boş olamaz.');
+    }
+
+    // Anahtar korunur: eski siparişlerin kargo bilgisi bozulmasın
+    $custom_cargoes[$key] = array(
+        'company' => $name,
+        'url' => $url,
+        'logo' => $logo,
+    );
+
+    update_option('kargoTR_custom_cargoes', $custom_cargoes);
+
+    wp_send_json_success();
+}
+
+// AJAX: Özel kargo firmasını sil
+add_action('wp_ajax_kargotr_delete_custom_cargo', 'kargoTR_delete_custom_cargo');
+function kargoTR_delete_custom_cargo() {
+    if (!isset($_POST['nonce'], $_POST['key']) || !wp_verify_nonce($_POST['nonce'], 'kargotr_cargo_nonce')) {
+        wp_send_json_error('Güvenlik doğrulaması başarısız.');
+    }
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Yetkiniz yok.');
+    }
+
+    $key = sanitize_key($_POST['key']);
+    $custom_cargoes = get_option('kargoTR_custom_cargoes', array());
+
+    if (!isset($custom_cargoes[$key])) {
+        wp_send_json_error('Bu firma silinemez.');
+    }
+
+    // Bu firmayla kayıtlı sipariş varsa silme: eski siparişlerin kargo bilgisi kaybolur
+    $orders_with_cargo = wc_get_orders(array(
+        'meta_key' => 'tracking_company',
+        'meta_value' => $key,
+        'limit' => 1,
+        'paginate' => true,
+        'return' => 'ids',
+    ));
+
+    $used_count = isset($orders_with_cargo->total) ? (int) $orders_with_cargo->total : 0;
+
+    if ($used_count > 0) {
+        wp_send_json_error(sprintf(
+            'Bu firma %d siparişte kullanılıyor. Silmek yerine listeden kapatabilirsiniz, böylece eski siparişlerin kargo bilgisi korunur.',
+            $used_count
+        ));
+    }
+
+    unset($custom_cargoes[$key]);
+    update_option('kargoTR_custom_cargoes', $custom_cargoes);
+
+    // Devre dışı listesinden ve teslimat sürelerinden de temizle
+    $disabled = get_option('kargoTR_disabled_cargoes', array());
+    update_option('kargoTR_disabled_cargoes', array_values(array_diff($disabled, array($key))));
+
+    $delivery_times = get_option('kargoTR_cargo_delivery_times', array());
+    unset($delivery_times[$key]);
+    update_option('kargoTR_cargo_delivery_times', $delivery_times);
 
     wp_send_json_success();
 }

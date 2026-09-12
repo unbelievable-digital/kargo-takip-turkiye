@@ -6,6 +6,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action('wp_dashboard_setup', 'kargoTR_add_dashboard_widgets');
 
 function kargoTR_add_dashboard_widgets() {
+    // Sipariş sayıları yalnızca siparişleri görebilenlere gösterilir
+    if (!current_user_can('edit_shop_orders')) {
+        return;
+    }
+
     wp_add_dashboard_widget(
         'kargo_takip_dashboard_widget', // Widget slug
         'Kargo Takip Durumu', // Title
@@ -23,21 +28,20 @@ function kargoTR_dashboard_widget_function() {
     // This avoids "midnight" issues where "Today" resets at 00:00 but user is still working.
     // _kargo_takip_timestamp current_time('mysql') ile (site saat dilimi) kaydedilir; karşılaştırma da site saatinde yapılır
     $yesterday = gmdate('Y-m-d H:i:s', current_time('timestamp') - DAY_IN_SECONDS);
-    $args = array(
+
+    // meta_key/meta_value kullanılıyor: HPOS kapalıyken meta_query yok sayılıyor ve
+    // "son 24 saat" yerine tüm siparişler sayılıyordu. paginate ile sadece toplam çekilir.
+    $shipped_today_query = wc_get_orders(array(
         'status' => array('wc-kargo-verildi', 'wc-completed'),
-        'meta_query' => array(
-            array(
-                'key' => '_kargo_takip_timestamp',
-                'value' => $yesterday,
-                'compare' => '>='
-            )
-        ),
-        'limit' => -1,
+        'meta_key' => '_kargo_takip_timestamp',
+        'meta_value' => $yesterday,
+        'meta_compare' => '>=',
+        'limit' => 1,
+        'paginate' => true,
         'return' => 'ids',
-    );
-    
-    $shipped_today_query = wc_get_orders($args);
-    $shipped_today_count = count($shipped_today_query);
+    ));
+
+    $shipped_today_count = isset($shipped_today_query->total) ? (int) $shipped_today_query->total : 0;
 
     ?>
     <div class="kargotr-dashboard-widget">
@@ -55,7 +59,7 @@ function kargoTR_dashboard_widget_function() {
         </div>
         
         <div class="kargotr-widget-actions">
-            <a href="<?php echo esc_url(admin_url('edit.php?post_type=shop_order&wc-status=processing')); ?>" class="button button-small">Siparişleri Gör</a>
+            <a href="<?php echo esc_url(kargoTR_orders_admin_url('wc-processing')); ?>" class="button button-small">Siparişleri Gör</a>
             <a href="<?php echo esc_url(admin_url('admin.php?page=kargo-takip-turkiye-bulk-import')); ?>" class="button button-primary button-small">Toplu Kargo Girişi</a>
         </div>
     </div>

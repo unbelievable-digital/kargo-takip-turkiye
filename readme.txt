@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 7.1
 WC tested up to: 11.1.0
 Requires PHP: 7.1
-Stable tag: 0.2.6
+Stable tag: 0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,6 +77,27 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.3 =
+* **Dokan uyumluluğu** - Kargo firması ve takip numarası alanları artık Dokan satıcı panelindeki sipariş detayında da görünüyor. Satıcı yalnızca kendi siparişini düzenleyebilir; çok satıcılı siparişlerde her satıcının kargo bilgisi ana siparişe işlenir ve müşteriye ayrı ayrı gösterilir
+* **Toplu CSV girişi yenilendi** - Türkçe Excel dosyaları (noktalı virgül ayracı ve BOM) artık çalışıyor, başlık satırı otomatik atlanıyor
+* Aynı CSV ikinci kez yüklendiğinde değişmeyen satırlar atlanıyor, müşterilere tekrar bildirim gönderilmiyor; büyük dosyalarda zaman aşımı koruması eklendi
+* SMS servis sağlayıcısı yanıt vermediğinde kayıtlı SMS başlığının silinmesi engellendi
+* Takip kodu adrese eklenirken kodlanıyor; boşluk, # veya & içeren kodlarda takip bağlantısı artık bozulmuyor
+* Telefon numarası düzeltmesi: 0090 ile başlayan numaralar tanınıyor, fatura telefonu yoksa teslimat telefonu kullanılıyor
+* İade (refund) kaydının numarası REST API'ye veya CSV'ye geldiğinde oluşan ölümcül hata giderildi
+* "Kargoya Verildi" durumu artık ödenmiş sayılıyor: dijital ürün indirmeleri açık kalıyor, "onaylı alıcı" yorumları ve müşteri harcama toplamı doğru hesaplanıyor
+* Siparişler listesine "Kargoya Verildi olarak işaretle" toplu işlemi eklendi
+* Panel widget'ındaki "Son 24 Saatte Kargolanan" sayısı HPOS kapalıyken de doğru hesaplanıyor; widget artık yalnızca sipariş yetkisi olanlara gösteriliyor
+* Durum eşlemesi: çift bildirim engeli artık yalnızca bildirimi durduruyor, sipariş durumu yine güncelleniyor
+* Durum eşlemesinde kargo bilgisi olmayan siparişlere gereksiz not düşürülmesi kaldırıldı
+* Üçüncü taraf eklentiler sipariş durumunu farklı biçimde tetiklediğinde oluşan hata giderildi
+* NetGSM kredi bakiyesi artık görünüyor (doğru sorgu tipi kullanılıyor)
+* SMS Ayarları sayfası hızlandırıldı: sağlayıcı sorguları önbelleğe alınıyor ve yalnızca seçili sağlayıcıya istek atılıyor
+* SMS şablonundaki {order_id} artık müşterinin gördüğü sipariş numarasını yazıyor
+* Özel kargo firmaları düzenlenebiliyor ve silinebiliyor; siparişlerde kullanılan firma yanlışlıkla silinemez
+* E-posta önizleme ve test e-postasında kesme işareti sorunu, bozuk bağlantı ve sabit tarih düzeltildi
+* Değerlendirme bildirimi sayacı yalnızca ilk kargo girişinde artıyor
 
 = 0.2.6 =
 * **Önemli düzeltme** - Sipariş kaydedildiğinde "Kargoya Verildi" durumunun hemen ardından eski duruma dönmesi giderildi

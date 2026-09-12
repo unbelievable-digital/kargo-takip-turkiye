@@ -119,14 +119,21 @@ function kargoTR_sms_setting_page() {
                                 </div>
                             </div>
 
-                            <?php if ($NetGsm_Password && $NetGsm_UserName): ?>
+                            <?php if ($NetGsm_Password && $NetGsm_UserName && in_array($sms_provider, array('NetGSM', 'no', ''), true)): ?>
                                 <div class="kargotr-form-grid" style="margin-top: 20px;">
                                     <div class="kargotr-form-field">
                                         <label for="NetGsm_Header">SMS Başlığı</label>
                                         <?php
-                                        $netGsm_Header_get = kargoTR_get_netgsm_headers($NetGsm_UserName, $NetGsm_Password);
+                                        $netGsm_Header_get = kargoTR_remote_cache('netgsm_headers_' . $NetGsm_UserName . $NetGsm_Password, function () use ($NetGsm_UserName, $NetGsm_Password) {
+                                            return kargoTR_get_netgsm_headers($NetGsm_UserName, $NetGsm_Password);
+                                        });
                                         if (!$netGsm_Header_get) {
-                                            echo '<p class="kargotr-error">Kullanıcı adı veya şifre hatalı!</p>';
+                                            echo '<p class="kargotr-error">Başlık listesi alınamadı. Kullanıcı adı/şifre hatalı olabilir veya NetGSM yanıt vermiyor.</p>';
+                                            // Liste gelmediyse kayıtlı başlık formda taşınmalı, yoksa kaydetmede siliniyor
+                                            if ($NetGsm_Header) {
+                                                echo '<p class="description">Kayıtlı başlık: <strong>' . esc_html($NetGsm_Header) . '</strong> (korunuyor)</p>';
+                                                echo '<input type="hidden" name="NetGsm_Header" value="' . esc_attr($NetGsm_Header) . '">';
+                                            }
                                         } else {
                                             echo '<select name="NetGsm_Header" id="NetGsm_Header" class="kargotr-select">';
                                             foreach ($netGsm_Header_get as $value) {
@@ -142,8 +149,13 @@ function kargoTR_sms_setting_page() {
                                         <label>Hesap Durumu</label>
                                         <div class="kargotr-account-info">
                                             <?php
-                                            $NetGSM_packet_info = kargoTR_get_netgsm_packet_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
-                                            $NetGSM_credit_info = kargoTR_get_netgsm_credit_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
+                                            $netgsm_cache_key = 'netgsm_' . $NetGsm_UserName . $NetGsm_Password . $NetGsm_AppKey;
+                                            $NetGSM_packet_info = kargoTR_remote_cache($netgsm_cache_key . '_packet', function () use ($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey) {
+                                                return kargoTR_get_netgsm_packet_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
+                                            });
+                                            $NetGSM_credit_info = kargoTR_remote_cache($netgsm_cache_key . '_credit', function () use ($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey) {
+                                                return kargoTR_get_netgsm_credit_info($NetGsm_UserName, $NetGsm_Password, $NetGsm_AppKey);
+                                            });
 
                                             // Check if packet info is an error array
                                             if (is_array($NetGSM_packet_info) && isset($NetGSM_packet_info['error'])) {
@@ -205,14 +217,21 @@ function kargoTR_sms_setting_page() {
                                 <?php endif; ?>
                             </div>
 
-                            <?php if ($Kobikom_ApiKey): ?>
+                            <?php if ($Kobikom_ApiKey && in_array($sms_provider, array('Kobikom', 'no', ''), true)): ?>
                                 <div class="kargotr-form-grid" style="margin-top: 20px;">
                                     <div class="kargotr-form-field">
                                         <label for="Kobikom_Header">SMS Başlığı</label>
                                         <?php
-                                        $KobiKom_get_Headers = kargoTR_get_kobikom_headers($Kobikom_ApiKey);
+                                        $KobiKom_get_Headers = kargoTR_remote_cache('kobikom_headers_' . $Kobikom_ApiKey, function () use ($Kobikom_ApiKey) {
+                                            return kargoTR_get_kobikom_headers($Kobikom_ApiKey);
+                                        });
                                         if (!$KobiKom_get_Headers) {
-                                            echo '<p class="kargotr-error">API anahtarı hatalı!</p>';
+                                            echo '<p class="kargotr-error">Başlık listesi alınamadı. API anahtarı hatalı olabilir veya Kobikom yanıt vermiyor.</p>';
+                                            // Liste gelmediyse kayıtlı başlık formda taşınmalı, yoksa kaydetmede siliniyor
+                                            if ($Kobikom_option_Header) {
+                                                echo '<p class="description">Kayıtlı başlık: <strong>' . esc_html($Kobikom_option_Header) . '</strong> (korunuyor)</p>';
+                                                echo '<input type="hidden" name="Kobikom_Header" value="' . esc_attr($Kobikom_option_Header) . '">';
+                                            }
                                         } else {
                                             echo '<select name="Kobikom_Header" id="Kobikom_Header" class="kargotr-select">';
                                             foreach ($KobiKom_get_Headers as $value) {
@@ -228,7 +247,9 @@ function kargoTR_sms_setting_page() {
                                         <label>Hesap Durumu</label>
                                         <div class="kargotr-account-info">
                                             <?php
-                                            $KobiKom_get_Credit = kargoTR_get_kobikom_balance($Kobikom_ApiKey);
+                                            $KobiKom_get_Credit = kargoTR_remote_cache('kobikom_balance_' . $Kobikom_ApiKey, function () use ($Kobikom_ApiKey) {
+                                                return kargoTR_get_kobikom_balance($Kobikom_ApiKey);
+                                            });
                                             if ($KobiKom_get_Credit) {
                                                 foreach ($KobiKom_get_Credit as $value) {
                                                     echo '<div class="kargotr-account-stat">';

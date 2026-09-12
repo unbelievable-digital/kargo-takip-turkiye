@@ -172,96 +172,76 @@ function kargoTR_get_netgsm_packet_info($username, $password, $appkey = '') {
 }
 
 function kargoTR_get_netgsm_credit_info($username, $password, $appkey = '') {
-    // NetGSM Balance API - Returns JSON response
-    $url = "https://api.netgsm.com.tr/balance";
-    
-    // Build request body - appkey only if provided
+    // NetGSM Balance API. stip=2 kredi bakiyesini döndürür ("balance": "57,860").
+    // Önceki sürümler stip=1 kullanıyordu; o uç paket listesi döndürdüğü için bakiye hiç görünmüyordu.
+    $balance = kargoTR_netgsm_balance_request($username, $password, $appkey, 2);
+
+    if ($balance !== false) {
+        return $balance;
+    }
+
+    // Bazı hesaplarda kredi yerine paket tanımlı: paket listesinden TL/Kredi satırını ara
+    return kargoTR_netgsm_balance_request($username, $password, $appkey, 1);
+}
+
+/**
+ * NetGSM bakiye uç noktasına istek atar.
+ *
+ * @param string $username kullanıcı kodu
+ * @param string $password şifre
+ * @param string $appkey   uygulama anahtarı (opsiyonel)
+ * @param int    $stip     2 = kredi bakiyesi, 1 = paket listesi
+ * @return string|false bakiye veya false
+ */
+function kargoTR_netgsm_balance_request($username, $password, $appkey, $stip) {
     $request_body = array(
         'usercode' => $username,
         'password' => $password,
-        'stip' => 1
+        'stip' => $stip,
     );
-    
-    // Add appkey only if it's not empty
+
     if (!empty($appkey)) {
         $request_body['appkey'] = $appkey;
     }
-    
-    $body = json_encode($request_body);
-    
-    $request = wp_remote_post($url, array(
+
+    $request = wp_remote_post('https://api.netgsm.com.tr/balance', array(
         'headers' => array('Content-Type' => 'application/json'),
-        'body' => $body,
-        'timeout' => 15
+        'body' => wp_json_encode($request_body),
+        'timeout' => 15,
     ));
-    
-    if (is_wp_error($request)) {
+
+    if (is_wp_error($request) || wp_remote_retrieve_response_code($request) !== 200) {
         return false;
     }
-    
-    $response_code = wp_remote_retrieve_response_code($request);
-    if ($response_code !== 200) {
+
+    $data = json_decode(trim(wp_remote_retrieve_body($request)), true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
         return false;
     }
-    
-    $response = trim(wp_remote_retrieve_body($request));
-    
-    // Try to decode JSON response
-    $data = json_decode($response, true);
-    
-    if (json_last_error() !== JSON_ERROR_NONE) {
+
+    // "00" başarı kodudur, diğer kodlar hatadır
+    if (isset($data['code']) && (string) $data['code'] !== '00') {
         return false;
     }
-    
-    // Check for NetGSM API error codes
-    if (isset($data['code'])) {
-        // If appkey was used and got code 60, try without appkey
-        if ($data['code'] == 60 && !empty($appkey)) {
-            $request_body_retry = array(
-                'usercode' => $username,
-                'password' => $password,
-                'stip' => 1
-            );
-            
-            $body_retry = json_encode($request_body_retry);
-            $request_retry = wp_remote_post($url, array(
-                'headers' => array('Content-Type' => 'application/json'),
-                'body' => $body_retry,
-                'timeout' => 15
-            ));
-            
-            if (!is_wp_error($request_retry)) {
-                $response_retry = trim(wp_remote_retrieve_body($request_retry));
-                $data_retry = json_decode($response_retry, true);
-                
-                if (isset($data_retry['balance']) && is_array($data_retry['balance'])) {
-                    foreach ($data_retry['balance'] as $item) {
-                        if (isset($item['balance_name']) && (strpos($item['balance_name'], 'TL') !== false || strpos($item['balance_name'], 'Kredi') !== false)) {
-                            return $item['amount'];
-                        }
-                    }
-                }
-            }
-        }
+
+    if (!isset($data['balance'])) {
         return false;
     }
-    
-    // Check for API error messages
-    if (isset($data['error']) || isset($data['message'])) {
-        return false;
+
+    // stip=2: balance düz bir değer
+    if (!is_array($data['balance'])) {
+        return (string) $data['balance'];
     }
-    
-    if (!isset($data['balance']) || !is_array($data['balance'])) {
-        return false;
-    }
-    
-    // Find credit balance (TL)
+
+    // stip=1: paket listesi, TL/Kredi satırını ara
     foreach ($data['balance'] as $item) {
-        if (isset($item['balance_name']) && (strpos($item['balance_name'], 'TL') !== false || strpos($item['balance_name'], 'Kredi') !== false)) {
+        if (isset($item['balance_name'], $item['amount'])
+            && (strpos($item['balance_name'], 'TL') !== false || strpos($item['balance_name'], 'Kredi') !== false)) {
             return $item['amount'];
         }
     }
-    
+
     return false;
 }
 
@@ -271,6 +251,12 @@ function kargoTR_get_netgsm_credit_info($username, $password, $appkey = '') {
  */
 function kargoTR_netgsm_normalize_phone($phone) {
     $phone = preg_replace('/[^0-9]/', '', $phone);
+
+    // Uluslararası ön ek: 00905xxxxxxxxx -> 905xxxxxxxxx
+    if (strlen($phone) === 14 && substr($phone, 0, 4) === '0090') {
+        $phone = substr($phone, 2);
+    }
+
     if (strlen($phone) === 10 && substr($phone, 0, 1) === '5') {
         return '90' . $phone;
     }
@@ -342,11 +328,15 @@ function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages
 
 function kargoTR_SMS_gonder_netgsm($order_id) {
     $order = wc_get_order($order_id);
-    if (!$order) {
+    if (!$order instanceof WC_Order) {
         return;
     }
 
     $phone = $order->get_billing_phone();
+    if (empty($phone)) {
+        // Fatura telefonu yoksa teslimat telefonunu dene
+        $phone = $order->get_shipping_phone();
+    }
     if (empty($phone)) {
         $order->add_order_note('SMS Gönderilemedi - Siparişte telefon numarası yok.');
         return;

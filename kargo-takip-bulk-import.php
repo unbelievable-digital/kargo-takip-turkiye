@@ -127,6 +127,7 @@ function kargoTR_handle_csv_upload() {
 
     $success_count = 0;
     $error_count = 0;
+    $skipped_count = 0;
     $errors = array();
 
     $send_sms = isset($_POST['send_sms']) && $_POST['send_sms'] === 'yes';
@@ -136,14 +137,47 @@ function kargoTR_handle_csv_upload() {
     // Get all cargo companies for validation (lowercase keys)
     $cargoes = kargoTR_get_all_cargoes(true);
 
-    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+    // Ayracı ilk satırdan tespit et: Türkçe Excel noktalı virgülle dışa aktarıyor
+    $first_line = fgets($handle);
+    if ($first_line === false) {
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closes the handle opened above for fgetcsv().
+        fclose($handle);
+        echo '<div class="notice notice-error"><p>Dosya boş.</p></div>';
+        return;
+    }
+
+    // UTF-8 BOM'u temizle, yoksa ilk sipariş numarası 0 olarak okunuyor
+    $first_line = preg_replace('/^\xEF\xBB\xBF/', '', $first_line);
+    $delimiter = (substr_count($first_line, ';') > substr_count($first_line, ',')) ? ';' : ',';
+
+    rewind($handle);
+    $is_first_row = true;
+
+    // Büyük dosyalarda yarıda kesilmemek için süreyi uzat
+    if (function_exists('set_time_limit')) {
+        @set_time_limit(0);
+    }
+
+    while (($data = fgetcsv($handle, 4096, $delimiter)) !== FALSE) {
+        // İlk satırdaki BOM'u temizle ve başlık satırıysa atla
+        if ($is_first_row) {
+            $is_first_row = false;
+            if (isset($data[0])) {
+                $data[0] = preg_replace('/^\xEF\xBB\xBF/', '', $data[0]);
+            }
+            // Sipariş numarası sayı değilse bu bir başlık satırıdır
+            if (!isset($data[0]) || !is_numeric(trim($data[0]))) {
+                continue;
+            }
+        }
+
         // Skip empty rows
         if (empty($data[0])) continue;
 
         // Eksik sütunlu satır: takip kodu olmadan bildirim gitmemeli
         if (count($data) < 3 || trim($data[2]) === '') {
             $error_count++;
-            $errors[] = sprintf('Satır atlandı (eksik bilgi): %s', esc_html(implode(',', $data)));
+            $errors[] = sprintf('Satır atlandı (eksik bilgi): %s', implode($delimiter, $data));
             continue;
         }
 
@@ -154,7 +188,7 @@ function kargoTR_handle_csv_upload() {
 
         // Validate Order
         $order = wc_get_order($order_id);
-        if (!$order) {
+        if (!$order instanceof WC_Order) {
             $error_count++;
             $errors[] = "Sipariş ID {$order_id} bulunamadı.";
             continue;
@@ -198,6 +232,15 @@ function kargoTR_handle_csv_upload() {
             $cargo_company_key = $mapped_key;
         }
 
+        // Aynı dosya ikinci kez yüklenirse bildirimleri tekrar gönderme
+        if ($order->get_meta('tracking_company', true) === $cargo_company_key
+            && (string) $order->get_meta('tracking_code', true) === $tracking_code) {
+            $skipped_count++;
+            continue;
+        }
+
+        $had_tracking = (string) $order->get_meta('tracking_code', true) !== '';
+
         // Update Order Meta (HPOS uyumlu)
         $order->update_meta_data('tracking_company', $cargo_company_key);
         $order->update_meta_data('tracking_code', $tracking_code);
@@ -206,8 +249,10 @@ function kargoTR_handle_csv_upload() {
         $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
         $order->save();
 
-        // Review notice için sayacı artır
-        kargoTR_increment_tracking_orders_count();
+        // Review notice sayacı: yalnızca ilk kez kargo bilgisi girilen siparişlerde artar
+        if (!$had_tracking) {
+            kargoTR_increment_tracking_orders_count();
+        }
 
         // Add Note
         $order->add_order_note(sprintf('Toplu yükleme ile kargo bilgisi girildi. Firma: %s, Takip No: %s', $cargo_company_key, $tracking_code));
@@ -244,7 +289,11 @@ function kargoTR_handle_csv_upload() {
     fclose($handle);
 
     // Show Results
-    echo '<div class="notice notice-success is-dismissible"><p>İşlem Tamamlandı. Başarılı: <strong>' . absint($success_count) . '</strong></p></div>';
+    echo '<div class="notice notice-success is-dismissible"><p>İşlem Tamamlandı. Başarılı: <strong>' . absint($success_count) . '</strong>';
+    if ($skipped_count > 0) {
+        echo ' &mdash; Değişmediği için atlanan: <strong>' . absint($skipped_count) . '</strong> (bu siparişlere tekrar bildirim gönderilmedi)';
+    }
+    echo '</p></div>';
     
     if ($error_count > 0) {
         echo '<div class="notice notice-warning is-dismissible"><p>Bazı satırlar işlenemedi (' . absint($error_count) . ' hata):</p>';

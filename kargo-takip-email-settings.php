@@ -675,13 +675,13 @@ function kargoTR_ajax_email_preview() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $template = wp_kses_post($_POST['template']);
-    $use_wc_template = isset($_POST['use_wc_template']) ? sanitize_text_field($_POST['use_wc_template']) : 'no';
+    $template = isset($_POST['template']) ? wp_kses_post(wp_unslash($_POST['template'])) : '';
+    $use_wc_template = isset($_POST['use_wc_template']) ? sanitize_text_field(wp_unslash($_POST['use_wc_template'])) : 'no';
 
     // Örnek verilerle değiştir
     $preview_content = str_replace(
         array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
-        array('Ahmet Yılmaz', '12345', 'Yurtiçi Kargo', 'YK123456789', 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YK123456789', gmdate('d.m.Y', strtotime('+3 days', current_time('timestamp')))),
+        array('Ahmet Yılmaz', '12345', 'Yurtiçi Kargo', 'YK123456789', 'https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YK123456789', kargoTR_sample_delivery_date()),
         $template
     );
 
@@ -695,6 +695,22 @@ function kargoTR_ajax_email_preview() {
     wp_send_json_success(array('html' => $html));
 }
 
+
+/**
+ * Önizleme ve test e-postasında kullanılacak örnek teslimat tarihi
+ * Ayarlardaki varsayılan gün sayısını ve sitenin tarih biçimini kullanır.
+ *
+ * @return string
+ */
+function kargoTR_sample_delivery_date() {
+    $days = (int) get_option('kargo_estimated_delivery_days', 3);
+    if ($days < 1) {
+        $days = 3;
+    }
+
+    return date_i18n(get_option('date_format'), strtotime("+$days days", current_time('timestamp')));
+}
+
 // AJAX: Test Email Gönder
 add_action('wp_ajax_kargotr_send_test_email', 'kargoTR_ajax_send_test_email');
 function kargoTR_ajax_send_test_email() {
@@ -704,9 +720,9 @@ function kargoTR_ajax_send_test_email() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $template = wp_kses_post($_POST['template']);
-    $email = sanitize_email($_POST['email']);
-    $use_wc_template = isset($_POST['use_wc_template']) ? sanitize_text_field($_POST['use_wc_template']) : 'no';
+    $template = isset($_POST['template']) ? wp_kses_post(wp_unslash($_POST['template'])) : '';
+    $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+    $use_wc_template = isset($_POST['use_wc_template']) ? sanitize_text_field(wp_unslash($_POST['use_wc_template'])) : 'no';
 
     if (!is_email($email)) {
         wp_send_json_error('Geçersiz e-posta adresi.');
@@ -715,7 +731,7 @@ function kargoTR_ajax_send_test_email() {
     // Örnek verilerle değiştir
     $content = str_replace(
         array('{customer_name}', '{order_id}', '{company_name}', '{tracking_number}', '{tracking_url}', '{estimated_delivery_date}'),
-        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456', gmdate('d.m.Y', strtotime('+3 days', current_time('timestamp')))),
+        array('Test Müşteri', '99999', 'PTT Kargo', 'TEST123456', 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=TEST123456', kargoTR_sample_delivery_date()),
         $template
     );
 
@@ -833,7 +849,7 @@ function kargoTR_get_email_preview_html($content) {
                 <div class="email-footer">
                     Bu e-posta Kargo Takip Türkiye eklentisi tarafından gönderilmiştir.
                     <br>
-                    <a href="https://unbelievable.digital>Unbelievable.Digital Tarafndan Geliştirmiştir</a>
+                    <a href="https://unbelievable.digital">Unbelievable.Digital tarafından geliştirilmiştir</a>
                 </div>
             </div>
         </div>

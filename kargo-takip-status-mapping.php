@@ -232,9 +232,18 @@ function kargoTR_trigger_mapped_notifications($order_id, $mapping) {
  * Statü değişikliği hook handler
  */
 add_action('woocommerce_order_status_changed', 'kargoTR_handle_status_change', 10, 4);
-function kargoTR_handle_status_change($order_id, $old_status, $new_status, $order) {
+function kargoTR_handle_status_change($order_id, $old_status = '', $new_status = '', $order = null) {
     // Zaten "Kargoya Verildi" statüsünde ise işlem yapma
     if ($new_status === 'kargo-verildi') {
+        return;
+    }
+
+    // Üçüncü taraf eklentiler bu kancayı 3 parametreyle tetikleyebiliyor
+    if (!$order instanceof WC_Order) {
+        $order = wc_get_order($order_id);
+    }
+
+    if (!$order instanceof WC_Order) {
         return;
     }
 
@@ -249,25 +258,19 @@ function kargoTR_handle_status_change($order_id, $old_status, $new_status, $orde
     $tracking_code = $order->get_meta('tracking_code', true);
 
     if (empty($tracking_company) || empty($tracking_code)) {
-        // Kargo bilgisi yok, sadece sipariş notu ekle
-        $order->add_order_note(
-            sprintf(
-                /* translators: %s: mapped order status name */
-                __('Durum eşlemesi algılandı: "%s". Ancak kargo takip bilgisi eksik olduğu için bildirim gönderilmedi.', 'kargo-takip-turkiye'),
-                $mapping['name']
-            )
-        );
+        // Kargo bilgisi yok: her siparişe not düşürmemek için sessizce çık
         return;
     }
 
-    // Çift bildirim kontrolü
+    // Çift bildirim kontrolü: yalnızca bildirimleri engeller, statü değişimini değil
     // Eski sürümlerde Genel Ayarlar kaydı bu option'ı boşaltıyordu; boş değer varsayılan (açık) sayılır
     $prevent_duplicate = get_option('kargoTR_prevent_duplicate_notification', 'yes');
-    if ($prevent_duplicate !== 'no' && kargoTR_order_notification_sent($order_id)) {
+    $skip_notifications = ($prevent_duplicate !== 'no' && kargoTR_order_notification_sent($order_id));
+
+    if ($skip_notifications) {
         $order->add_order_note(
-            __('Durum eşlemesi algılandı ancak bu sipariş için daha önce bildirim gönderilmiş. Çift bildirim engellendi.', 'kargo-takip-turkiye')
+            __('Durum eşlemesi algılandı. Bu sipariş için daha önce bildirim gönderildiğinden ikinci bildirim gönderilmedi.', 'kargo-takip-turkiye')
         );
-        return;
     }
 
     // Statüyü "Kargoya Verildi" olarak değiştir
@@ -280,6 +283,11 @@ function kargoTR_handle_status_change($order_id, $old_status, $new_status, $orde
     // Kargo takip timestamp'ini kaydet
     $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
     $order->save();
+
+    // Daha önce bildirim gönderildiyse statü değişti ama ikinci bildirim gönderilmez
+    if ($skip_notifications) {
+        return;
+    }
 
     // Bildirimleri tetikle
     kargoTR_trigger_mapped_notifications($order_id, $mapping);
@@ -1085,8 +1093,12 @@ function kargoTR_ajax_toggle_preset_mapping() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $preset = sanitize_key($_POST['preset']);
-    $enabled = sanitize_text_field($_POST['enabled']);
+    $preset = isset($_POST['preset']) ? sanitize_key(wp_unslash($_POST['preset'])) : '';
+    $enabled = isset($_POST['enabled']) ? sanitize_text_field(wp_unslash($_POST['enabled'])) : 'no';
+
+    if ($preset === '' || !array_key_exists($preset, kargoTR_get_status_mapping_presets())) {
+        wp_send_json_error('Geçersiz preset.');
+    }
 
     $preset_definitions = kargoTR_get_status_mapping_presets();
     if (!isset($preset_definitions[$preset])) {
@@ -1111,8 +1123,13 @@ function kargoTR_ajax_add_status_mapping() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $status = sanitize_text_field($_POST['status']);
-    $label = sanitize_text_field($_POST['label']);
+    $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : '';
+    $label = isset($_POST['label']) ? sanitize_text_field(wp_unslash($_POST['label'])) : '';
+
+    // Eşlenen statü WooCommerce'te tanımlı ve eşlenebilir olmalı
+    if ($status === '' || !array_key_exists(kargoTR_normalize_status($status), kargoTR_get_wc_order_statuses())) {
+        wp_send_json_error('Geçersiz sipariş statüsü.');
+    }
     $send_email = isset($_POST['send_email']) && $_POST['send_email'] === 'true';
     $send_sms = isset($_POST['send_sms']) && $_POST['send_sms'] === 'true';
 
@@ -1153,7 +1170,7 @@ function kargoTR_ajax_toggle_status_mapping() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $index = intval($_POST['index']);
+    $index = isset($_POST['index']) ? intval($_POST['index']) : -1;
     $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
 
     $mappings = get_option('kargoTR_status_mappings', array());
@@ -1179,7 +1196,7 @@ function kargoTR_ajax_remove_status_mapping() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $index = intval($_POST['index']);
+    $index = isset($_POST['index']) ? intval($_POST['index']) : -1;
 
     $mappings = get_option('kargoTR_status_mappings', array());
 
@@ -1205,7 +1222,7 @@ function kargoTR_ajax_update_prevent_duplicate() {
         wp_send_json_error('Yetkiniz yok.');
     }
 
-    $enabled = sanitize_text_field($_POST['enabled']);
+    $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'no' ? 'no' : 'yes';
     update_option('kargoTR_prevent_duplicate_notification', $enabled);
 
     wp_send_json_success();

@@ -60,6 +60,51 @@ function kargoTR_resolve_cargo_key($input) {
 }
 
 /**
+ * SMS sağlayıcı sorgularını kısa süreli önbelleğe alır
+ * Ayarlar sayfası her açılışta bakiye/başlık isteği atıyordu; sayfa bu yüzden yavaştı.
+ *
+ * @param string   $key      önbellek anahtarı (kimlik bilgilerini içermeli ki değişince tazelensin)
+ * @param callable $callback sonucu üreten fonksiyon
+ * @param int      $ttl      saniye cinsinden önbellek süresi
+ * @return mixed
+ */
+function kargoTR_remote_cache($key, $callback, $ttl = 300) {
+    $transient_key = 'kargotr_rc_' . md5($key);
+    $cached = get_transient($transient_key);
+
+    if ($cached !== false) {
+        // false sonucu da önbelleğe alınır, aksi halde hatalı kimlikte her açılışta tekrar denenir
+        return $cached === '__kargotr_false__' ? false : $cached;
+    }
+
+    $value = call_user_func($callback);
+    set_transient($transient_key, $value === false ? '__kargotr_false__' : $value, $ttl);
+
+    return $value;
+}
+
+/**
+ * Sipariş listesi yönetim adresini verir (HPOS açık/kapalı fark etmeksizin)
+ *
+ * @param string $status wc- önekli sipariş statüsü, boş bırakılırsa tüm siparişler
+ * @return string
+ */
+function kargoTR_orders_admin_url($status = '') {
+    $hpos_enabled = class_exists('\Automattic\WooCommerce\Utilities\OrderUtil')
+        && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+
+    $args = $hpos_enabled ? array('page' => 'wc-orders') : array('post_type' => 'shop_order');
+
+    if ($status) {
+        $args['status'] = $status;
+    }
+
+    $base = $hpos_enabled ? 'admin.php' : 'edit.php';
+
+    return add_query_arg($args, admin_url($base));
+}
+
+/**
  * Kargo bilgisi girildiğinde durumu değiştirilmemesi gereken sipariş statüleri
  *
  * @return array
@@ -160,15 +205,27 @@ function kargoTR_getCargoTrack($tracking_company = NULL, $tracking_code = NULL) 
         return '';
     }
 
-    $url = $cargoes[$tracking_company]["url"];
+    return kargoTR_build_tracking_url($cargoes[$tracking_company]["url"], $tracking_code);
+}
+
+/**
+ * Takip adresini kargo firmasının URL kalıbından oluşturur
+ * Takip kodu URL'e girmeden önce kodlanır: boşluk, # veya & içeren kodlar bağlantıyı bozuyordu.
+ *
+ * @param string $base_url firma URL kalıbı
+ * @param string $tracking_code takip kodu
+ * @return string
+ */
+function kargoTR_build_tracking_url($base_url, $tracking_code) {
+    $encoded_code = rawurlencode(trim((string) $tracking_code));
 
     // URL'de {code} placeholder'ı varsa değiştir
-    if (strpos($url, '{code}') !== false) {
-        return str_replace('{code}', $tracking_code, $url);
+    if (strpos($base_url, '{code}') !== false) {
+        return str_replace('{code}', $encoded_code, $base_url);
     }
 
     // Yoksa sona ekle (geriye uyumluluk)
-    return $url . $tracking_code;
+    return $base_url . $encoded_code;
 }
 
 /*
@@ -250,14 +307,7 @@ function kargoTR_get_order_cargo_information($order_id) {
         if(isset($cargoes[$tracking_company])) {
             $logo = isset($cargoes[$tracking_company]["logo"]) ? $cargoes[$tracking_company]["logo"] : "";
             $company = $cargoes[$tracking_company]["company"];
-
-            // URL'de {code} placeholder'ı varsa değiştir, yoksa sona ekle
-            $base_url = $cargoes[$tracking_company]["url"];
-            if (strpos($base_url, '{code}') !== false) {
-                $url = str_replace('{code}', $tracking_code, $base_url);
-            } else {
-                $url = $base_url . $tracking_code;
-            }
+            $url = kargoTR_build_tracking_url($cargoes[$tracking_company]["url"], $tracking_code);
 
             return array(
                 "logo" => $logo,
@@ -297,7 +347,8 @@ function kargoTR_get_sms_template($order_id, $template) {
     $template = str_replace("{tracking_number}", $tracking_code, $template);
     $template = str_replace("{tracking_url}", kargoTR_getCargoTrack($tracking_company, $tracking_code), $template);
     $template = str_replace("{company_name}", kargoTR_get_company_name($tracking_company), $template);
-    $template = str_replace("{order_id}", $order_id, $template);
+    // Sipariş numarası eklentilerinde müşterinin gördüğü numara farklı olabilir
+    $template = str_replace("{order_id}", $order->get_order_number(), $template);
 
     // Estimated Delivery Date (HPOS uyumlu)
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');

@@ -96,8 +96,9 @@ function kargoTR_api_add_tracking_code($request) {
     }
 
     // Get order details from order id (HPOS uyumlu)
+    // İade (WC_Order_Refund) nesnelerinde add_order_note/update_status yok, ölümcül hatayı önle
     $order = wc_get_order($order_id);
-    if (!$order) {
+    if (!$order instanceof WC_Order) {
         return new WP_Error('rest_invalid_order', 'Order not found', array('status' => 404));
     }
 
