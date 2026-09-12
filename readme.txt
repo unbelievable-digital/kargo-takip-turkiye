@@ -1,4 +1,4 @@
-=== Kargo Takip Türkiye - WooCommerce & Dokan Kargo Takip, SMS ve E-posta ===
+=== Kargo Takip, WooCommerce & Dokan Kargo Takip, SMS ve E-posta ===
 Contributors: zgrkaralar,unbelievabledigital
 Tags: kargo takip, kargo, woocommerce, dokan, sms
 Requires at least: 4.9
@@ -15,7 +15,7 @@ WooCommerce ve Dokan siparişlerinize kargo takip bilgisi ekleyin, müşterileri
 
 **3.000'den fazla aktif site tarafından kullanılmaktadır!**
 
-Kargo Takip Türkiye, WooCommerce siparişlerine kargo firması ve takip numarası eklemenizi sağlar. Bilgiyi girdiğiniz anda sipariş durumu "Kargoya Verildi" olur, müşteriye takip bağlantısını içeren SMS ve e-posta gider. Müşteri kargosunu hesabım sayfasından da takip edebilir.
+Kargo Takip, WooCommerce siparişlerine kargo firması ve takip numarası eklemenizi sağlar. Bilgiyi girdiğiniz anda sipariş durumu "Kargoya Verildi" olur, müşteriye takip bağlantısını içeren SMS ve e-posta gider. Müşteri kargosunu hesabım sayfasından da takip edebilir.
 
 = Öne çıkan özellikler =
 
