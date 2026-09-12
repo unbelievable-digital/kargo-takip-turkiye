@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kargo Takip Türkiye
  * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz. Mail ve SMS gönderebilirsiniz.
- * Version: 0.2.5
+ * Version: 0.2.6
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  * Text Domain: kargo-takip-turkiye
@@ -145,11 +145,11 @@ add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
 function kargoTR_register_admin_menu() {
     $menu_slug = 'kargo-takip-turkiye';
     // add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
-    add_menu_page( 'Kargo Takip Türkiye', 'Kargo Takip', 'read', $menu_slug, false, 'dashicons-car', 20 );
-    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Genel Ayarlar', 'read', $menu_slug, 'kargoTR_setting_page' );
+    add_menu_page( 'Kargo Takip Türkiye', 'Kargo Takip', 'manage_woocommerce', $menu_slug, false, 'dashicons-car', 20 );
+    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Genel Ayarlar', 'manage_woocommerce', $menu_slug, 'kargoTR_setting_page' );
     add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'Kargo Ayarlari', 'manage_options', 'kargo-takip-turkiye-cargo-settings', 'kargoTR_cargo_setting_page' );
-    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'E-Mail Ayarlari', 'read', 'kargo-takip-turkiye-email-settings', 'kargoTR_email_setting_page' );
-    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'SMS Ayarlari', 'read', 'kargo-takip-turkiye-sms-settings', 'kargoTR_sms_setting_page' );
+    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'E-Mail Ayarlari', 'manage_woocommerce', 'kargo-takip-turkiye-email-settings', 'kargoTR_email_setting_page' );
+    add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'SMS Ayarlari', 'manage_woocommerce', 'kargo-takip-turkiye-sms-settings', 'kargoTR_sms_setting_page' );
     // WhatsApp menüsü şimdilik gizli - add_submenu_page( $menu_slug, 'Kargo Takip Türkiye Ayarlar', 'WhatsApp Ayarlari', 'read', 'kargo-takip-turkiye-whatsapp-settings', 'kargoTR_whatsapp_setting_page' );
     add_submenu_page( $menu_slug, 'Toplu Kargo Girişi', 'Toplu İşlemler', 'manage_options', 'kargo-takip-turkiye-bulk-import', 'kargoTR_bulk_import_page' );
     add_submenu_page( $menu_slug, 'Durum Eşlemesi', 'Durum Eşlemesi', 'manage_options', 'kargo-takip-turkiye-status-mapping', 'kargoTR_status_mapping_page' );
@@ -202,9 +202,39 @@ function kargoTR_register_settings() {
         'Kobikom_Header' => $defaultValues['field'],
         'kargoTr_sms_template' => $defaultValues['smsTemplate'],
     );
+    // Gizli alanlar formda maskeli gösterilir; boş gönderilirse kayıtlı değer korunur
+    $secret_settings = array('NetGsm_Password', 'NetGsm_AppKey', 'Kobikom_ApiKey');
+
     foreach ($sms_settings as $key => $default) {
-        register_setting('kargoTR-sms-settings-group', $key, array('default' => $default));
+        $args = array('default' => $default);
+
+        if (in_array($key, $secret_settings, true)) {
+            $args['sanitize_callback'] = 'kargoTR_keep_secret_if_empty';
+        }
+
+        register_setting('kargoTR-sms-settings-group', $key, $args);
     }
+}
+
+/**
+ * Gizli ayar alanları için sanitize callback
+ * Alan boş gönderildiyse kayıtlı değeri korur, böylece maskeli form değeri silmez.
+ *
+ * @param string $value formdan gelen değer
+ * @return string kaydedilecek değer
+ */
+function kargoTR_keep_secret_if_empty($value) {
+    $value = is_string($value) ? trim($value) : '';
+
+    if ($value !== '') {
+        return sanitize_text_field($value);
+    }
+
+    // Hangi option için çağrıldığını bul ve mevcut değeri koru
+    $option = str_replace(array('sanitize_option_', 'pre_update_option_'), '', current_filter());
+    $existing = get_option($option, '');
+
+    return is_string($existing) ? $existing : '';
 }
 
 
@@ -809,7 +839,9 @@ function kargoTR_general_shipment_details_for_admin($order) {
 }
 
 
-add_action('woocommerce_process_shop_order_meta', 'kargoTR_tracking_save_general_details');
+// Öncelik 45: WooCommerce kendi sipariş kaydını 40'ta yapıp durum alanındaki değeri uyguluyor.
+// Daha erken çalışırsak "Kargoya Verildi" durumu hemen ardından geri alınıyor.
+add_action('woocommerce_process_shop_order_meta', 'kargoTR_tracking_save_general_details', 45);
 
 function kargoTR_tracking_save_general_details($ord_id) {
     $order = wc_get_order($ord_id);
@@ -869,10 +901,12 @@ function kargoTR_tracking_save_general_details($ord_id) {
 
         // Review notice için sayacı artır
         kargoTR_increment_tracking_orders_count();
-        
-        // Only update status if it's not already shipped or completed (optional, but good practice)
-        // But user might want to force it. Let's keep original behavior but only on change.
-        $order->update_status('kargo-verildi', 'Sipariş takip kodu eklendi/güncellendi');
+
+        // Tamamlanmış, iptal edilmiş veya iade edilmiş siparişlerin durumuna dokunma:
+        // aksi halde "sipariş tamamlandı" e-postası ikinci kez gönderiliyor
+        if (!in_array($order->get_status(), kargoTR_protected_order_statuses(), true)) {
+            $order->update_status('kargo-verildi', 'Sipariş takip kodu eklendi/güncellendi');
+        }
 
         if ($mail_send_general_option == 'yes') {
             do_action('order_ship_mail', $ord_id);
@@ -1103,10 +1137,25 @@ function kargoTR_kargo_eposta_details($order_id) {
     $details = kargoTR_kargo_bildirim_icerik($order, $mailer, $subject);
     $mailHeaders[] = "Content-Type: text/html\r\n";
 
-    $mailer->send($mailTo, $subject, $details, $mailHeaders);
+    if (!$mailTo) {
+        $order->add_order_note(__('Kargo bildirim e-postası gönderilemedi: siparişte e-posta adresi yok.', 'kargo-takip-turkiye'));
+        return;
+    }
 
-    /* translators: %s: customer billing email address */
-    $note = sprintf(__('Müşterinin %s e-postasına kargo takip bilgileri gönderilmiştir.', 'kargo-takip-turkiye'), $order->get_billing_email());
+    $sent = $mailer->send($mailTo, $subject, $details, $mailHeaders);
+
+    if ($sent) {
+        /* translators: %s: customer billing email address */
+        $note = sprintf(__('Müşterinin %s e-postasına kargo takip bilgileri gönderilmiştir.', 'kargo-takip-turkiye'), $mailTo);
+        // Durum eşlemesi aynı siparişe ikinci kez bildirim göndermesin
+        if (function_exists('kargoTR_mark_order_notified')) {
+            kargoTR_mark_order_notified($order_id);
+        }
+    } else {
+        /* translators: %s: customer billing email address */
+        $note = sprintf(__('Kargo bildirim e-postası %s adresine gönderilemedi. Sitenizin e-posta ayarlarını kontrol edin.', 'kargo-takip-turkiye'), $mailTo);
+    }
+
     $order->add_order_note($note);
 
     // Siparişi güncelle

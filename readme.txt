@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 7.1
 WC tested up to: 11.1.0
 Requires PHP: 7.1
-Stable tag: 0.2.5
+Stable tag: 0.2.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,6 +77,20 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.2.6 =
+* **Önemli düzeltme** - Sipariş kaydedildiğinde "Kargoya Verildi" durumunun hemen ardından eski duruma dönmesi giderildi
+* Tamamlanmış, iptal edilmiş veya iade edilmiş siparişlerde kargo bilgisi girilince durum artık değiştirilmiyor (müşteriye ikinci "siparişiniz tamamlandı" e-postası gitmiyor)
+* **Güvenlik** - Eklenti ayarları artık yalnızca WooCommerce yönetim yetkisi olan kullanıcılara açık. Önceden yazar/editör rolündeki kullanıcılar SMS ayarları sayfasındaki NetGSM şifresini ve Kobikom API anahtarını görebiliyordu
+* SMS kimlik bilgileri formda maskeleniyor, alan boş bırakıldığında kayıtlı değer korunuyor
+* Aynı siparişe e-posta/SMS bildiriminin iki kez gönderilmesi engellendi (durum eşlemesi ile birlikte kullanımda)
+* E-posta gönderilemediğinde sipariş notu artık "gönderildi" demiyor, gerçek sonucu yazıyor
+* Kobikom servisi yanıt vermediğinde SMS Ayarları sayfasının çökmesi düzeltildi
+* Kobikom SMS metnindeki & ve # karakterleri yüzünden mesajın kesilmesi düzeltildi; eksik telefon, anahtar veya şablon artık açık hata notu veriyor
+* Toplu CSV girişinde takip kodu boş olan satırlar atlanıyor (müşteriye numarasız bildirim gitmiyor)
+* REST API ile eklenen kargo bilgisi artık sipariş durumunu ve istatistik zaman damgasını güncelliyor
+* Özel kargo firmalarının logosu sipariş listesinde düzgün görünüyor
+* MNG Kargo ve Sendeo Kargo kullanımdan kaldırıldı: yeni siparişlerde seçilemezler, eski siparişlerin kargo bilgisi korunur. API veya CSV ile gönderilirse devralan firmaya kaydedilir (MNG için DHL eCommerce, Sendeo için Kolay Gelsin)
 
 = 0.2.5 =
 * Sendeo Kargo devre dışı bırakılamama sorunu düzeltildi. Eski "Sendeo" anahtarıyla kaydedilmiş siparişler otomatik olarak yeni anahtara taşınır

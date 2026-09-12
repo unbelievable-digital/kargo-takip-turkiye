@@ -69,7 +69,10 @@ function kargoTR_shipping_information_column_content( $column, $post_id )
                 $information = kargoTR_get_order_cargo_information($post_id);
                 
                 if ($information && !empty($information["logo"])) {
-                    $logo_url = plugin_dir_url( __FILE__ ).$information["logo"];
+                    // Özel firmaların logosu tam URL olarak kaydedilir, eklenti yolu eklenmemeli
+                    $logo_url = strpos($information["logo"], 'http') === 0
+                        ? $information["logo"]
+                        : plugin_dir_url( __FILE__ ) . $information["logo"];
                     // Wrap with URL if tracking code exists
                     if (!empty($information["url"])) {
                         echo "<a href='".esc_url($information["url"])."' target='_blank'>";

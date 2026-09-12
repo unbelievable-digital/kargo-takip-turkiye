@@ -380,6 +380,10 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
 
     if ($result['success']) {
         $order->add_order_note('SMS Gönderildi - NetGSM İşlem Kodu: ' . ($result['jobid'] ?: '-'));
+        // Durum eşlemesi aynı siparişe ikinci kez bildirim göndermesin
+        if (function_exists('kargoTR_mark_order_notified')) {
+            kargoTR_mark_order_notified($order_id);
+        }
     } else {
         $order->add_order_note('SMS Gönderilemedi - ' . $result['error']);
     }

@@ -60,6 +60,15 @@ function kargoTR_resolve_cargo_key($input) {
 }
 
 /**
+ * Kargo bilgisi girildiğinde durumu değiştirilmemesi gereken sipariş statüleri
+ *
+ * @return array
+ */
+function kargoTR_protected_order_statuses() {
+    return array('completed', 'cancelled', 'refunded');
+}
+
+/**
  * Kullanımdan kaldırılmış bir firmanın bilgisini verir
  * Kullanımdan kaldırılan firmalar yeni siparişlerde seçilemez ama eski siparişlerde
  * firma adı, logosu ve takip bağlantısı çalışmaya devam eder.

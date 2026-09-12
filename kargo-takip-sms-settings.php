@@ -103,15 +103,19 @@ function kargoTR_sms_setting_page() {
                                 <div class="kargotr-form-field">
                                     <label for="NetGsm_Password">Şifre</label>
                                     <input type="password" id="NetGsm_Password" name="NetGsm_Password"
-                                           value="<?php echo esc_attr($NetGsm_Password); ?>">
+                                           value="" autocomplete="new-password"
+                                           placeholder="<?php echo $NetGsm_Password ? '••••••••  (kayıtlı)' : 'NetGSM şifreniz'; ?>">
+                                    <?php if ($NetGsm_Password): ?>
+                                        <p class="description">Değiştirmek için yeni şifreyi yazın. Boş bırakırsanız kayıtlı şifre korunur.</p>
+                                    <?php endif; ?>
                                 </div>
-                                
+
                                 <div class="kargotr-form-field">
                                     <label for="NetGsm_AppKey">App Key</label>
                                     <input type="text" id="NetGsm_AppKey" name="NetGsm_AppKey"
-                                           value="<?php echo esc_attr($NetGsm_AppKey); ?>"
-                                           placeholder="API App Key (opsiyonel)">
-                                    <p class="description">NetGSM panelinden alabilirsiniz</p>
+                                           value="" autocomplete="off"
+                                           placeholder="<?php echo $NetGsm_AppKey ? '••••••••  (kayıtlı)' : 'API App Key (opsiyonel)'; ?>">
+                                    <p class="description">NetGSM panelinden alabilirsiniz. Boş bırakırsanız kayıtlı değer korunur.</p>
                                 </div>
                             </div>
 
@@ -193,8 +197,12 @@ function kargoTR_sms_setting_page() {
                         <div class="kargotr-card-body">
                             <div class="kargotr-form-field">
                                 <label for="Kobikom_ApiKey">API Anahtarı</label>
-                                <textarea id="Kobikom_ApiKey" name="Kobikom_ApiKey" rows="3"
-                                          class="kargotr-textarea"><?php echo esc_attr($Kobikom_ApiKey); ?></textarea>
+                                <textarea id="Kobikom_ApiKey" name="Kobikom_ApiKey" rows="3" autocomplete="off"
+                                          placeholder="<?php echo $Kobikom_ApiKey ? '••••••••  (kayıtlı)' : 'Kobikom API anahtarınız'; ?>"
+                                          class="kargotr-textarea"></textarea>
+                                <?php if ($Kobikom_ApiKey): ?>
+                                    <p class="description">Değiştirmek için yeni anahtarı yazın. Boş bırakırsanız kayıtlı anahtar korunur.</p>
+                                <?php endif; ?>
                             </div>
 
                             <?php if ($Kobikom_ApiKey): ?>

@@ -163,6 +163,8 @@ function kargoTR_api_add_tracking_code($request) {
             }
         }
 
+        // İstatistikler için zaman damgası: admin tarafıyla aynı davranış
+        $order->update_meta_data('_kargo_takip_timestamp', current_time('mysql'));
         $order->save();
 
         // Review notice için sayacı artır
@@ -176,6 +178,11 @@ function kargoTR_api_add_tracking_code($request) {
                 $tracking_code
             )
         );
+
+        // Durumu "Kargoya Verildi" yap: admin tarafıyla aynı davranış
+        if (!in_array($order->get_status(), kargoTR_protected_order_statuses(), true)) {
+            $order->update_status('kargo-verildi', __('Kargo takip bilgisi API ile eklendi', 'kargo-takip-turkiye'));
+        }
 
         // Send mail to customer if mail send option is true
         if ($mail_send_general_option == 'yes') {

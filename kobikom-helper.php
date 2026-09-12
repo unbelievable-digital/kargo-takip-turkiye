@@ -12,9 +12,15 @@ function kargoTR_get_kobikom_headers($api) {
         return false;
     }
 
-    $url = "https://sms.kobikom.com.tr/api/subscription?api_token=$api";
-    $request = wp_remote_get($url);
-    $response = json_decode($request['body'], true);
+    $url = 'https://sms.kobikom.com.tr/api/subscription?api_token=' . rawurlencode($api);
+    $request = wp_remote_get($url, array('timeout' => 15));
+
+    // API cevap vermezse ayarlar sayfası çökmemeli
+    if (is_wp_error($request)) {
+        return false;
+    }
+
+    $response = json_decode(wp_remote_retrieve_body($request), true);
 
     return !empty($response['data']) ? $response['data'] : false;
 }
@@ -23,16 +29,29 @@ function kargoTR_get_kobikom_balance($api) {
     if (empty($api) || $api == null) {
         return false;
     }
-    $url = "https://sms.kobikom.com.tr/api/balance?api_token=$api";
-    $request = wp_remote_get($url);
-    $response = json_decode($request['body'], true);
+    $url = 'https://sms.kobikom.com.tr/api/balance?api_token=' . rawurlencode($api);
+    $request = wp_remote_get($url, array('timeout' => 15));
+
+    // API cevap vermezse ayarlar sayfası çökmemeli
+    if (is_wp_error($request)) {
+        return false;
+    }
+
+    $response = json_decode(wp_remote_retrieve_body($request), true);
 
     return !empty($response['packages']) ? $response['packages'] : false;
 }
 
 function kargoTR_SMS_gonder_kobikom($order_id) {
     $order = wc_get_order($order_id);
+    if (!$order instanceof WC_Order) {
+        return;
+    }
+
     $phone = $order->get_billing_phone();
+    if (!$phone) {
+        $phone = $order->get_shipping_phone();
+    }
 
     // Telefon numarası temizleme ve formatlama (905xxxxxxxxx)
     $phone = preg_replace('/[^0-9]/', '', $phone);
@@ -46,31 +65,59 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
     $KobiKom_Header = get_option('Kobikom_Header');
 
     $message = kargoTR_get_sms_template($order_id, get_option('kargoTr_sms_template'));
-    
-    $url = "https://sms.kobikom.com.tr/api/message/send";
+
+    // Eksik bilgiyle istek atıp hatayı SMS servisinden beklemek yerine burada durdur
+    if (empty($Kobikom_ApiKey)) {
+        $order->add_order_note('Sms Gönderilemedi - Kobikom API anahtarı tanımlı değil.');
+        return;
+    }
+
+    if (empty($phone)) {
+        $order->add_order_note('Sms Gönderilemedi - Siparişte telefon numarası yok.');
+        return;
+    }
+
+    if (trim($message) === '') {
+        $order->add_order_note('Sms Gönderilemedi - SMS şablonu boş.');
+        return;
+    }
+
+    // add_query_arg değerleri kodlamaz: mesajdaki & ve # karakterleri SMS metnini kesiyordu
     $params = array(
         'api_token' => $Kobikom_ApiKey,
         'to' => $phone,
         'from' => $KobiKom_Header,
         'message' => $message,
-        'unicode' => 1
+        'unicode' => 1,
     );
-    
-    $request_url = add_query_arg($params, $url);
-    $request = wp_remote_get($request_url);
-    
+
+    $query = array();
+    foreach ($params as $param_key => $param_value) {
+        $query[] = rawurlencode($param_key) . '=' . rawurlencode($param_value);
+    }
+
+    $request_url = 'https://sms.kobikom.com.tr/api/message/send?' . implode('&', $query);
+    $request = wp_remote_get($request_url, array('timeout' => 20));
+
     if (is_wp_error($request)) {
         $order->add_order_note("Sms Gönderilemedi - Kobikom Hatası: " . $request->get_error_message());
-    } else {
-        $body = wp_remote_retrieve_body($request);
-        $response = json_decode($body, true);
-        
-        if (!empty($response['data'][0]['uuid'])) {
-             $order->add_order_note("Sms Gönderildi - Kobikom SMS Kodu : " . $response['data'][0]['uuid']);
-        } else {
-             $order->add_order_note("Kobikom SMS Yanıtı: " . $body);
-        }
+        return;
     }
+
+    $status_code = wp_remote_retrieve_response_code($request);
+    $body = wp_remote_retrieve_body($request);
+    $response = json_decode($body, true);
+
+    if (!empty($response['data'][0]['uuid'])) {
+        $order->add_order_note("Sms Gönderildi - Kobikom SMS Kodu : " . $response['data'][0]['uuid']);
+        if (function_exists('kargoTR_mark_order_notified')) {
+            kargoTR_mark_order_notified($order_id);
+        }
+        return;
+    }
+
+    $error_detail = isset($response['message']) ? $response['message'] : wp_strip_all_tags(substr($body, 0, 200));
+    $order->add_order_note(sprintf('Sms Gönderilemedi - Kobikom yanıtı (HTTP %s): %s', $status_code, $error_detail));
 }
 
 add_action('order_send_sms_kobikom', 'kargoTR_SMS_gonder_kobikom');

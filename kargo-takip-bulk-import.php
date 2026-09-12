@@ -140,6 +140,13 @@ function kargoTR_handle_csv_upload() {
         // Skip empty rows
         if (empty($data[0])) continue;
 
+        // Eksik sütunlu satır: takip kodu olmadan bildirim gitmemeli
+        if (count($data) < 3 || trim($data[2]) === '') {
+            $error_count++;
+            $errors[] = sprintf('Satır atlandı (eksik bilgi): %s', esc_html(implode(',', $data)));
+            continue;
+        }
+
         // Clean data
         $order_id = intval(trim($data[0]));
         $cargo_company_input = trim($data[1]);
