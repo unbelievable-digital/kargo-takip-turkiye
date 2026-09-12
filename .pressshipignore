@@ -2,3 +2,6 @@ CLAUDE.md
 Tasks.md
 .distignore
 .playwright-mcp
+tests
+bin
+.wp-env.json

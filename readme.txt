@@ -1,33 +1,43 @@
-=== Kargo Takip ===
+=== Kargo Takip Türkiye - WooCommerce & Dokan Kargo Takip, SMS ve E-posta ===
 Contributors: zgrkaralar,unbelievabledigital
-Tags: kargo, kargo takip, aras kargo, yurtiçi kargo, yurt içi kargo
+Tags: kargo takip, kargo, woocommerce, dokan, sms
 Requires at least: 4.9
 Tested up to: 7.1
 WC tested up to: 11.1.0
 Requires PHP: 7.1
-Stable tag: 0.3
+Stable tag: 0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-WooCommerce siparişlerinize kargo takip bilgisi ekleyin ve müşterilerinize otomatik e-posta/SMS bildirimleri gönderin.
+WooCommerce ve Dokan siparişlerinize kargo takip bilgisi ekleyin, müşterilerinize otomatik SMS ve e-posta bildirimi gönderin.
 
 == Description ==
 
 **3.000'den fazla aktif site tarafından kullanılmaktadır!**
 
-Kargo Takip Türkiye eklentisi ile WooCommerce siparişlerinize kargo takip bilgisi ekleyebilir ve müşterilerinize otomatik bildirimler gönderebilirsiniz.
+Kargo Takip Türkiye, WooCommerce siparişlerine kargo firması ve takip numarası eklemenizi sağlar. Bilgiyi girdiğiniz anda sipariş durumu "Kargoya Verildi" olur, müşteriye takip bağlantısını içeren SMS ve e-posta gider. Müşteri kargosunu hesabım sayfasından da takip edebilir.
 
-= Özellikler =
+= Öne çıkan özellikler =
 
-* **HPOS Uyumlu** - WooCommerce High-Performance Order Storage desteği
-* **27+ Kargo Firması** - Türkiye'nin önde gelen kargo firmalarını destekler
-* **Otomatik E-posta** - Kargo bilgisi girildiğinde otomatik e-posta gönderimi
-* **SMS Entegrasyonu** - NetGSM ve Kobikom SMS desteği
-* **Toplu Kargo Girişi** - Excel/CSV ile toplu kargo bilgisi girişi
-* **REST API** - Dış sistemlerle entegrasyon için API desteği
-* **Özelleştirilebilir Şablonlar** - E-posta ve SMS şablonlarını düzenleyebilme
-* **Tahmini Teslimat** - Kargo firmasına göre tahmini teslimat tarihi hesaplama
-* **Dashboard** - Kargo istatistikleri ve özet görünümü
+* **Dokan uyumlu** - Çok satıcılı pazaryerlerinde satıcılar kargo firmasını ve takip numarasını kendi panellerinden girer. Her satıcı yalnızca kendi siparişini düzenleyebilir, çok satıcılı siparişte müşteri her satıcının kargo bilgisini ayrı ayrı görür
+* **27+ kargo firması** - Türkiye'nin önde gelen kargo firmaları hazır tanımlı, istediğiniz firmayı kendiniz de ekleyebilirsiniz
+* **SMS bildirimi** - NetGSM ve Kobikom desteği, kendi mesaj şablonunuzla
+* **E-posta bildirimi** - WooCommerce e-posta şablonuyla uyumlu, düzenlenebilir içerik
+* **Toplu kargo girişi** - Excel/CSV dosyasıyla yüzlerce siparişe tek seferde kargo bilgisi. Türkçe Excel dosyaları (noktalı virgül ayracı) desteklenir
+* **REST API** - Dış sistemlerinizden kargo bilgisi gönderin
+* **Durum eşlemesi** - Başka bir eklenti veya entegrasyon siparişi "shipped" yaptığında kargo bildirimleri otomatik tetiklenir
+* **Tahmini teslimat** - Kargo firmasına göre tahmini teslimat tarihi hesaplanır ve müşteriye bildirilir
+* **HPOS uyumlu** - WooCommerce High-Performance Order Storage ile tam uyumlu
+* **Panel özeti** - Bekleyen ve son 24 saatte kargolanan sipariş sayısı
+
+= Nasıl çalışır? =
+
+1. Siparişi açın, kargo firmasını seçin ve takip numarasını girin
+2. Sipariş durumu otomatik olarak "Kargoya Verildi" olur
+3. Müşteriye takip bağlantısını içeren SMS ve e-posta gider
+4. Müşteri, Hesabım > Siparişler sayfasından kargosunu takip eder
+
+Dokan kullanıyorsanız satıcılar aynı işlemi kendi satıcı panellerindeki sipariş detay sayfasından yapar.
 
 = Desteklenen Kargo Firmaları (27+) =
 
@@ -77,6 +87,10 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.4 =
+* Eklenti adı ve açıklaması güncellendi: Dokan uyumluluğu, toplu kargo girişi, durum eşlemesi ve REST API gibi özellikler artık açıklamada yer alıyor
+* Geliştirme tarafında otomatik test altyapısı eklendi; her değişiklik PHP 7.4 ve 8.3 üzerinde WordPress, WooCommerce ve Dokan ile otomatik olarak test ediliyor (eklenti paketine dahil değildir)
 
 = 0.3 =
 * **Dokan uyumluluğu** - Kargo firması ve takip numarası alanları artık Dokan satıcı panelindeki sipariş detayında da görünüyor. Satıcı yalnızca kendi siparişini düzenleyebilir; çok satıcılı siparişlerde her satıcının kargo bilgisi ana siparişe işlenir ve müşteriye ayrı ayrı gösterilir

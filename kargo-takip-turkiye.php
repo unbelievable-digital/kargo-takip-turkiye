@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Kargo Takip Türkiye
- * Description: Bu eklenti sayesinde basit olarak müşterilerinize kargo takip linkini ulaştırabilirsiniz. Mail ve SMS gönderebilirsiniz.
- * Version: 0.3
+ * Plugin Name: Kargo Takip Türkiye - WooCommerce & Dokan Kargo Takip, SMS ve E-posta
+ * Description: WooCommerce ve Dokan siparişlerinize kargo takip bilgisi ekleyin, müşterilerinize otomatik SMS ve e-posta bildirimi gönderin.
+ * Version: 0.4
  * Author: Unbelievable.Digital
  * Author URI: https://unbelievable.digital
  * Text Domain: kargo-takip-turkiye

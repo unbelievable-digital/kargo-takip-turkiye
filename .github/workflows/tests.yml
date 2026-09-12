@@ -1,0 +1,104 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php }} söz dizimi
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Eklentinin desteklediği en düşük ve en güncel sürümler
+        php: ['7.4', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP kurulumu
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Söz dizimi denetimi
+        run: |
+          status=0
+          for file in $(find . -name '*.php' -not -path './node_modules/*' -not -path './vendor/*'); do
+            php -l "$file" > /dev/null || status=1
+          done
+          exit $status
+
+  tests:
+    name: WordPress testleri (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test ortamını PHP ${{ matrix.php }} için ayarla
+        run: |
+          node -e "
+            const fs = require('fs');
+            const config = JSON.parse(fs.readFileSync('.wp-env.json', 'utf8'));
+            config.phpVersion = '${{ matrix.php }}';
+            fs.writeFileSync('.wp-env.json', JSON.stringify(config, null, 2));
+          "
+
+      - name: Test ortamını başlat
+        run: npx --yes @wordpress/env start
+
+      # WooCommerce zip'i klasör adını koruyarak kurulur; "Requires Plugins" nedeniyle
+      # WooCommerce, eklentiden önce aktif olmalı
+      - name: Eklentileri etkinleştir
+        run: npx --yes @wordpress/env run cli wp plugin activate --all
+
+      - name: Dokan Lite kur
+        run: npx --yes @wordpress/env run cli wp plugin install dokan-lite --activate --force
+        continue-on-error: true
+
+      - name: WooCommerce sihirbazını atla
+        run: npx --yes @wordpress/env run cli wp option update woocommerce_onboarding_profile '{"skipped":true}' --format=json
+
+      - name: Testleri çalıştır
+        run: |
+          status=0
+          for suite in tests/test-*.php; do
+            echo "::group::$suite"
+            npx --yes @wordpress/env run cli wp eval-file "wp-content/plugins/kargo-takip-turkiye/$suite" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      - name: WordPress hata kayıtlarını göster
+        if: failure()
+        run: npx --yes @wordpress/env logs wordpress --watch=false | tail -100
+        continue-on-error: true
+
+  plugin-check:
+    name: WordPress.org Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Readme Türkçe olduğu için dil uyarıları beklenir; PHP hataları raporlanır
+      - name: Plugin Check
+        run: npx --yes pressship verify . --skip-readme-validator
+        continue-on-error: true

@@ -8,3 +8,6 @@
 CLAUDE.md
 Tasks.md
 *.log
+/tests
+/bin
+.wp-env.json
