@@ -1310,19 +1310,7 @@ function kargoTR_wrap_with_wc_template($content, $email_heading, $order, $mailer
         return kargoTR_wrap_email_content($content, $email_heading, $mailer);
     }
 
-    ob_start();
-
-    // WooCommerce email header
-    do_action('woocommerce_email_header', $email_heading, null);
-
-    // Özel içerik
-    echo wp_kses_post(wpautop($content));
-
-    // WooCommerce email footer
-    do_action('woocommerce_email_footer', null);
-
-    $email_content = ob_get_clean();
-
-    // WooCommerce'in wrap_message metodunu kullan
-    return $mailer->wrap_message($email_heading, $email_content);
+    // wrap_message() WooCommerce e-posta başlığını ve alt bilgisini zaten ekler.
+    // İçeriği önceden sarmalamak iç içe şablona ve dar e-posta görünümüne neden olur.
+    return $mailer->wrap_message($email_heading, $content);
 }

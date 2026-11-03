@@ -879,19 +879,7 @@ function kargoTR_get_wc_email_preview_html($content) {
     $mailer = WC()->mailer();
     $email_heading = 'Siparişiniz Kargoya Verildi';
 
-    ob_start();
-
-    // WooCommerce email header
-    do_action('woocommerce_email_header', $email_heading, null);
-
-    // Özel içerik
-    echo wp_kses_post(wpautop($content));
-
-    // WooCommerce email footer
-    do_action('woocommerce_email_footer', null);
-
-    $email_content = ob_get_clean();
-
-    // WooCommerce'in wrap_message metodunu kullan
-    return $mailer->wrap_message($email_heading, $email_content);
+    // wrap_message() WooCommerce e-posta başlığını ve alt bilgisini zaten ekler.
+    // Önizleme ve test içeriğinin ikinci kez sarılmasını önle.
+    return $mailer->wrap_message($email_heading, $content);
 }
