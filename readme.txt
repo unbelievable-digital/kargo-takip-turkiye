@@ -1,5 +1,5 @@
 === Kargo Takip, WooCommerce & Dokan Kargo Takip, SMS ve E-posta ===
-Contributors: zgrkaralar,unbelievabledigital
+Contributors: zgrkaralar,unbelievabledigital,suhakaralar
 Tags: kargo takip, kargo, woocommerce, dokan, sms
 Requires at least: 4.9
 Tested up to: 7.1
@@ -87,6 +87,9 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 2.Siparişler sayfası görünümü
 
 == Changelog ==
+
+= 0.6 =
+* WooCommerce e-posta şablonu seçiliyken kargo bildirim e-postasında logo, başlık ve alt bilginin iki kez görünmesi ve e-posta gövdesinin daralması düzeltildi; önizleme ve test e-postası da aynı düzeltmeyi kullanıyor. Katkısı için Süha Karalar'a (@suhakaralar) teşekkürler
 
 = 0.5 =
 * **Müşteriye görünen tüm metinler artık ayarlanabilir** - E-posta konusu, "Kargo hazırlanıyor" yazısı, kargo firması ve takip numarası etiketleri, takip bağlantısı metni ve Hesabım sayfasındaki buton kendi dilinizde yazılabilir. Çok dilli ve yabancı dildeki mağazalar artık eklenti dosyalarını düzenlemek zorunda değil

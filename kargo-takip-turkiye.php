@@ -1312,5 +1312,5 @@ function kargoTR_wrap_with_wc_template($content, $email_heading, $order, $mailer
 
     // wrap_message() WooCommerce e-posta başlığını ve alt bilgisini zaten ekler.
     // İçeriği önceden sarmalamak iç içe şablona ve dar e-posta görünümüne neden olur.
-    return $mailer->wrap_message($email_heading, $content);
+    return $mailer->wrap_message($email_heading, wp_kses_post($content));
 }

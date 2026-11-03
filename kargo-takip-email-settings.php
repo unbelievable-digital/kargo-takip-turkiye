@@ -881,5 +881,5 @@ function kargoTR_get_wc_email_preview_html($content) {
 
     // wrap_message() WooCommerce e-posta başlığını ve alt bilgisini zaten ekler.
     // Önizleme ve test içeriğinin ikinci kez sarılmasını önle.
-    return $mailer->wrap_message($email_heading, $content);
+    return $mailer->wrap_message($email_heading, wp_kses_post($content));
 }
