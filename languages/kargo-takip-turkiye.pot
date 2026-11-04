@@ -2,7 +2,7 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Kargo Takip, WooCommerce & Dokan Kargo Takip, SMS ve E-posta 0.6\n"
+"Project-Id-Version: Kargo Takip, WooCommerce & Dokan Kargo Takip, SMS ve E-posta 0.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/kargo-takip-turkiye\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
