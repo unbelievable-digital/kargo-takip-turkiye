@@ -25,6 +25,7 @@ GitHub Actions aynı adımları her push ve pull request'te PHP 7.4 ve 8.3 ile �
 | `test-cargo-data.php` | Kargo firma anahtarları, kullanımdan kaldırılan firmalar, takip adresi oluşturma, eski anahtar taşıma |
 | `test-order-flow.php` | Kargo bilgisi kaydı, sipariş durumu, bildirim işaretleri, ödenmiş statü, SMS şablonu |
 | `test-email.php` | WooCommerce e-posta şablonunun tek kez uygulanması, önizleme, içerik temizliği |
+| `test-notification-queue.php` | Bildirimlerin arka plan kuyruğu, mükerrer iş engeli, geçici/kalıcı hatada tekrar deneme |
 | `test-integrations.php` | REST API, toplu CSV girişi, durum eşlemesi, NetGSM/Kobikom, Dokan |
 
 ## Yeni test yazma

@@ -42,10 +42,18 @@ function kargoTR_get_kobikom_balance($api) {
     return !empty($response['packages']) ? $response['packages'] : false;
 }
 
+/**
+ * Kargo SMS'ini Kobikom ile gönderir
+ *
+ * Bildirim kuyruğu (kargo-takip-notification-queue.php) üzerinden çağrılır.
+ *
+ * @param int $order_id sipariş ID
+ * @return true|false|WP_Error true gönderildi, false kalıcı hata, WP_Error (kargotr_retry) tekrar denenebilir
+ */
 function kargoTR_SMS_gonder_kobikom($order_id) {
     $order = wc_get_order($order_id);
     if (!$order instanceof WC_Order) {
-        return;
+        return false;
     }
 
     $phone = $order->get_billing_phone();
@@ -69,17 +77,17 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
     // Eksik bilgiyle istek atıp hatayı SMS servisinden beklemek yerine burada durdur
     if (empty($Kobikom_ApiKey)) {
         $order->add_order_note('Sms Gönderilemedi - Kobikom API anahtarı tanımlı değil.');
-        return;
+        return false;
     }
 
     if (empty($phone)) {
         $order->add_order_note('Sms Gönderilemedi - Siparişte telefon numarası yok.');
-        return;
+        return false;
     }
 
     if (trim($message) === '') {
         $order->add_order_note('Sms Gönderilemedi - SMS şablonu boş.');
-        return;
+        return false;
     }
 
     // add_query_arg değerleri kodlamaz: mesajdaki & ve # karakterleri SMS metnini kesiyordu
@@ -101,7 +109,7 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
 
     if (is_wp_error($request)) {
         $order->add_order_note("Sms Gönderilemedi - Kobikom Hatası: " . $request->get_error_message());
-        return;
+        return new WP_Error('kargotr_retry', $request->get_error_message());
     }
 
     $status_code = wp_remote_retrieve_response_code($request);
@@ -113,14 +121,14 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
         if (function_exists('kargoTR_mark_order_notified')) {
             kargoTR_mark_order_notified($order_id);
         }
-        return;
+        return true;
     }
 
     $error_detail = isset($response['message']) ? $response['message'] : wp_strip_all_tags(substr($body, 0, 200));
     $order->add_order_note(sprintf('Sms Gönderilemedi - Kobikom yanıtı (HTTP %s): %s', $status_code, $error_detail));
-}
 
-add_action('order_send_sms_kobikom', 'kargoTR_SMS_gonder_kobikom');
+    return ((int) $status_code >= 500) ? new WP_Error('kargotr_retry', $error_detail) : false;
+}
 
 
 

@@ -13,6 +13,10 @@ if (!defined('ABSPATH')) {
 global $kargotr_test_state;
 $kargotr_test_state = array('pass' => 0, 'fail' => 0, 'failures' => array());
 
+// Testler varsayılan olarak bildirimleri hemen gönderir (kuyruk testi bunu açar).
+// Böylece order_ship_mail çağrısının sonucu aynı istekte kontrol edilebilir.
+update_option('kargoTR_async_notifications', 'no');
+
 /**
  * Tek bir iddiayı doğrular
  *

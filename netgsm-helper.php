@@ -276,7 +276,8 @@ function kargoTR_netgsm_normalize_phone($phone) {
  * @param string $password NetGSM şifre (ham, urlencode yok)
  * @param string $msgheader Mesaj başlığı (gönderici adı)
  * @param array  $messages [ ['msg' => '...', 'no' => '905xxxxxxxxx'], ... ]
- * @return array ['success' => bool, 'jobid' => string|null, 'error' => string|null]
+ * @return array ['success' => bool, 'jobid' => string|null, 'error' => string|null, 'retry' => bool]
+ *               retry: hata geçici (bağlantı hatası, servis 5xx), tekrar denenebilir
  */
 function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages) {
     $url = 'https://api.netgsm.com.tr/sms/rest/v2/send';
@@ -297,9 +298,10 @@ function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages
     ));
 
     if (is_wp_error($request)) {
-        return array('success' => false, 'jobid' => null, 'error' => $request->get_error_message());
+        return array('success' => false, 'jobid' => null, 'error' => $request->get_error_message(), 'retry' => true);
     }
 
+    $status   = (int) wp_remote_retrieve_response_code($request);
     $response = trim(wp_remote_retrieve_body($request));
     $data     = json_decode($response, true);
 
@@ -308,6 +310,7 @@ function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages
             'success' => true,
             'jobid'   => isset($data['jobid']) ? $data['jobid'] : null,
             'error'   => null,
+            'retry'   => false,
         );
     }
 
@@ -323,13 +326,21 @@ function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages
     $code   = isset($data['code']) ? (string) $data['code'] : '';
     $errmsg = isset($error_codes[$code]) ? $error_codes[$code] : ('NetGSM API: ' . ($response ?: 'Bilinmeyen yanıt'));
 
-    return array('success' => false, 'jobid' => null, 'error' => $errmsg . ' (Kod: ' . $code . ')');
+    return array('success' => false, 'jobid' => null, 'error' => $errmsg . ' (Kod: ' . $code . ')', 'retry' => $status >= 500);
 }
 
+/**
+ * Kargo SMS'ini NetGSM ile gönderir
+ *
+ * Bildirim kuyruğu (kargo-takip-notification-queue.php) üzerinden çağrılır.
+ *
+ * @param int $order_id sipariş ID
+ * @return true|false|WP_Error true gönderildi, false kalıcı hata, WP_Error (kargotr_retry) tekrar denenebilir
+ */
 function kargoTR_SMS_gonder_netgsm($order_id) {
     $order = wc_get_order($order_id);
     if (!$order instanceof WC_Order) {
-        return;
+        return false;
     }
 
     $phone = $order->get_billing_phone();
@@ -339,7 +350,7 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
     }
     if (empty($phone)) {
         $order->add_order_note('SMS Gönderilemedi - Siparişte telefon numarası yok.');
-        return;
+        return false;
     }
 
     $NetGsm_UserName = get_option('NetGsm_UserName');
@@ -348,7 +359,7 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
 
     if (empty($NetGsm_UserName) || empty($NetGsm_Password) || empty($NetGsm_Header)) {
         $order->add_order_note('SMS Gönderilemedi - NetGSM kullanıcı adı, şifre veya başlık eksik.');
-        return;
+        return false;
     }
 
     // Dinamik başlık: "yes" ise API'den ilk başlığı al
@@ -356,7 +367,7 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
         $headers = kargoTR_get_netgsm_headers($NetGsm_UserName, $NetGsm_Password);
         if (!is_array($headers) || empty($headers)) {
             $order->add_order_note('SMS Gönderilemedi - NetGSM mesaj başlıkları alınamadı.');
-            return;
+            return new WP_Error('kargotr_retry', 'NetGSM mesaj başlıkları alınamadı.');
         }
         $NetGsm_Header = $headers[0];
     }
@@ -374,10 +385,12 @@ function kargoTR_SMS_gonder_netgsm($order_id) {
         if (function_exists('kargoTR_mark_order_notified')) {
             kargoTR_mark_order_notified($order_id);
         }
-    } else {
-        $order->add_order_note('SMS Gönderilemedi - ' . $result['error']);
+        return true;
     }
+
+    $order->add_order_note('SMS Gönderilemedi - ' . $result['error']);
+
+    return !empty($result['retry']) ? new WP_Error('kargotr_retry', $result['error']) : false;
 }
-add_action('order_send_sms', 'kargoTR_SMS_gonder_netgsm');
 
 ?>

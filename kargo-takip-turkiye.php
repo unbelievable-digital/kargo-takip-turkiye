@@ -142,6 +142,7 @@ include 'kargo-takip-review-notice.php';
 // include 'kargo-takip-checkout-fields.php'; // Disabled
 include 'kargo-takip-dashboard.php';
 include 'kargo-takip-dokan.php';
+include 'kargo-takip-notification-queue.php';
 add_action( 'admin_menu', 'kargoTR_register_admin_menu' );
 function kargoTR_register_admin_menu() {
     $menu_slug = 'kargo-takip-turkiye';
@@ -175,6 +176,7 @@ function kargoTR_register_settings() {
     $general_settings = array(
         'kargo_hazirlaniyor_text' => $defaultValues['select'],
         'mail_send_general' => $defaultValues['select'],
+        'kargoTR_async_notifications' => 'yes',
         'kargo_estimated_delivery_days' => '3',
         'kargo_estimated_delivery_enabled' => $defaultValues['select'],
     );
@@ -251,6 +253,7 @@ function kargoTR_keep_secret_if_empty($value) {
 function kargoTR_setting_page() {
     $kargo_hazirlaniyor_text = get_option('kargo_hazirlaniyor_text', 'no');
     $mail_send_general_option = get_option('mail_send_general', 'no');
+    $async_notifications_option = get_option('kargoTR_async_notifications', 'yes');
     $estimated_days = get_option('kargo_estimated_delivery_days', '3');
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
 
@@ -339,6 +342,20 @@ function kargoTR_setting_page() {
                                 </label>
                                 <p class="description" style="margin-top: 8px; margin-left: 24px;">
                                     Kargo takip bilgisi girildiğinde müşteriye otomatik olarak e-posta gönderilir.
+                                </p>
+                            </div>
+
+                            <div class="kargotr-setting-item" style="margin-top: 16px;">
+                                <label class="kargotr-toggle-label">
+                                    <input type="checkbox" name="kargoTR_async_notifications" value="yes"
+                                           <?php checked($async_notifications_option, 'yes'); ?>
+                                           id="async-notifications-toggle">
+                                    <strong>Bildirimleri Arka Planda Gönder</strong>
+                                </label>
+                                <p class="description" style="margin-top: 8px; margin-left: 24px;">
+                                    E-posta ve SMS, sipariş kaydedilirken beklenmeden birkaç saniye içinde arka planda gönderilir.
+                                    Bağlantı hatası gibi geçici sorunlarda 5 ve 30 dakika sonra tekrar denenir.
+                                    Kapatırsanız bildirimler kayıt sırasında hemen gönderilir.
                                 </p>
                             </div>
 
@@ -1227,22 +1244,33 @@ function kargoTR_wrap_email_content($content, $email_heading, $mailer) {
 
 
 
+/**
+ * Kargo bildirim e-postasını gönderir
+ *
+ * Doğrudan order_ship_mail action'ına bağlı değildir; bildirim kuyruğu
+ * (kargo-takip-notification-queue.php) üzerinden çağrılır.
+ *
+ * @param int $order_id sipariş ID
+ * @return true|false|WP_Error true gönderildi, false kalıcı hata, WP_Error (kargotr_retry) tekrar denenebilir
+ */
 function kargoTR_kargo_eposta_details($order_id) {
     $order = wc_get_order($order_id);
-    $phone = $order->get_billing_phone();
-    $alici = $order->get_shipping_first_name() . " " . $order->get_shipping_last_name();
+    if (!$order instanceof WC_Order) {
+        return false;
+    }
+
     $mailer = WC()->mailer();
 
     $mailTo = $order->get_billing_email();
     $subject = kargoTR_text('kargoTR_text_email_subject');
-    $details = kargoTR_kargo_bildirim_icerik($order, $mailer, $subject);
     $mailHeaders[] = "Content-Type: text/html\r\n";
 
     if (!$mailTo) {
         $order->add_order_note(__('Kargo bildirim e-postası gönderilemedi: siparişte e-posta adresi yok.', 'kargo-takip-turkiye'));
-        return;
+        return false;
     }
 
+    $details = kargoTR_kargo_bildirim_icerik($order, $mailer, $subject);
     $sent = $mailer->send($mailTo, $subject, $details, $mailHeaders);
 
     if ($sent) {
@@ -1258,12 +1286,10 @@ function kargoTR_kargo_eposta_details($order_id) {
     }
 
     $order->add_order_note($note);
-
-    // Siparişi güncelle
     $order->save();
-}
 
-add_action('order_ship_mail', 'kargoTR_kargo_eposta_details');
+    return $sent ? true : new WP_Error('kargotr_retry', $note);
+}
 
 // AJAX: Kargo mailini yeniden gönder
 add_action('wp_ajax_kargotr_resend_cargo_mail', 'kargoTR_resend_cargo_mail');
@@ -1297,8 +1323,10 @@ function kargoTR_resend_cargo_mail() {
         wp_send_json_error('Kargo takip bilgisi bulunamadı.');
     }
 
-    // Email gönder
-    kargoTR_kargo_eposta_details($order_id);
+    // Email gönder (yönetici sonucu hemen görsün diye kuyruğa alınmaz)
+    if (kargoTR_kargo_eposta_details($order_id) !== true) {
+        wp_send_json_error('E-posta gönderilemedi. Ayrıntı için sipariş notlarına bakın.');
+    }
 
     wp_send_json_success('E-posta başarıyla gönderildi: ' . $order->get_billing_email());
 }
