@@ -192,6 +192,15 @@ function kargoTR_register_settings() {
         register_setting('kargoTR-general-settings-group', $key, array('default' => $default));
     }
 
+    register_setting('kargoTR-general-settings-group', 'kargoTR_notification_retry_count', array(
+        'default'           => 2,
+        'sanitize_callback' => 'kargoTR_sanitize_retry_count',
+    ));
+    register_setting('kargoTR-general-settings-group', 'kargoTR_notification_retry_interval', array(
+        'default'           => 15,
+        'sanitize_callback' => 'kargoTR_sanitize_retry_interval',
+    ));
+
     // EMAIL AYARLARI GRUBU
     $email_settings = array(
         'kargoTr_email_template' => $defaultValues['emailTemplate'],
@@ -254,6 +263,8 @@ function kargoTR_setting_page() {
     $kargo_hazirlaniyor_text = get_option('kargo_hazirlaniyor_text', 'no');
     $mail_send_general_option = get_option('mail_send_general', 'no');
     $async_notifications_option = get_option('kargoTR_async_notifications', 'yes');
+    $retry_count_option = kargoTR_sanitize_retry_count(get_option('kargoTR_notification_retry_count', 2));
+    $retry_interval_option = kargoTR_sanitize_retry_interval(get_option('kargoTR_notification_retry_interval', 15));
     $estimated_days = get_option('kargo_estimated_delivery_days', '3');
     $estimated_delivery_enabled = get_option('kargo_estimated_delivery_enabled', 'no');
 
@@ -354,8 +365,30 @@ function kargoTR_setting_page() {
                                 </label>
                                 <p class="description" style="margin-top: 8px; margin-left: 24px;">
                                     E-posta ve SMS, sipariş kaydedilirken beklenmeden birkaç saniye içinde arka planda gönderilir.
-                                    Bağlantı hatası gibi geçici sorunlarda 5 ve 30 dakika sonra tekrar denenir.
                                     Kapatırsanız bildirimler kayıt sırasında hemen gönderilir.
+                                </p>
+                            </div>
+
+                            <div class="kargotr-setting-item" style="margin-top: 16px;">
+                                <strong>Gönderilemeyen Bildirimi Tekrar Dene</strong>
+                                <p style="margin: 8px 0 0 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                    <select name="kargoTR_notification_retry_count" id="kargotr-retry-count" aria-label="Tekrar deneme sayısı">
+                                        <?php foreach (kargoTR_notification_retry_count_choices() as $retry_value => $retry_label) : ?>
+                                            <option value="<?php echo esc_attr($retry_value); ?>" <?php selected($retry_count_option, $retry_value); ?>><?php echo esc_html($retry_label); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <span id="kargotr-retry-interval-wrap">
+                                        <select name="kargoTR_notification_retry_interval" aria-label="Denemeler arası süre">
+                                            <?php foreach (kargoTR_notification_retry_interval_choices() as $interval_value => $interval_label) : ?>
+                                                <option value="<?php echo esc_attr($interval_value); ?>" <?php selected($retry_interval_option, $interval_value); ?>><?php echo esc_html($interval_label); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        arayla
+                                    </span>
+                                </p>
+                                <p class="description" style="margin-top: 8px;">
+                                    SMS servisine bağlanılamadığında veya e-posta gönderilemediğinde bildirim seçtiğiniz sayıda tekrar denenir; her deneme sipariş notlarına yazılır.
+                                    SMS'in servise ulaşmış olabileceği durumlarda (ör. zaman aşımı) müşteriye çift SMS gitmemesi için tekrar denenmez.
                                 </p>
                             </div>
 

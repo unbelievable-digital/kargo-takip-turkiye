@@ -52,16 +52,94 @@ function kargoTR_notification_channel_label($channel) {
 }
 
 /**
+ * Genel Ayarlar'da seçilebilen tekrar deneme sayıları
+ *
+ * @return array sayı => etiket
+ */
+function kargoTR_notification_retry_count_choices() {
+    return array(
+        0 => 'Tekrar denememe',
+        1 => '1 kez',
+        2 => '2 kez',
+        3 => '3 kez',
+    );
+}
+
+/**
+ * Genel Ayarlar'da seçilebilen denemeler arası süreler (dakika)
+ *
+ * @return array dakika => etiket
+ */
+function kargoTR_notification_retry_interval_choices() {
+    return array(
+        5  => '5 dakika',
+        15 => '15 dakika',
+        30 => '30 dakika',
+        60 => '1 saat',
+    );
+}
+
+/**
+ * Tekrar deneme sayısı ayarını doğrular; listede olmayan değer varsayılana döner
+ *
+ * @param mixed $value
+ * @return int
+ */
+function kargoTR_sanitize_retry_count($value) {
+    $value = absint($value);
+    return array_key_exists($value, kargoTR_notification_retry_count_choices()) ? $value : 2;
+}
+
+/**
+ * Denemeler arası süre ayarını doğrular; listede olmayan değer varsayılana döner
+ *
+ * @param mixed $value
+ * @return int
+ */
+function kargoTR_sanitize_retry_interval($value) {
+    $value = absint($value);
+    return array_key_exists($value, kargoTR_notification_retry_interval_choices()) ? $value : 15;
+}
+
+/**
  * Tekrar denemeler arasındaki bekleme süreleri (saniye)
  *
- * Dizinin uzunluğu tekrar deneme sayısıdır: varsayılan 2 tekrar, toplam 3 deneme.
+ * Genel Ayarlar'daki tekrar deneme sayısı ve aralığından oluşur. Dizinin uzunluğu
+ * tekrar deneme sayısıdır; varsayılan 15 dakika arayla 2 tekrar, toplam 3 deneme.
+ * Geliştiriciler kargoTR_notification_retry_delays filtresiyle değiştirebilir.
  *
  * @return int[]
  */
 function kargoTR_notification_retry_delays() {
-    $delays = apply_filters('kargoTR_notification_retry_delays', array(5 * MINUTE_IN_SECONDS, 30 * MINUTE_IN_SECONDS));
+    $count = kargoTR_sanitize_retry_count(get_option('kargoTR_notification_retry_count', 2));
+    $interval = kargoTR_sanitize_retry_interval(get_option('kargoTR_notification_retry_interval', 15));
+
+    $delays = $count > 0 ? array_fill(0, $count, $interval * MINUTE_IN_SECONDS) : array();
+    $delays = apply_filters('kargoTR_notification_retry_delays', $delays);
 
     return array_values(array_map('absint', (array) $delays));
+}
+
+/**
+ * Bir SMS isteği hatası güvenle tekrar denenebilir mi
+ *
+ * Yalnızca isteğin servise hiç ulaşmadığı kesin olan durumlar tekrar denenir:
+ * alan adı çözülemedi (cURL 6), bağlantı kurulamadı (cURL 7), SSL el sıkışması
+ * başarısız (cURL 35), 502 ve 503. Zaman aşımı, 500 ve 504'te mesaj servise
+ * ulaşıp gönderilmiş olabilir; tekrar denemek müşteriye çift SMS gönderir.
+ *
+ * @param WP_Error|int $error_or_status HTTP hatası ya da HTTP durum kodu
+ * @return bool
+ */
+function kargoTR_sms_failure_retryable($error_or_status) {
+    if (is_wp_error($error_or_status)) {
+        if (preg_match('/cURL error (\d+)/', $error_or_status->get_error_message(), $match)) {
+            return in_array((int) $match[1], array(6, 7, 35), true);
+        }
+        return false;
+    }
+
+    return in_array((int) $error_or_status, array(502, 503), true);
 }
 
 /**

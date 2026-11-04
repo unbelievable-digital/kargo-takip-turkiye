@@ -90,7 +90,7 @@ Eklentinin çalışabilmesi için woocommerce eklentisi gereklidir. Eklentiyi ak
 
 = 0.7 =
 * **Bildirimler arka planda gönderiliyor** - Kargo e-postası ve SMS artık sipariş kaydedilirken beklenmiyor; WooCommerce ile gelen Action Scheduler üzerinden birkaç saniye içinde gönderiliyor. SMS servisi yavaş yanıt verdiğinde sipariş kaydı, toplu CSV girişi ve REST API istekleri artık beklemiyor
-* Bağlantı hatası, SMS servisinde geçici arıza veya e-postanın gönderilememesi durumunda bildirim 5 ve 30 dakika sonra otomatik olarak tekrar deneniyor; her deneme sipariş notlarına yazılıyor. Telefon numarası yok, şifre hatalı gibi kalıcı hatalarda tekrar denenmiyor
+* SMS servisine bağlanılamadığında veya e-posta gönderilemediğinde bildirim otomatik olarak tekrar deneniyor (varsayılan 15 dakika arayla 2 kez); her deneme sipariş notlarına yazılıyor. Tekrar deneme sayısı ve aralığı Genel Ayarlar'dan değiştirilebilir veya kapatılabilir. Zaman aşımı gibi SMS'in servise ulaşmış olabileceği durumlarda, müşteriye çift SMS gitmemesi için tekrar denenmiyor. Telefon numarası yok, şifre hatalı gibi kalıcı hatalarda da tekrar denenmiyor
 * Aynı sipariş için bekleyen bir bildirim varsa (örneğin durum eşlemesi tetiklendiğinde) ikinci bildirim kuyruğa eklenmiyor
 * Genel Ayarlar'a "Bildirimleri Arka Planda Gönder" seçeneği eklendi (varsayılan açık); kapatılırsa bildirimler eskisi gibi kayıt sırasında gönderilir
 * Siparişteki "E-postayı yeniden gönder" butonu, gönderim başarısız olduğunda artık başarılı mesajı göstermiyor

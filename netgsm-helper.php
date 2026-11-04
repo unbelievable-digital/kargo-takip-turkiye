@@ -277,7 +277,7 @@ function kargoTR_netgsm_normalize_phone($phone) {
  * @param string $msgheader Mesaj başlığı (gönderici adı)
  * @param array  $messages [ ['msg' => '...', 'no' => '905xxxxxxxxx'], ... ]
  * @return array ['success' => bool, 'jobid' => string|null, 'error' => string|null, 'retry' => bool]
- *               retry: hata geçici (bağlantı hatası, servis 5xx), tekrar denenebilir
+ *               retry: istek servise hiç ulaşmadı, tekrar denenebilir (bkz. kargoTR_sms_failure_retryable)
  */
 function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages) {
     $url = 'https://api.netgsm.com.tr/sms/rest/v2/send';
@@ -298,7 +298,12 @@ function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages
     ));
 
     if (is_wp_error($request)) {
-        return array('success' => false, 'jobid' => null, 'error' => $request->get_error_message(), 'retry' => true);
+        $retry = kargoTR_sms_failure_retryable($request);
+        $error = $request->get_error_message();
+        if (!$retry) {
+            $error .= ' (SMS servise ulaşmış olabilir; çift gönderim olmaması için tekrar denenmedi)';
+        }
+        return array('success' => false, 'jobid' => null, 'error' => $error, 'retry' => $retry);
     }
 
     $status   = (int) wp_remote_retrieve_response_code($request);
@@ -326,7 +331,7 @@ function kargoTR_netgsm_send_rest_v2($username, $password, $msgheader, $messages
     $code   = isset($data['code']) ? (string) $data['code'] : '';
     $errmsg = isset($error_codes[$code]) ? $error_codes[$code] : ('NetGSM API: ' . ($response ?: 'Bilinmeyen yanıt'));
 
-    return array('success' => false, 'jobid' => null, 'error' => $errmsg . ' (Kod: ' . $code . ')', 'retry' => $status >= 500);
+    return array('success' => false, 'jobid' => null, 'error' => $errmsg . ' (Kod: ' . $code . ')', 'retry' => kargoTR_sms_failure_retryable($status));
 }
 
 /**

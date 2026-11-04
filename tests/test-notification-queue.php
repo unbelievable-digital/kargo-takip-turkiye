@@ -27,6 +27,9 @@ $mail_fail = function () { return false; };
 
 kargotr_assert('Action Scheduler kullanılabilir', kargoTR_action_scheduler_available());
 
+delete_option('kargoTR_notification_retry_count');
+delete_option('kargoTR_notification_retry_interval');
+
 // --- Varsayılan açık ---
 delete_option('kargoTR_async_notifications');
 kargotr_assert('Arka plan gönderimi varsayılan açık', kargoTR_async_notifications_enabled());
@@ -72,6 +75,33 @@ kargotr_assert('Son denemeden sonra yeni iş yok', count(kargotr_test_pending_ac
 kargotr_assert('Vazgeçildi notu düştü', strpos(kargotr_test_order_notes($retry_order), '3 denemede gönderilemedi') !== false);
 remove_filter('pre_wp_mail', $mail_fail, 99);
 
+// --- Ayarlar: tekrar deneme sayısı ve aralığı ---
+kargotr_assert('Varsayılan: 15 dk arayla 2 tekrar', kargoTR_notification_retry_delays() === array(900, 900), wp_json_encode(kargoTR_notification_retry_delays()));
+
+update_option('kargoTR_notification_retry_count', 3);
+update_option('kargoTR_notification_retry_interval', 60);
+kargotr_assert('Ayar: 1 saat arayla 3 tekrar', kargoTR_notification_retry_delays() === array(3600, 3600, 3600));
+
+add_filter('pre_wp_mail', $mail_fail, 99);
+$hourly_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'Q4'));
+$before = time();
+kargoTR_run_notification('email', $hourly_order, 1);
+$next = as_next_scheduled_action(KARGOTR_NOTIFICATION_HOOK, array('email', $hourly_order, 2), KARGOTR_NOTIFICATION_GROUP);
+kargotr_assert('Tekrar 1 saat sonraya planlandı', is_int($next) && $next >= $before + 3600 && $next <= time() + 3600, (string) $next);
+kargotr_assert('Not toplam deneme sayısını gösterir', strpos(kargotr_test_order_notes($hourly_order), 'deneme 2/4') !== false);
+
+update_option('kargoTR_notification_retry_count', 0);
+$no_retry_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'Q5'));
+kargoTR_run_notification('email', $no_retry_order, 1);
+kargotr_assert('Tekrar deneme kapalıysa iş planlanmaz', count(kargotr_test_pending_actions('email', $no_retry_order, 2)) === 0);
+remove_filter('pre_wp_mail', $mail_fail, 99);
+
+update_option('kargoTR_notification_retry_count', 99);
+kargotr_assert('Geçersiz sayı varsayılana döner', count(kargoTR_notification_retry_delays()) === 2);
+
+delete_option('kargoTR_notification_retry_count');
+delete_option('kargoTR_notification_retry_interval');
+
 // --- Kalıcı hata: e-posta adresi yoksa tekrar denenmez ---
 $no_mail_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'Q3'));
 $no_mail = wc_get_order($no_mail_order);
@@ -85,11 +115,19 @@ update_option('Kobikom_ApiKey', 'test-token');
 update_option('Kobikom_Header', 'TESTBASLIK');
 update_option('kargoTr_sms_template', 'Takip: {tracking_number}');
 
-$filter = kargotr_fake_http(new WP_Error('http_request_failed', 'zaman aşımı'));
+$filter = kargotr_fake_http(new WP_Error('http_request_failed', 'cURL error 7: Failed to connect to sms.kobikom.com.tr port 443'));
 $kobi_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'K1'));
 kargoTR_run_notification('kobikom', $kobi_order, 1);
 kargotr_unfake_http($filter);
-kargotr_assert('Kobikom bağlantı hatası tekrar denenir', count(kargotr_test_pending_actions('kobikom', $kobi_order, 2)) === 1);
+kargotr_assert('Kobikom bağlantı kurulamadı: tekrar denenir', count(kargotr_test_pending_actions('kobikom', $kobi_order, 2)) === 1);
+
+// Zaman aşımında SMS gönderilmiş olabilir: çift SMS olmasın diye tekrar denenmez
+$filter = kargotr_fake_http(new WP_Error('http_request_failed', 'cURL error 28: Operation timed out after 20001 milliseconds'));
+$kobi_timeout_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'K3'));
+kargoTR_run_notification('kobikom', $kobi_timeout_order, 1);
+kargotr_unfake_http($filter);
+kargotr_assert('Kobikom zaman aşımı tekrar denenmez', count(kargotr_test_pending_actions('kobikom', $kobi_timeout_order, 2)) === 0);
+kargotr_assert('Zaman aşımı notu açıklama içerir', strpos(kargotr_test_order_notes($kobi_timeout_order), 'ulaşmış olabilir') !== false);
 
 $filter = kargotr_fake_http(array('body' => '{"message":"Unauthenticated."}', 'response' => array('code' => 401)));
 $kobi_auth_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'K2'));
@@ -108,6 +146,18 @@ $netgsm_order = kargotr_test_order('processing', array('tracking_company' => 'pt
 kargoTR_run_notification('netgsm', $netgsm_order, 1);
 kargotr_unfake_http($filter);
 kargotr_assert('NetGSM 503 tekrar denenir', count(kargotr_test_pending_actions('netgsm', $netgsm_order, 2)) === 1);
+
+$filter = kargotr_fake_http(array('body' => '', 'response' => array('code' => 500)));
+$netgsm_500_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'N3'));
+kargoTR_run_notification('netgsm', $netgsm_500_order, 1);
+kargotr_unfake_http($filter);
+kargotr_assert('NetGSM 500 tekrar denenmez (SMS gitmiş olabilir)', count(kargotr_test_pending_actions('netgsm', $netgsm_500_order, 2)) === 0);
+
+$filter = kargotr_fake_http(new WP_Error('http_request_failed', 'cURL error 28: Operation timed out'));
+$netgsm_timeout_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'N4'));
+kargoTR_run_notification('netgsm', $netgsm_timeout_order, 1);
+kargotr_unfake_http($filter);
+kargotr_assert('NetGSM zaman aşımı tekrar denenmez', count(kargotr_test_pending_actions('netgsm', $netgsm_timeout_order, 2)) === 0);
 
 $filter = kargotr_fake_http(array('body' => '{"code":"30"}', 'response' => array('code' => 200)));
 $netgsm_auth_order = kargotr_test_order('processing', array('tracking_company' => 'ptt', 'tracking_code' => 'N2'));

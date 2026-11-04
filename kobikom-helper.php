@@ -108,8 +108,12 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
     $request = wp_remote_get($request_url, array('timeout' => 20));
 
     if (is_wp_error($request)) {
-        $order->add_order_note("Sms Gönderilemedi - Kobikom Hatası: " . $request->get_error_message());
-        return new WP_Error('kargotr_retry', $request->get_error_message());
+        if (kargoTR_sms_failure_retryable($request)) {
+            $order->add_order_note("Sms Gönderilemedi - Kobikom Hatası: " . $request->get_error_message());
+            return new WP_Error('kargotr_retry', $request->get_error_message());
+        }
+        $order->add_order_note("Sms Gönderilemedi - Kobikom Hatası: " . $request->get_error_message() . ' (SMS servise ulaşmış olabilir; çift gönderim olmaması için tekrar denenmedi)');
+        return false;
     }
 
     $status_code = wp_remote_retrieve_response_code($request);
@@ -127,7 +131,7 @@ function kargoTR_SMS_gonder_kobikom($order_id) {
     $error_detail = isset($response['message']) ? $response['message'] : wp_strip_all_tags(substr($body, 0, 200));
     $order->add_order_note(sprintf('Sms Gönderilemedi - Kobikom yanıtı (HTTP %s): %s', $status_code, $error_detail));
 
-    return ((int) $status_code >= 500) ? new WP_Error('kargotr_retry', $error_detail) : false;
+    return kargoTR_sms_failure_retryable((int) $status_code) ? new WP_Error('kargotr_retry', $error_detail) : false;
 }
 
 
